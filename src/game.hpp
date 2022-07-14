@@ -4,6 +4,9 @@
 #include "SDL2/SDL.h"
 #include <iostream>
 #include <SDL2/SDL_image.h>
+#include <math.h>
+
+#define PI 3.14159265359
 
 class Game {
 public:
