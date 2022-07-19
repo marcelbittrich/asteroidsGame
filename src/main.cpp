@@ -6,10 +6,9 @@ int main(int argc,char * argv[])
 {
 
 	const int FPS = 60;
-	const int frameDelay = 1000/FPS;
+	const float frameDelay = 1000.0f/FPS;
 
-	Uint32 frameStart;
-	int frameTime;
+	Uint32 frameStart, frameTime;
 
 	game = new Game();
 
@@ -26,9 +25,13 @@ int main(int argc,char * argv[])
 
 		frameTime = SDL_GetTicks() - frameStart;
 
-		if(frameDelay > frameTime)
+		if(frameTime < frameDelay)
 		{
-			SDL_Delay(frameDelay - frameTime);
+			SDL_Delay((int)(frameDelay - frameTime));
+		}
+		else
+		{
+			SDL_Delay((int)frameDelay);
 		}
 
 	};

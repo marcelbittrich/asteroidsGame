@@ -3,11 +3,16 @@
 SDL_Texture* playerTex;
 SDL_Rect srcR, destR;
 bool giveThrust, isTurningRight, isTurningLeft;
-double velocity = 0;
 double v_max = 5;
 double shipAngle = 0;
 double roatatingSpeed = 3;
+double shipPosX = 0.0;
+double shipPosY = 0.0;
+double thrust = 0.2;
 int windowwidth, windowheight;
+
+std::vector<double> velocity = {0.0, 0.0};
+
 
 Game::Game()
 {}
@@ -52,17 +57,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
     destR.w = 50;
     destR.h = 50;
-    destR.x = width/2-destR.w/2;
-    destR.y = height/2-destR.h/2;
+    shipPosX = width/2-destR.w/2;
+    shipPosY = height/2-destR.h/2;
 }
 
 void Game::handleEvents()
 {
     SDL_Event event;
     SDL_PollEvent(&event);
-    //while(SDL_PollEvent(&event)){
-        switch (event.type)
-        {
+    switch (event.type)
+    {
         case SDL_QUIT:
             isRunning = false;
             break;
@@ -102,51 +106,22 @@ void Game::handleEvents()
                     break;
             }
             break;
-            // std::cout << event.key.keysym.sym << std::endl;
-            // if (event.key.keysym.sym == SDLK_UP) {
-            //     std::cout << "up" << std::endl;
-            //     if(velocity<v_max){
-            //     velocity += 1.5;
-            //     }
-
-            //     std::cout << velocity << std::endl;
-            // }
-            // if (event.key.keysym.sym == SDLK_DOWN) {
-            //     std::cout << "down" << std::endl;
-            // }
-            // if (event.key.keysym.sym == SDLK_RIGHT) {
-            //     std::cout << "right" << std::endl;
-            //     shipAngle += roatatingSpeed;
-            //     std::cout << shipAngle << std::endl;
-            // }
-            // if (event.key.keysym.sym == SDLK_LEFT) {
-            //     std::cout << "left" << std::endl;
-            //     shipAngle -= roatatingSpeed;
-            //     std::cout << shipAngle << std::endl;
-            // }
-            // if (event.key.keysym.sym == SDLK_SPACE) {
-            //     std::cout << "position reset" << std::endl;
-
-                
-            //     std::cout << windowheight << windowwidth << std::endl; 
-            //     destR.x = windowwidth/2-destR.w/2;
-            //     destR.y = windowheight/2-destR.h/2;
-            // }
         default:
             break;
-        }
-    //}
+    }
 }
 
 void Game::update()
 {
     if (giveThrust)
     {
-        velocity = std::min(velocity+1.5, v_max);
-    }else{
-        velocity = std::max(velocity-0.05, 0.0);
+        
+        float deltaX = (sin(shipAngle*PI/180) * thrust);
+        float deltaY = -(cos(shipAngle*PI/180) * thrust);
+        velocity.at(0) += deltaX;
+        velocity.at(1) += deltaY;
     }
-    
+
     if (isTurningRight)
     {
         shipAngle += roatatingSpeed;
@@ -157,24 +132,27 @@ void Game::update()
         shipAngle -= roatatingSpeed;
     }
 
-    destR.x += (sin(shipAngle*PI/180)*velocity);
-    destR.y += -(cos(shipAngle*PI/180)*velocity);
-    std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
-
-    if (destR.x < 0){
-        destR.x = windowwidth;
-    }
-    if (destR.x > windowwidth){
-        destR.x = 0;
-    }
-    if (destR.y < 0){
-        destR.y = windowheight;
-    }
-    if (destR.y > windowheight){
-        destR.y = 0;
-    }
+    shipPosX += velocity.at(0);
+    shipPosY += velocity.at(1);
+    // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
 
 
+
+    if (shipPosX < 0){
+        shipPosX = windowwidth;
+    }
+    if (shipPosX > windowwidth){
+        shipPosX = 0;
+    }
+    if (shipPosY < 0){
+        shipPosY = windowheight;
+    }
+    if (shipPosY > windowheight){
+        shipPosY = 0;
+    }
+
+    destR.x = std::round(shipPosX);
+    destR.y = std::round(shipPosY);
 }
 
 void Game::render()

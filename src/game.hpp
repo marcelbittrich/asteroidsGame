@@ -5,6 +5,7 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
 #include <math.h>
+#include <vector>
 
 #define PI 3.14159265359
 
