@@ -3,12 +3,15 @@
 SDL_Texture* playerTex;
 SDL_Rect srcR, destR;
 bool giveThrust, isTurningRight, isTurningLeft;
-double v_max = 5;
-double shipAngle = 0;
-double roatatingSpeed = 3;
+
+double shipAngle = 0.0;
 double shipPosX = 0.0;
 double shipPosY = 0.0;
+double v_sum = 0.0;
+double v_max = 5;
+double roatatingSpeed = 3;
 double thrust = 0.2;
+
 int windowwidth, windowheight;
 
 std::vector<double> velocity = {0.0, 0.0};
@@ -115,9 +118,23 @@ void Game::update()
 {
     if (giveThrust)
     {
+        double deltaX = 0;
+        double deltaY = 0; 
+        double v_angle = 0;
+
+        v_sum = sqrt(pow(velocity.at(0),2) + pow(velocity.at(0),2));
+        v_angle = acos(velocity.at(0)/v_sum);
+        std::cout << v_angle*PI/180 << std::endl;
+        v_sum += -0.05;
+        velocity.at(0) = (sin(v_angle*PI/180) * v_sum);
+        velocity.at(1) = -(cos(v_angle*PI/180) * v_sum); 
+
+        if (v_sum <= v_max)
+        {
+            deltaX = (sin(shipAngle*PI/180) * thrust);
+            deltaY = -(cos(shipAngle*PI/180) * thrust); 
+        }
         
-        float deltaX = (sin(shipAngle*PI/180) * thrust);
-        float deltaY = -(cos(shipAngle*PI/180) * thrust);
         velocity.at(0) += deltaX;
         velocity.at(1) += deltaY;
     }
