@@ -8,9 +8,9 @@ double shipAngle = 0.0;
 double shipPosX = 0.0;
 double shipPosY = 0.0;
 double v_sum = 0.0;
-double v_max = 5;
-double roatatingSpeed = 3;
-double thrust = 0.2;
+double v_max = 20;
+double roatatingSpeed = 2;
+double thrust = 0.05;
 
 int windowwidth, windowheight;
 
@@ -116,18 +116,30 @@ void Game::handleEvents()
 
 void Game::update()
 {
+
+    double deltaX = 0;
+    double deltaY = 0; 
+    double v_angle = 0;
+    double v_angle_degree = 0; 
+
+    v_sum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
+
+    if (v_sum > 0)
+    {
+        v_angle = atan2(velocity[0],velocity[1]);
+        v_sum = std::max(v_sum - 0.01, 0.0);
+    }    
+
+    v_angle_degree = v_angle*180/PI;
+    std::cout << v_angle_degree << std::endl;
+
+    
+    velocity.at(0) = (sin(v_angle) * v_sum);
+    velocity.at(1) = (cos(v_angle) * v_sum); 
+
     if (giveThrust)
     {
-        double deltaX = 0;
-        double deltaY = 0; 
-        double v_angle = 0;
 
-        v_sum = sqrt(pow(velocity.at(0),2) + pow(velocity.at(0),2));
-        v_angle = acos(velocity.at(0)/v_sum);
-        std::cout << v_angle*PI/180 << std::endl;
-        v_sum += -0.05;
-        velocity.at(0) = (sin(v_angle*PI/180) * v_sum);
-        velocity.at(1) = -(cos(v_angle*PI/180) * v_sum); 
 
         if (v_sum <= v_max)
         {
@@ -135,9 +147,12 @@ void Game::update()
             deltaY = -(cos(shipAngle*PI/180) * thrust); 
         }
         
-        velocity.at(0) += deltaX;
-        velocity.at(1) += deltaY;
     }
+
+    velocity.at(0) += deltaX;
+    velocity.at(1) += deltaY;
+
+
 
     if (isTurningRight)
     {
@@ -177,6 +192,7 @@ void Game::render()
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
     SDL_RenderCopyEx(renderer, playerTex, NULL, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+    SDL_RenderDrawLine(renderer, shipPosX, shipPosY, 0, 0);
     SDL_RenderPresent(renderer);
 }
 
