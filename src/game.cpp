@@ -2,6 +2,7 @@
 #include "handleinput.hpp"
 
 SDL_Texture* playerTex;
+SDL_Texture* thrustPlayerTex;
 SDL_Rect srcR, destR;
 ControlBools controlBools;
 
@@ -14,6 +15,8 @@ double roatatingSpeed = 2;
 double thrust = 0.05;
 
 int windowwidth, windowheight;
+
+int thurstAnimationCounter = 0;
 
 std::vector<double> velocity = {0.0, 0.0};
 
@@ -59,8 +62,17 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     }
     playerTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
+
+    image = IMG_Load("img/ship_thrustanimation.png");
+    thrustPlayerTex = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+
     destR.w = 50;
     destR.h = 50;
+    srcR.w = 300;
+    srcR.h = 300;
+    srcR.x = 0;
+    srcR.y = 0;
     shipPosX = width/2-destR.w/2;
     shipPosY = height/2-destR.h/2;
 }
@@ -142,13 +154,20 @@ void Game::update()
 
     destR.x = std::round(shipPosX);
     destR.y = std::round(shipPosY);
+
+    thurstAnimationCounter = (thurstAnimationCounter + 1) % 3;
+    srcR.x = thurstAnimationCounter * 300;
 }
 
 void Game::render()
 {
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
-    SDL_RenderCopyEx(renderer, playerTex, NULL, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+    if (controlBools.giveThrust) {
+        SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+    } else {
+        SDL_RenderCopyEx(renderer, playerTex, NULL, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+    }
     SDL_RenderDrawLine(renderer, shipPosX, shipPosY, 0, 0);
     SDL_RenderPresent(renderer);
 }
