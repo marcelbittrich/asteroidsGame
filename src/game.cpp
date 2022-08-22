@@ -1,8 +1,9 @@
 #include "game.hpp"
+#include "handleinput.hpp"
 
 SDL_Texture* playerTex;
 SDL_Rect srcR, destR;
-bool giveThrust, isTurningRight, isTurningLeft;
+ControlBools controlBools;
 
 double shipAngle = 0.0;
 double shipPosX = 0.0;
@@ -68,50 +69,7 @@ void Game::handleEvents()
 {
     SDL_Event event;
     SDL_PollEvent(&event);
-    switch (event.type)
-    {
-        case SDL_QUIT:
-            isRunning = false;
-            break;
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
-            {
-                case SDLK_UP:
-                    giveThrust = true;
-                    break;
-                case SDLK_DOWN:
-                    break;
-                case SDLK_RIGHT:
-                    isTurningRight = true;
-                    break;
-                case SDLK_LEFT:
-                    isTurningLeft = true;
-                    break;
-                default:
-                    break;
-            }
-            break;
-        case SDL_KEYUP:
-            switch (event.key.keysym.sym)
-            {
-                case SDLK_UP:
-                    giveThrust = false;
-                    break;
-                case SDLK_DOWN:
-                    break;
-                case SDLK_RIGHT:
-                    isTurningRight = false;
-                    break;
-                case SDLK_LEFT:
-                    isTurningLeft = false;
-                    break;
-                default:
-                    break;
-            }
-            break;
-        default:
-            break;
-    }
+    handleInput(event, &controlBools, &isRunning);
 }
 
 void Game::update()
@@ -131,13 +89,13 @@ void Game::update()
     }    
 
     v_angle_degree = v_angle*180/PI;
-    std::cout << v_angle_degree << std::endl;
+    std::cout << "direction heading: " << v_angle_degree << std::endl;
 
     
     velocity.at(0) = (sin(v_angle) * v_sum);
     velocity.at(1) = (cos(v_angle) * v_sum); 
 
-    if (giveThrust)
+    if (controlBools.giveThrust)
     {
 
 
@@ -153,13 +111,12 @@ void Game::update()
     velocity.at(1) += deltaY;
 
 
-
-    if (isTurningRight)
+    if (controlBools.isTurningRight)
     {
         shipAngle += roatatingSpeed;
     }
 
-    if (isTurningLeft)
+    if (controlBools.isTurningLeft)
     {
         shipAngle -= roatatingSpeed;
     }
