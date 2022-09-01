@@ -3,6 +3,7 @@
 
 SDL_Texture* playerTex;
 SDL_Texture* thrustPlayerTex;
+SDL_Texture* asteroidTex;
 SDL_Rect srcR, destR;
 ControlBools controlBools;
 
@@ -20,6 +21,36 @@ int thurstAnimationCounter = 0;
 
 std::vector<double> velocity = {0.0, 0.0};
 
+
+class Asteroid
+{
+    private:
+        double xPos, yPos;
+        int width, height;
+        SDL_Rect getRect()
+        {
+            SDL_Rect rect;
+            rect.w = width;
+            rect.h = height;
+            rect.x = std::round(xPos);
+            rect.y = std::round(yPos);
+            return rect;
+        }
+    public:
+        SDL_Rect rect;
+
+        Asteroid(double xPos, double yPos, int width, int height)
+        {
+            this->xPos = xPos;
+            this->yPos = yPos;
+            this->width = width;
+            this->height = height;
+
+            rect = getRect();
+        }
+};
+
+Asteroid asteroid = Asteroid(400.0, 400.0, 50, 50);
 
 Game::Game()
 {}
@@ -92,6 +123,10 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     image = IMG_Load("img/ship_thrustanimation.png");
     thrustPlayerTex = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+
+    image = IMG_Load("img/asteroid_small1.png");
+    asteroidTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
     destR.w = 50;
@@ -200,7 +235,7 @@ void Game::render()
     } else {
         SDL_RenderCopyEx(renderer, playerTex, NULL, &destR, shipAngle, NULL, SDL_FLIP_NONE);
     }
-    SDL_RenderDrawLine(renderer, shipPosX, shipPosY, 0, 0);
+    SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, NULL, NULL, SDL_FLIP_NONE);
     SDL_RenderPresent(renderer);
 }
 
