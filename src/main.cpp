@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+
 Game *game = nullptr;
 
 int main(int argc,char * argv[])
@@ -37,8 +38,7 @@ int main(int argc,char * argv[])
 	};
 	
 	game->clean();
-
-	std::cout << "Na toll";
+	std::cout << "Na toll" << std::endl;
 
 	return 0;
 }

@@ -1,13 +1,16 @@
 #include "handleinput.hpp"
 
 void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) {
-    std::cout << "handle input: " << event.key.keysym.sym << std::endl;
+    
+    //std::cout << "handle keyboard input: " << event.key.keysym.sym << std::endl;
+    //std::cout << "controller input" << event.type << std::endl;
+
     switch (event.type)
     {
         case SDL_QUIT:
             *isRunning = false;
             break;
-        case SDL_KEYDOWN:
+        case SDL_KEYDOWN: 
             switch (event.key.keysym.sym)
             {
                 case SDLK_UP:
@@ -43,7 +46,36 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
             }
             break;
+  
+        case SDL_CONTROLLERBUTTONDOWN:
+            switch (event.cbutton.button)
+            {
+                case SDL_CONTROLLER_BUTTON_B:
+                    controlBools->giveThrust = true;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    controlBools->isTurningRight = true;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    controlBools->isTurningLeft = true;
+            }
+            break;
+
+        case SDL_CONTROLLERBUTTONUP:
+            switch (event.cbutton.button)
+            {
+                case SDL_CONTROLLER_BUTTON_B:
+                    controlBools->giveThrust = false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    controlBools->isTurningRight = false;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    controlBools->isTurningLeft = false;
+            }
+            break;
         default:
             break;
     }
+
 }

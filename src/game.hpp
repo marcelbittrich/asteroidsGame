@@ -6,6 +6,7 @@
 #include <SDL2/SDL_image.h>
 #include <math.h>
 #include <vector>
+#include "SDL2/SDL_gamecontroller.h"
 
 #define PI 3.14159265359
 

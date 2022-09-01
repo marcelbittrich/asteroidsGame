@@ -56,6 +56,33 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     } else {
         isRunning = false;
     }
+
+    printf("%i joysticks were found.\n", SDL_NumJoysticks() );
+    for (int i = 1; i <= SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            printf("Joystick %i is supported by the game controller interface!\n", i);
+        }
+    }
+    printf("The names of the joysticks are:\n");
+    for (int i=0; i < SDL_NumJoysticks(); i++ ){
+        SDL_Joystick *joystick = SDL_JoystickOpen(i);
+        printf("%s\n", SDL_JoystickName(joystick));
+    }
+
+
+    SDL_GameController *gamepad = nullptr;
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            gamepad = SDL_GameControllerOpen(i);
+            if (gamepad) {
+                std::cout << "Gamecontroller opened!" << std::endl;
+                break;
+            } else {
+                fprintf(stderr, "Could not open gamecontroller %i: %s\n", i, SDL_GetError());
+            }
+        }
+    }
+
     SDL_Surface* image = IMG_Load("img/ship.png");
     if (image == NULL) {
         std::cout << IMG_GetError();
@@ -80,8 +107,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 void Game::handleEvents()
 {
     SDL_Event event;
-    SDL_PollEvent(&event);
-    handleInput(event, &controlBools, &isRunning);
+
+    while (SDL_PollEvent(&event))
+    {
+        handleInput(event, &controlBools, &isRunning);
+    }
+
 }
 
 void Game::update()
@@ -101,7 +132,7 @@ void Game::update()
     }    
 
     v_angle_degree = v_angle*180/PI;
-    std::cout << "direction heading: " << v_angle_degree << std::endl;
+    //std::cout << "direction heading: " << v_angle_degree << std::endl;
 
     
     velocity.at(0) = (sin(v_angle) * v_sum);
@@ -157,6 +188,7 @@ void Game::update()
 
     thurstAnimationCounter = (thurstAnimationCounter + 1) % 3;
     srcR.x = thurstAnimationCounter * 300;
+    //std::cout << thurstAnimationCounter << std::endl;
 }
 
 void Game::render()
@@ -174,6 +206,7 @@ void Game::render()
 
 void Game::clean()
 {
+    
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
     IMG_Quit();
