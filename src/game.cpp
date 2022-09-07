@@ -107,9 +107,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     srcR.y = 0;
     shipPosX = width/2-destR.w/2;
     shipPosY = height/2-destR.h/2;
-
-    asteroids.push_back(Asteroid(400.0, 400.0, 50, 50));
-    asteroids.push_back(Asteroid(200.0, 200.0, 50, 50));
+    destR.x = std::round(shipPosX);
+    destR.y = std::round(shipPosY);
+    initAsteroids(destR, width, height);
 }
 
 void Game::handleEvents()

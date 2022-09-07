@@ -16,6 +16,7 @@ class Asteroid
         Asteroid(double xPos, double yPos, int width, int height);
 };
 
+void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
 
 extern std::vector<Asteroid> asteroids;
 
