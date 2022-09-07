@@ -1,5 +1,5 @@
-#ifndef game_hpp
-#define game_hpp
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #include "SDL2/SDL.h"
 #include <iostream>
@@ -7,6 +7,7 @@
 #include <math.h>
 #include <vector>
 #include "SDL2/SDL_gamecontroller.h"
+#include "gameobjects.hpp"
 
 #define PI 3.14159265359
 

@@ -22,36 +22,6 @@ int thurstAnimationCounter = 0;
 std::vector<double> velocity = {0.0, 0.0};
 
 
-class Asteroid
-{
-    private:
-        double xPos, yPos;
-        int width, height;
-        SDL_Rect getRect()
-        {
-            SDL_Rect rect;
-            rect.w = width;
-            rect.h = height;
-            rect.x = std::round(xPos);
-            rect.y = std::round(yPos);
-            return rect;
-        }
-    public:
-        SDL_Rect rect;
-
-        Asteroid(double xPos, double yPos, int width, int height)
-        {
-            this->xPos = xPos;
-            this->yPos = yPos;
-            this->width = width;
-            this->height = height;
-
-            rect = getRect();
-        }
-};
-
-Asteroid asteroid = Asteroid(400.0, 400.0, 50, 50);
-
 Game::Game()
 {}
 Game::~Game()
@@ -137,6 +107,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     srcR.y = 0;
     shipPosX = width/2-destR.w/2;
     shipPosY = height/2-destR.h/2;
+
+    asteroids.push_back(Asteroid(400.0, 400.0, 50, 50));
+    asteroids.push_back(Asteroid(200.0, 200.0, 50, 50));
 }
 
 void Game::handleEvents()
@@ -235,7 +208,9 @@ void Game::render()
     } else {
         SDL_RenderCopyEx(renderer, playerTex, NULL, &destR, shipAngle, NULL, SDL_FLIP_NONE);
     }
-    SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, NULL, NULL, SDL_FLIP_NONE);
+    for(Asteroid asteroid: asteroids) {
+        SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
+    }
     SDL_RenderPresent(renderer);
 }
 
