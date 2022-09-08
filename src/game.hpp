@@ -1,13 +1,18 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include "SDL2/SDL.h"
 #include <iostream>
-#include <SDL2/SDL_image.h>
 #include <math.h>
 #include <vector>
+#include <stdexcept>
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
 #include "SDL2/SDL_gamecontroller.h"
+
+#include "handleinput.hpp"
 #include "gameobjects.hpp"
+
 
 #define PI 3.14159265359
 

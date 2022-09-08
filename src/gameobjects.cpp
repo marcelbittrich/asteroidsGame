@@ -1,6 +1,4 @@
-#include <stdexcept>
 #include "gameobjects.hpp"
-#include <math.h>
 
 Asteroid::Asteroid(double xPos, double yPos, int width, int height)
 {
@@ -43,6 +41,7 @@ SDL_Point getRandomPosition(
             int gameObjectCenterY = gameObject.y + gameObject.h / 2;
             double distance = sqrt(std::pow(gameObjectCenterX - x, 2) + std::pow(gameObjectCenterY - y, 2));
             if (distance < minDistance) {
+                std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
                 break;
             }

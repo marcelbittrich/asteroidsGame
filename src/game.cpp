@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include "handleinput.hpp"
 
 SDL_Texture* playerTex;
 SDL_Texture* thrustPlayerTex;

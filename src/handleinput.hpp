@@ -1,8 +1,7 @@
 #ifndef handleinput_hpp
 #define handleinput_hpp
 
-#include "SDL2/SDL.h"
-#include <iostream>
+#include "game.hpp"
 
 struct controlBools {
     bool giveThrust;
