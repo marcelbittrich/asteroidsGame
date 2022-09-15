@@ -1,7 +1,11 @@
 #ifndef GAMEOBJECTS_HPP
 #define GAMEOBJECTS_HPP
 
-#include "game.hpp"
+#include <iostream>
+#include <math.h>
+#include <vector>
+#include <stdexcept>
+
 #include "handleinput.hpp"
 
 

@@ -77,5 +77,6 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
         default:
             break;
     }
-
 }
+
+ControlBools controlBools;

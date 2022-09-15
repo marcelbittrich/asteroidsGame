@@ -6,8 +6,8 @@ SDL_Texture* playerTex;
 SDL_Texture* thrustPlayerTex;
 SDL_Texture* asteroidTex;
 SDL_Rect srcR;
-ControlBools controlBools;
 
+extern ControlBools controlBools;
 
 int windowwidth, windowheight;
 

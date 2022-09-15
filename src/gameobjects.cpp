@@ -1,5 +1,7 @@
 #include "gameobjects.hpp"
 
+#define PI 3.14159265359
+
 
 
 Ship::Ship(double xPos, double yPos, int width, int height)
