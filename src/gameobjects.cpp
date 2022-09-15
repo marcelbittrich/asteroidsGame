@@ -1,12 +1,116 @@
 #include "gameobjects.hpp"
 
+
+
+Ship::Ship(double xPos, double yPos, int width, int height)
+{
+    this->xPos = xPos;
+    this->yPos = yPos;
+    this->width = width;
+    this->height = height;
+    this->col_radius = (width/2 + height/2)/2;
+    rect = getRect();
+}
+
+Ship::Ship()
+{
+
+}
+
+Ship::~Ship()
+{
+
+}
+
+SDL_Rect Ship::getRect()
+{
+    SDL_Rect rect;
+    rect.w = width;
+    rect.h = height;
+    rect.x = std::round(xPos);
+    rect.y = std::round(yPos);
+    return rect;
+}
+
+void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
+{
+    double deltaX = 0;
+    double deltaY = 0;
+    double v_angle = 0;
+    double v_angle_degree = 0; 
+    double v_sum;
+
+    v_sum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
+
+    if (v_sum > 0)
+    {
+        v_angle = atan2(velocity[0],velocity[1]);
+        v_sum = std::max(v_sum - 0.01, 0.0);
+    }    
+
+    v_angle_degree = v_angle*180/PI;
+    //std::cout << "direction heading: " << v_angle_degree << std::endl;
+
+    
+    velocity.at(0) = (sin(v_angle) * v_sum);
+    velocity.at(1) = (cos(v_angle) * v_sum); 
+
+    if (controlBools.giveThrust)
+    {
+
+
+        if (v_sum <= v_max)
+        {
+            deltaX = (sin(shipAngle*PI/180) * thrust);
+            deltaY = -(cos(shipAngle*PI/180) * thrust); 
+        }
+        
+    }
+
+    velocity.at(0) += deltaX;
+    velocity.at(1) += deltaY;
+
+
+    if (controlBools.isTurningRight)
+    {
+        shipAngle += roatatingSpeed;
+    }
+
+    if (controlBools.isTurningLeft)
+    {
+        shipAngle -= roatatingSpeed;
+    }
+
+    xPos += velocity.at(0);
+    yPos += velocity.at(1);
+    // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
+
+
+
+    if (xPos < 0){
+        xPos = windowWidth;
+    }
+    if (xPos > windowWidth){
+        xPos = 0;
+    }
+    if (yPos < 0){
+        yPos = windowHeight;
+    }
+    if (yPos > windowHeight){
+        yPos = 0;
+    }
+
+    rect.x = std::round(xPos);
+    rect.y = std::round(yPos);
+}
+
 Asteroid::Asteroid(double xPos, double yPos, int width, int height)
 {
     this->xPos = xPos;
     this->yPos = yPos;
     this->width = width;
     this->height = height;
-
+    this->col_radius = (width/2 + height/2)/2;
     rect = getRect();
 }
 
@@ -19,6 +123,13 @@ SDL_Rect Asteroid::getRect()
     rect.y = std::round(yPos);
     return rect;
 }
+
+
+/*void initShip(int windowWidth, int windowHeight)
+{
+
+}*/
+
 
 std::vector<Asteroid> asteroids = {};
 
@@ -70,4 +181,12 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
         asteroids.push_back(asteroid);
         gameObjects.push_back(asteroid.rect);
     }
+}
+
+bool doesCollide(Gameobject firstObject, Gameobject secondObject)
+{
+    double distance;
+    distance = sqrt(pow(firstObject.xPos - secondObject.xPos,2) + pow(firstObject.yPos - secondObject.yPos,2));
+   
+    return distance <= firstObject.col_radius + secondObject.col_radius;
 }
