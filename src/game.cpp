@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+
 Ship ship = Ship();
 
 SDL_Texture* playerTex;
@@ -129,7 +130,16 @@ void Game::update()
     srcR.x = thurstAnimationCounter * 300;
     //std::cout << thurstAnimationCounter << std::endl;
 
-
+    for(auto asteroid : asteroids)
+    {
+        if (doesCollide(ship,asteroid))
+        {
+            std::cout << "Collision!!!!!!" << std::endl;
+            ship.xPos = windowwidth/2-ship.rect.w/2;
+            ship.yPos = windowheight/2-ship.rect.h/2;
+            ship.velocity = {0,0};
+        }
+    }
 
 }
 

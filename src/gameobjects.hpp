@@ -11,13 +11,10 @@
 
 class Gameobject
 {
-    protected:
-        std::vector<double> velocity {0, 0};
     public:  
         double xPos, yPos;
         double col_radius;
-        
-     
+        std::vector<double> velocity {0, 0}; 
 };
 
 class Ship : public Gameobject
@@ -49,6 +46,7 @@ class Asteroid : public Gameobject
 
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
 //void initShip(int windowWidth, int windowHeight);
+bool doesCollide(Gameobject firstObject, Gameobject secondObject);
 
 //extern Ship ship;
 extern std::vector<Asteroid> asteroids;

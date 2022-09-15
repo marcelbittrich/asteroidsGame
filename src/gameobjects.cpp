@@ -171,7 +171,7 @@ SDL_Point getRandomPosition(
 
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 {
-    int asteroidAmount = 100;
+    int asteroidAmount = 20;
     int asteroidSize = 50;
     std::vector<SDL_Rect> gameObjects = {shipRect};
     for (int i=0; i < asteroidAmount; i++)
