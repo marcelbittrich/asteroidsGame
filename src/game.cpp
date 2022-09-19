@@ -46,6 +46,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         if(renderer)
         {
             SDL_SetRenderDrawColor(renderer,0,0,0,0);
+            SDL_RenderClear(renderer);
             std::cout << "Renderer created!" << std::endl;
         }
         isRunning = true;
@@ -145,8 +146,10 @@ void Game::update()
 
 void Game::render()
 {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
+
     if (controlBools.giveThrust) {
         SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
     } else {
@@ -154,8 +157,17 @@ void Game::render()
     }
     for(Asteroid asteroid: asteroids) {
         SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
+        SDL_SetRenderDrawColor(renderer,0,0,255,255);
+        drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
     }
+
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
+
+
     SDL_RenderPresent(renderer);
+  
 }
 
 void Game::clean()
