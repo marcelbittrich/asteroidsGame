@@ -50,6 +50,117 @@ Already implemented are the following:
 - [x] Rendering of small asteroids
 - [x] Simple circle-shaped hit detection and debugging option
 
+## How to try it
+
+<details>
+  <summary>Click here</summary>
+  
+  ### Setup
+  
+  We are using VSC and GCC with MinGW to compile our game. You can learn how to get it [here](https://code.visualstudio.com/docs/cpp/config-mingw). After you installed it you have to create a `.vscode` folder in your project to change some settings (see next sections). This is most seartanly not the only way how to run our code but this is how we did it. If you want further guidance look [here](https://dev.to/giovannicodes/setup-sdl2-with-visual-studio-code-and-mingw64-on-windows-14c5).
+  
+  ### VSC Settings
+  
+  To run our project please create the three following `.json` files in your `.vscode` folder.
+  
+  `c_pp_properties.json`
+  
+  ```json
+    {
+        "configurations": [
+            {
+                "name": "Win32",
+                "includePath": [
+                    "${workspaceFolder}/**/*",
+                    "${workspaceFolder}\\SDL2\\include"
+                ],
+                "defines": [
+                    "_DEBUG",
+                    "UNICODE",
+                    "_UNICODE"
+                ],
+                "windowsSdkVersion": "10.0.19041.0",
+                "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+                "cStandard": "c17",
+                "cppStandard": "c++17",
+                "intelliSenseMode": "gcc-x64"
+            }
+        ],
+        "version": 4
+    }
+  ```
+  
+  `launch.json`
+  
+  ```json
+    {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "(gdb)",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}\\build\\game.exe",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
+                "setupCommands": [
+                    {
+                        "description": "Enably pretty printing",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ],
+                "preLaunchTask": "SDL2"
+            }
+        ]
+    }
+  ```
+  
+  `tasks.json`
+  
+  ```json
+    {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "type": "shell",
+                "label": "SDL2",
+                "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+                "args": [
+                    "-Wall",
+                    "-g",
+                    "src\\*.cpp",
+                    "-o",
+                    "build\\game.exe",
+                    "-I${workspaceFolder}/SDL2/include",
+                    "-L${workspaceFolder}/SDL2/lib",
+                    "-lmingw32",
+                    "-lSDL2main",
+                    "-lSDL2",
+                    "-lSDL2_image",
+                    "-mwindows",
+                    "-mconsole"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder}"
+                },
+                "problemMatcher": [
+                    "$gcc"
+                ],
+                "group": "build"
+            }
+        ]
+    }
+  ```
+  
+  
+</details>
+
 ## Changelog
 
 2022-09-19 - added circle shapes to visualize the collision radius of the gameobjects
