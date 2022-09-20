@@ -57,11 +57,11 @@ Already implemented are the following:
   
   ### Setup
   
-  We are using VSC and GCC with MinGW to compile our game. You can learn how to get it [here](https://code.visualstudio.com/docs/cpp/config-mingw). After you installed it you have to create a `.vscode` folder in your project to change some settings (see next sections). This is most seartanly not the only way how to run our code but this is how we did it. If you want further guidance look [here](https://dev.to/giovannicodes/setup-sdl2-with-visual-studio-code-and-mingw64-on-windows-14c5).
+  We are using VSC and GCC with MinGW to compile our game. You can learn how to get it [here](https://code.visualstudio.com/docs/cpp/config-mingw). After you installed it you have to create a `.vscode` folder in your project to change some settings (see next sections). This is most certainly not the only way how to run our code, but this is how we do it. If you want further guidance look [here](https://dev.to/giovannicodes/setup-sdl2-with-visual-studio-code-and-mingw64-on-windows-14c5).
   
   ### VSC Settings
   
-  To run our project please create the three following `.json` files in your `.vscode` folder.
+  To run our project please create the three following `.json` files in your `.vscode` folder. Make sure that your MinGW installation directory matches the one mentioned below (C:/msys64/mingw64/bin/*) or change it to your personal one.
   
   `c_pp_properties.json`
   
