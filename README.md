@@ -1,5 +1,5 @@
 # asteroidsGame
-An "Asteroids" like game written in C++ with SDL2
+:joystick::rocket: An "Asteroids" like game written in C++ with SDL2
 
 ## Description
 
