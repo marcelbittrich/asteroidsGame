@@ -10,7 +10,8 @@ Ship::Ship(double xPos, double yPos, int width, int height)
     this->yPos = yPos;
     this->width = width;
     this->height = height;
-    this->col_radius = (width/2 + height/2)/2;
+    double colRadiusOffset = 0.6;
+    this->col_radius = (width/2 + height/2)/2*colRadiusOffset;
     rect = getRect();
 }
 
@@ -112,7 +113,8 @@ Asteroid::Asteroid(double xPos, double yPos, int width, int height)
     this->yPos = yPos;
     this->width = width;
     this->height = height;
-    this->col_radius = (width/2 + height/2)/2;
+    double colRadiusOffset = 0.6;
+    this->col_radius = (width/2 + height/2)/2 * colRadiusOffset;
     rect = getRect();
 }
 
