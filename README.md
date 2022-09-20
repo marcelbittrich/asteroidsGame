@@ -20,11 +20,11 @@ At this moment we use the following file structure:
     ├── build                   # Compiled files with necessary dll files
     ├── img                     # Files to creat textures for the gameobjects
     ├── src                     # Source files
-    │   ├── main.cpp            # 
-    │   ├── game.cpp            # 
-    │   ├── handleinput.cpp     # 
-    │   ├── gameobjects.cpp     # 
-    │   └── shapes.cpp          # 
+    │   ├── main.cpp                # Main function with gameloop
+    │   ├── game.cpp                # Init, handleEvents, update, render and clear functions
+    │   ├── handleinput.cpp         # Gamepad and keyboard input handling
+    │   ├── gameobjects.cpp         # All gameobjects with collision
+    │   └── shapes.cpp              # Simple shapes for debugging
     ├── .gitignore
     └── README.md
 
@@ -36,7 +36,7 @@ These are our future objective in no paticular order:
 - [ ] Make a fun game!
 - [ ] Add bigger asteroids
 - [ ] Add shots to split or destoy astroids
-- [ ] Make them all move and spwan at random positions
+- [ ] Make them all move and spawn at random positions
 - [ ] Add collectable items
 - [ ] Seperate calculation from framerate
 - [ ] Add score and menu 
@@ -50,5 +50,8 @@ Already implemented are the following:
 - [x] Rendering of small asteroids
 - [x] Simple circle-shaped hit detection and debugging option
 
+## Changelog
+
+2022-09-19 - added circle shapes to visualize the collision radius of the gameobjects
 
 
