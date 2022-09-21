@@ -38,7 +38,6 @@ int main(int argc,char * argv[])
 	};
 	
 	game->clean();
-	std::cout << "Na toll" << std::endl;
 
 	return 0;
 }
