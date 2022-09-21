@@ -130,9 +130,13 @@ void Game::update()
     thurstAnimationCounter = (thurstAnimationCounter + 1) % 3;
     srcR.x = thurstAnimationCounter * 300;
     //std::cout << thurstAnimationCounter << std::endl;
-
     for(auto asteroid : asteroids)
     {
+        asteroid.update(windowwidth,windowheight);
+    }
+    for(auto asteroid : asteroids)
+    {
+
         if (doesCollide(ship,asteroid))
         {
             std::cout << "Collision!!!!!!" << std::endl;

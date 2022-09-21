@@ -175,6 +175,8 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 {
     int asteroidAmount = 20;
     int asteroidSize = 50;
+    int asteroidMinVel = 10;
+    int asteroidMaxVel = 20;
     std::vector<SDL_Rect> gameObjects = {shipRect};
     for (int i=0; i < asteroidAmount; i++)
     {
@@ -182,10 +184,38 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
             windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
         );
         Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize, asteroidSize);
+
+        asteroid.velocity = {(double) (rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel),(double) (rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel)};
+        std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
         asteroids.push_back(asteroid);
         gameObjects.push_back(asteroid.rect);
     }
 }
+
+void Asteroid::update(int windowWidth, int windowHeight)
+{
+    xPos += velocity.at(0);
+    yPos += velocity.at(1);
+
+    if (xPos < 0){
+        xPos = windowWidth;
+    }
+    if (xPos > windowWidth){
+        xPos = 0;
+    }
+    if (yPos < 0){
+        yPos = windowHeight;
+    }
+    if (yPos > windowHeight){
+        yPos = 0;
+    }
+
+    rect.x = std::round(xPos);
+    rect.y = std::round(yPos);
+}
+
+
+
 
 bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 {

@@ -14,7 +14,9 @@ class Gameobject
     public:  
         double xPos, yPos;
         double col_radius;
-        std::vector<double> velocity {0, 0}; 
+        std::vector<double> velocity {0, 0};
+        //virtual void draw(); TODO 
+        //virtual void update(); TODO
 };
 
 class Ship : public Gameobject
@@ -42,6 +44,7 @@ class Asteroid : public Gameobject
     public:
         SDL_Rect rect;
         Asteroid(double xPos, double yPos, int width, int height);
+        void update(int windowWidth, int windowHeight);
 };
 
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
