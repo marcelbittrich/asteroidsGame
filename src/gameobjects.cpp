@@ -245,7 +245,7 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
         std::cout << "Asteroid Collision" << std::endl;
         
         //source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
-        
+
         //Stossnormale
         std::vector<double> normal;
         normal.push_back(secondObject.xPos-firstObject.xPos);
@@ -257,7 +257,6 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
         std::valarray<double>v1(firstObject.velocity.size());
         std::copy(begin(firstObject.velocity), end(firstObject.velocity), begin(v1));
 
-        //std::valarray<double>f1(firstObject.velocity.size());
 
         float f1 = (v1[0]*n[0]+v1[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
         //parallel component for object 1
@@ -268,7 +267,6 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
         std::valarray<double>v2(secondObject.velocity.size());
         std::copy(begin(secondObject.velocity), end(secondObject.velocity), begin(v2));
 
-        //std::valarray<double>f2(secondObject.velocity.size());
 
         double f2 = (v2[0]*n[0]+v2[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
         //parallel component for object 2
