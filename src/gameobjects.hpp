@@ -50,6 +50,7 @@ class Asteroid : public Gameobject
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
 //void initShip(int windowWidth, int windowHeight);
 bool doesCollide(Gameobject firstObject, Gameobject secondObject);
+void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject);
 
 //extern Ship ship;
 extern std::vector<Asteroid> asteroids;

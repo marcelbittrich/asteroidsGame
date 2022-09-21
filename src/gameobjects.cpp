@@ -2,6 +2,7 @@
 
 #define PI 3.14159265359
 
+#include <valarray>
 
 
 Ship::Ship(double xPos, double yPos, int width, int height)
@@ -135,7 +136,7 @@ SDL_Rect Asteroid::getRect()
 }*/
 
 
-std::vector<Asteroid> asteroids = {};
+
 
 SDL_Point getRandomPosition(
     int windowWidth,
@@ -171,21 +172,26 @@ SDL_Point getRandomPosition(
     throw std::runtime_error("Max tries for getRandomPosition exceeded!");
 }
 
+double randomSign(){
+    if(rand()% 100 <= 49) return -1.0f;
+    return 1.0f; 
+}
+
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 {
     int asteroidAmount = 20;
     int asteroidSize = 50;
-    int asteroidMinVel = 10;
-    int asteroidMaxVel = 20;
+    double asteroidVelMulti = 0.1;
+    int asteroidMinVel = 0;
+    int asteroidMaxVel = 100;
     std::vector<SDL_Rect> gameObjects = {shipRect};
     for (int i=0; i < asteroidAmount; i++)
     {
         SDL_Point randomPosition = getRandomPosition(
             windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
         );
-        Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize, asteroidSize);
-
-        asteroid.velocity = {(double) (rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel),(double) (rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel)};
+        Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize, asteroidSize);  
+        asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
         std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
         asteroids.push_back(asteroid);
         gameObjects.push_back(asteroid.rect);
@@ -194,8 +200,8 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 
 void Asteroid::update(int windowWidth, int windowHeight)
 {
-    xPos += velocity.at(0);
-    yPos += velocity.at(1);
+    xPos += velocity[0];
+    yPos += velocity[1];
 
     if (xPos < 0){
         xPos = windowWidth;
@@ -223,4 +229,62 @@ bool doesCollide(Gameobject firstObject, Gameobject secondObject)
     distance = sqrt(pow(firstObject.xPos - secondObject.xPos,2) + pow(firstObject.yPos - secondObject.yPos,2));
    
     return distance <= firstObject.col_radius + secondObject.col_radius;
+
+    
+
+
 }
+
+void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
+{
+    double distance;
+    distance = sqrt(pow(firstObject.xPos - secondObject.xPos,2) + pow(firstObject.yPos - secondObject.yPos,2));
+
+    if (distance <= firstObject.col_radius + secondObject.col_radius)
+    {
+        std::cout << "Asteroid Collision" << std::endl;
+        
+        //source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
+        
+        //Stossnormale
+        std::vector<double> normal;
+        normal.push_back(secondObject.xPos-firstObject.xPos);
+        normal.push_back(secondObject.yPos-firstObject.yPos);
+        //angle between object 1 and normal
+        std::valarray<double>n(normal.size());
+        std::copy(begin(normal), end(normal), begin(n));
+
+        std::valarray<double>v1(firstObject.velocity.size());
+        std::copy(begin(firstObject.velocity), end(firstObject.velocity), begin(v1));
+
+        //std::valarray<double>f1(firstObject.velocity.size());
+
+        float f1 = (v1[0]*n[0]+v1[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
+        //parallel component for object 1
+        std::valarray<double> vp1 = n * f1;  
+        //vertical component for object 1
+        std::valarray<double> vv1 = v1 - vp1;
+
+        std::valarray<double>v2(secondObject.velocity.size());
+        std::copy(begin(secondObject.velocity), end(secondObject.velocity), begin(v2));
+
+        //std::valarray<double>f2(secondObject.velocity.size());
+
+        double f2 = (v2[0]*n[0]+v2[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
+        //parallel component for object 2
+        std::valarray<double> vp2 = n * f2;  
+        //vertical component for object 2
+        std::valarray<double> vv2 = v2 - vp2;
+
+        //if both objects are equal in weight
+        v1 = vv1 + vp2;
+        v2 = vv2 + vp1;
+
+        firstObject.velocity[0] = v1[0];
+        firstObject.velocity[1] = v1[1];
+        secondObject.velocity[0] = v2[0];
+        secondObject.velocity[1] = v2[1];
+    }
+}
+
+

@@ -15,7 +15,7 @@ int windowwidth, windowheight;
 int thurstAnimationCounter = 0;
 
 std::vector<double> velocity = {0.0, 0.0};
-
+std::vector<Asteroid> asteroids;
 
 Game::Game()
 {}
@@ -130,11 +130,12 @@ void Game::update()
     thurstAnimationCounter = (thurstAnimationCounter + 1) % 3;
     srcR.x = thurstAnimationCounter * 300;
     //std::cout << thurstAnimationCounter << std::endl;
-    for(auto asteroid : asteroids)
+    for(Asteroid &asteroid : asteroids)
     {
         asteroid.update(windowwidth,windowheight);
     }
-    for(auto asteroid : asteroids)
+
+    for(Asteroid asteroid : asteroids)
     {
 
         if (doesCollide(ship,asteroid))
@@ -144,6 +145,16 @@ void Game::update()
             ship.yPos = windowheight/2-ship.rect.h/2;
             ship.velocity = {0,0};
         }
+        
+    }
+
+    for(decltype(asteroids.size()) i = 0; i != asteroids.size(); i++)
+    {
+        for (decltype(asteroids.size()) j = i+1; j != asteroids.size(); j++)
+            {
+                //std::cout << "Kombination: " << i << ", " << j << std::endl;
+                asteroidsCollide(asteroids[i],asteroids[j]);
+            } 
     }
 
 }
