@@ -13,6 +13,7 @@
 #include "handleinput.hpp"
 #include "gameobjects.hpp"
 #include "shapes.hpp"
+#include "background.hpp"
 
 #define PI 3.14159265359
 

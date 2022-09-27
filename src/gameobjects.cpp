@@ -14,6 +14,8 @@ Ship::Ship(double xPos, double yPos, int width, int height)
     double colRadiusOffset = 0.6;
     this->col_radius = (width/2 + height/2)/2*colRadiusOffset;
     rect = getRect();
+    this->midPos.x = xPos + width/2;
+    this->midPos.y = yPos + height/2;
 }
 
 Ship::Ship()
@@ -89,19 +91,17 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     yPos += velocity.at(1);
     // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
 
-
-
-    if (xPos < 0){
-        xPos = windowWidth;
+    if (xPos < 0 - rect.w){
+        xPos = windowWidth + rect.w;
     }
-    if (xPos > windowWidth){
-        xPos = 0;
+    if (xPos > windowWidth + rect.w){
+        xPos = 0 - rect.w;
     }
-    if (yPos < 0){
-        yPos = windowHeight;
+    if (yPos < 0 - rect.h){
+        yPos = windowHeight + rect.h;
     }
-    if (yPos > windowHeight){
-        yPos = 0;
+    if (yPos > windowHeight + rect.h){
+        yPos = 0 - rect.h;
     }
 
     rect.x = std::round(xPos);
@@ -117,6 +117,8 @@ Asteroid::Asteroid(double xPos, double yPos, int width, int height)
     double colRadiusOffset = 0.6;
     this->col_radius = (width/2 + height/2)/2 * colRadiusOffset;
     rect = getRect();
+    this->midPos.x = xPos + width/2;
+    this->midPos.y = yPos + height/2;
 }
 
 SDL_Rect Asteroid::getRect()
@@ -179,7 +181,7 @@ double randomSign(){
 
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 {
-    int asteroidAmount = 20;
+    int asteroidAmount = 2;
     int asteroidSize = 50;
     double asteroidVelMulti = 0.1;
     int asteroidMinVel = 0;
@@ -195,6 +197,7 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
         std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
         asteroids.push_back(asteroid);
         gameObjects.push_back(asteroid.rect);
+        colObjects.push_back(asteroid);
     }
 }
 
@@ -203,17 +206,17 @@ void Asteroid::update(int windowWidth, int windowHeight)
     xPos += velocity[0];
     yPos += velocity[1];
 
-    if (xPos < 0){
-        xPos = windowWidth;
+    if (xPos < 0 - rect.w){
+        xPos = windowWidth + rect.w;
     }
-    if (xPos > windowWidth){
-        xPos = 0;
+    if (xPos > windowWidth + rect.w){
+        xPos = 0 - rect.w;
     }
-    if (yPos < 0){
-        yPos = windowHeight;
+    if (yPos < 0 - rect.h){
+        yPos = windowHeight + rect.h;
     }
-    if (yPos > windowHeight){
-        yPos = 0;
+    if (yPos > windowHeight + rect.h){
+        yPos = 0 - rect.h;
     }
 
     rect.x = std::round(xPos);
@@ -226,7 +229,7 @@ void Asteroid::update(int windowWidth, int windowHeight)
 bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 {
     double distance;
-    distance = sqrt(pow(firstObject.xPos - secondObject.xPos,2) + pow(firstObject.yPos - secondObject.yPos,2));
+    distance = sqrt(pow((firstObject.xPos+firstObject.rect.w/2) - (secondObject.xPos+secondObject.rect.w/2),2) + pow((firstObject.yPos+firstObject.rect.h/2) - (secondObject.yPos+secondObject.rect.h/2),2));
    
     return distance <= firstObject.col_radius + secondObject.col_radius;
 
@@ -237,10 +240,8 @@ bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
 {
-    double distance;
-    distance = sqrt(pow(firstObject.xPos - secondObject.xPos,2) + pow(firstObject.yPos - secondObject.yPos,2));
-
-    if (distance <= firstObject.col_radius + secondObject.col_radius)
+    
+    if (doesCollide(firstObject,secondObject))
     {
         std::cout << "Asteroid Collision" << std::endl;
         

@@ -9,13 +9,14 @@ SDL_Texture* asteroidTex;
 SDL_Rect srcR;
 
 extern ControlBools controlBools;
-
 int windowwidth, windowheight;
-
 int thurstAnimationCounter = 0;
+
+background gameBackground;
 
 std::vector<double> velocity = {0.0, 0.0};
 std::vector<Asteroid> asteroids;
+std::vector<Gameobject> colObjects;
 
 Game::Game()
 {}
@@ -95,7 +96,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     asteroidTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-
+    gameBackground = background(windowwidth,windowheight,100);
     
     srcR.w = 300;
     srcR.h = 300;
@@ -106,6 +107,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 
     ship = Ship(shipPosX, shipPosY, 50, 50);
+    colObjects.push_back(ship);
 
 
     initAsteroids(ship.rect, width, height);
@@ -164,6 +166,8 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
+
+    gameBackground.render(renderer);
 
     if (controlBools.giveThrust) {
         SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
