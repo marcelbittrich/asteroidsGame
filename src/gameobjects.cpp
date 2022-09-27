@@ -14,8 +14,8 @@ Ship::Ship(double xPos, double yPos, int width, int height)
     double colRadiusOffset = 0.6;
     this->col_radius = (width/2 + height/2)/2*colRadiusOffset;
     rect = getRect();
-    this->midPos.x = xPos + width/2;
-    this->midPos.y = yPos + height/2;
+    this->midPos[0] = xPos + width/2;
+    this->midPos[1] = yPos + height/2;
 }
 
 Ship::Ship()
@@ -106,6 +106,8 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
 
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
+    midPos[0] = xPos + width/2;
+    midPos[1] = yPos + height/2;
 }
 
 Asteroid::Asteroid(double xPos, double yPos, int width, int height)
@@ -117,8 +119,8 @@ Asteroid::Asteroid(double xPos, double yPos, int width, int height)
     double colRadiusOffset = 0.6;
     this->col_radius = (width/2 + height/2)/2 * colRadiusOffset;
     rect = getRect();
-    this->midPos.x = xPos + width/2;
-    this->midPos.y = yPos + height/2;
+    this->midPos[0] = xPos + width/2;
+    this->midPos[1] = yPos + height/2;
 }
 
 SDL_Rect Asteroid::getRect()
@@ -181,7 +183,7 @@ double randomSign(){
 
 void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 {
-    int asteroidAmount = 2;
+    int asteroidAmount = 5;
     int asteroidSize = 50;
     double asteroidVelMulti = 0.1;
     int asteroidMinVel = 0;
@@ -221,6 +223,8 @@ void Asteroid::update(int windowWidth, int windowHeight)
 
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
+    midPos[0] = xPos + width/2;
+    midPos[1] = yPos + height/2;
 }
 
 

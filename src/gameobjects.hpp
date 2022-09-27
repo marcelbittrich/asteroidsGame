@@ -15,8 +15,8 @@ class Gameobject
         double xPos, yPos;
         double col_radius;
         std::vector<double> velocity {0, 0};
+        std::vector<double> midPos {0, 0};
         SDL_Rect rect;
-        SDL_Rect midPos;
         //virtual void draw(); TODO 
         //virtual void update(); TODO
 };
@@ -60,3 +60,6 @@ extern std::vector<Asteroid> asteroids;
 extern std::vector<Gameobject> colObjects;
 
 #endif
+
+
+

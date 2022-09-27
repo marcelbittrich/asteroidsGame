@@ -97,7 +97,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
 
     gameBackground = background(windowwidth,windowheight,100);
-    
+
     srcR.w = 300;
     srcR.h = 300;
     srcR.x = 0;
@@ -126,6 +126,7 @@ void Game::handleEvents()
 
 void Game::update()
 {
+    colObjects.clear();
 
     ship.update(controlBools,windowwidth,windowheight);
 
@@ -159,6 +160,10 @@ void Game::update()
             } 
     }
 
+    colObjects.push_back(ship);
+    colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
+    gameBackground.update(colObjects);
+
 }
 
 void Game::render()
@@ -183,7 +188,6 @@ void Game::render()
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
-
 
     SDL_RenderPresent(renderer);
   
