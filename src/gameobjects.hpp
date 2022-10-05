@@ -11,7 +11,11 @@
 
 class Gameobject
 {
-    public:  
+    private:
+        static int newId;
+    public:
+        int id;
+        Gameobject() : id(newId++) {};
         double xPos, yPos;
         double col_radius;
         std::vector<double> velocity {0, 0};
@@ -32,9 +36,7 @@ class Ship : public Gameobject
         SDL_Rect getRect();
     public:
         double shipAngle;
-        //SDL_Rect rect;
         Ship();
-        ~Ship();
         Ship(double xPos, double yPos, int width, int height);
         void update(ControlBools controlBools, int windowWidth, int windowHeight);
 };

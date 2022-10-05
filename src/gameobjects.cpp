@@ -5,7 +5,9 @@
 #include <valarray>
 
 
-Ship::Ship(double xPos, double yPos, int width, int height)
+int Gameobject::newId = 0;
+
+Ship::Ship(double xPos, double yPos, int width, int height) : Gameobject()
 {
     this->xPos = xPos;
     this->yPos = yPos;
@@ -18,15 +20,11 @@ Ship::Ship(double xPos, double yPos, int width, int height)
     this->midPos[1] = yPos + height/2;
 }
 
-Ship::Ship()
+Ship::Ship() : Gameobject()
 {
 
 }
 
-Ship::~Ship()
-{
-
-}
 
 SDL_Rect Ship::getRect()
 {
@@ -110,7 +108,7 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     midPos[1] = yPos + height/2;
 }
 
-Asteroid::Asteroid(double xPos, double yPos, int size)
+Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
 {
     this->xPos = xPos;
     this->yPos = yPos;
@@ -131,14 +129,6 @@ SDL_Rect Asteroid::getRect()
     rect.y = std::round(yPos);
     return rect;
 }
-
-
-/*void initShip(int windowWidth, int windowHeight)
-{
-
-}*/
-
-
 
 
 SDL_Point getRandomPosition(
@@ -248,19 +238,50 @@ bool doesCollide(Gameobject firstObject, Gameobject secondObject)
     return distance <= firstObject.col_radius + secondObject.col_radius;
 }
 
+
+struct CollisionOccurrence {
+    int firstObjectId;
+    int secondObjectId;
+    Uint32 time;
+};
+
+std::vector<CollisionOccurrence> recentCollisions = {};
+
+bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
+{
+    for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it ++)
+    {
+        if ((it->firstObjectId == firstObject.id && it->secondObjectId == secondObject.id) || (it->firstObjectId == secondObject.id && it->secondObjectId == firstObject.id)) {
+            if (SDL_GetTicks() > (it->time + 3000))
+            {
+                it->time = SDL_GetTicks();
+                return false;
+            } else {
+                std::cout << "Did recently collide" << std::endl;
+                return true;
+            }
+        }
+    }
+    CollisionOccurrence collisionOccurrence;
+    collisionOccurrence.firstObjectId = firstObject.id;
+    collisionOccurrence.secondObjectId = secondObject.id;
+    collisionOccurrence.time = SDL_GetTicks();
+    recentCollisions.push_back(collisionOccurrence);
+    return false;
+}
+
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
 {
-    
-    if (doesCollide(firstObject,secondObject))
+    if (doesCollide(firstObject,secondObject) && !didRecentlyCollide(firstObject, secondObject))
     {
-        std::cout << "Asteroid Collision" << std::endl;
+        // std::cout << "Asteroid Collision" << std::endl;
         
         //source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
 
         //Stossnormale
         std::vector<double> normal;
-        normal.push_back(secondObject.xPos-firstObject.xPos);
-        normal.push_back(secondObject.yPos-firstObject.yPos);
+        normal.push_back(secondObject.midPos[0]-firstObject.midPos[0]);
+        normal.push_back(secondObject.midPos[1]-firstObject.midPos[1]);
         //angle between object 1 and normal
         std::valarray<double>n(normal.size());
         std::copy(begin(normal), end(normal), begin(n));

@@ -145,10 +145,9 @@ void Game::update()
 
     for(Asteroid asteroid : asteroids)
     {
-
         if (doesCollide(ship,asteroid))
         {
-            std::cout << "Collision!!!!!!" << std::endl;
+            // std::cout << "Collision!!!!!!" << std::endl;
             ship.xPos = windowwidth/2-ship.rect.w/2;
             ship.yPos = windowheight/2-ship.rect.h/2;
             ship.velocity = {0,0};
