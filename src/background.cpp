@@ -69,8 +69,6 @@ void bgPoint::update(Gameobject colObject)
 
         renderPos.x = round(xPos);
         renderPos.y = round(yPos);
-        vDistance.clear();
-        nDistance.clear();
     }
 }
 
@@ -91,6 +89,7 @@ background::background(int windowWidth, int windowHeight, int divider)
     this->width = windowWidth;
     this->divider = divider;
 
+
     for (int i = 0; i < divider; i++)
     {
         int xPos = width/divider * i + width/divider/2;
@@ -105,7 +104,7 @@ background::background(int windowWidth, int windowHeight, int divider)
 }
 
 void background::update(std::vector<Gameobject>colObjects)
-{
+{   
     for (auto object:colObjects)
     {
         //std::cout << object.midPos[0] << " " << object.midPos[1] << std::endl;
