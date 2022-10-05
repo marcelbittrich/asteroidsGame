@@ -5,7 +5,8 @@ Ship ship = Ship();
 
 SDL_Texture* playerTex;
 SDL_Texture* thrustPlayerTex;
-SDL_Texture* asteroidTex;
+SDL_Texture* asteroidTexSmall;
+SDL_Texture* asteroidTexMedium;
 SDL_Rect srcR;
 
 extern ControlBools controlBools;
@@ -93,7 +94,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
 
     image = IMG_Load("img/asteroid_small1.png");
-    asteroidTex = SDL_CreateTextureFromSurface(renderer, image);
+    asteroidTexSmall = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+
+    image = IMG_Load("img/asteroid_medium1.png");
+    asteroidTexMedium = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
     gameBackground = background(windowwidth,windowheight,100);
@@ -162,7 +167,7 @@ void Game::update()
 
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
-    gameBackground.update(colObjects);
+    // gameBackground.update(colObjects);
 
 }
 
@@ -180,6 +185,12 @@ void Game::render()
         SDL_RenderCopyEx(renderer, playerTex, NULL, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
     }
     for(Asteroid asteroid: asteroids) {
+        SDL_Texture* asteroidTex = nullptr;
+        if (asteroid.size > 75) {
+            asteroidTex = asteroidTexMedium;
+        } else {
+            asteroidTex = asteroidTexSmall;
+        }
         SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
         SDL_SetRenderDrawColor(renderer,0,0,255,255);
         drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));

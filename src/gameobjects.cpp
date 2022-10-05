@@ -110,24 +110,23 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     midPos[1] = yPos + height/2;
 }
 
-Asteroid::Asteroid(double xPos, double yPos, int width, int height)
+Asteroid::Asteroid(double xPos, double yPos, int size)
 {
     this->xPos = xPos;
     this->yPos = yPos;
-    this->width = width;
-    this->height = height;
+    this->size = size;
     double colRadiusOffset = 0.6;
-    this->col_radius = (width/2 + height/2)/2 * colRadiusOffset;
+    this->col_radius = size/2 * colRadiusOffset;
     rect = getRect();
-    this->midPos[0] = xPos + width/2;
-    this->midPos[1] = yPos + height/2;
+    this->midPos[0] = xPos + size/2;
+    this->midPos[1] = yPos + size/2;
 }
 
 SDL_Rect Asteroid::getRect()
 {
     SDL_Rect rect;
-    rect.w = width;
-    rect.h = height;
+    rect.w = size;
+    rect.h = size;
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
     return rect;
@@ -181,27 +180,38 @@ double randomSign(){
     return 1.0f; 
 }
 
-void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
+
+void initSingleAsteroid(std::vector<SDL_Rect> &gameObjects, int windowWidth, int windowHeight, int asteroidSize)
 {
-    int asteroidAmount = 5;
-    int asteroidSize = 50;
-    double asteroidVelMulti = 0.1;
     int asteroidMinVel = 0;
     int asteroidMaxVel = 100;
+    double asteroidVelMulti = 0.1;
+    SDL_Point randomPosition = getRandomPosition(
+        windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
+    );
+    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize);  
+    asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
+    std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
+    asteroids.push_back(asteroid);
+    gameObjects.push_back(asteroid.rect);
+    colObjects.push_back(asteroid);
+}
+
+void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
+{
+    int asteroidAmountSmall = 10;
+    int asteroidAmountMedium = 10;
     std::vector<SDL_Rect> gameObjects = {shipRect};
-    for (int i=0; i < asteroidAmount; i++)
+    for (int i=0; i < asteroidAmountSmall; i++)
     {
-        SDL_Point randomPosition = getRandomPosition(
-            windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
-        );
-        Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize, asteroidSize);  
-        asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
-        std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
-        asteroids.push_back(asteroid);
-        gameObjects.push_back(asteroid.rect);
-        colObjects.push_back(asteroid);
+        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 50);
+    }
+    for (int i=0; i < asteroidAmountMedium; i++)
+    {
+        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 100);
     }
 }
+
 
 void Asteroid::update(int windowWidth, int windowHeight)
 {
@@ -223,8 +233,8 @@ void Asteroid::update(int windowWidth, int windowHeight)
 
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
-    midPos[0] = xPos + width/2;
-    midPos[1] = yPos + height/2;
+    midPos[0] = xPos + size/2;
+    midPos[1] = yPos + size/2;
 }
 
 
@@ -236,10 +246,6 @@ bool doesCollide(Gameobject firstObject, Gameobject secondObject)
     distance = sqrt(pow((firstObject.xPos+firstObject.rect.w/2) - (secondObject.xPos+secondObject.rect.w/2),2) + pow((firstObject.yPos+firstObject.rect.h/2) - (secondObject.yPos+secondObject.rect.h/2),2));
    
     return distance <= firstObject.col_radius + secondObject.col_radius;
-
-    
-
-
 }
 
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)

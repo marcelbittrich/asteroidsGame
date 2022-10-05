@@ -42,11 +42,11 @@ class Ship : public Gameobject
 class Asteroid : public Gameobject
 {
     private:
-        int width, height;
         SDL_Rect getRect();
     public:
+        int size;
         //SDL_Rect rect;
-        Asteroid(double xPos, double yPos, int width, int height);
+        Asteroid(double xPos, double yPos, int size);
         void update(int windowWidth, int windowHeight);
 };
 
