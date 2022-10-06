@@ -34,7 +34,6 @@ At this moment we use the following file structure:
 These are our future objective in no particular order:
 
 - [ ] Make a fun game!
-- [ ] Add bigger asteroids
 - [ ] Add shots to split or destroy asteroids
 - [ ] Make them all move and spawn at random positions
 - [ ] Add collectable items
@@ -49,6 +48,7 @@ Already implemented are the following:
 - [x] Keyboard and gamepad input handling
 - [x] Rendering of small asteroids
 - [x] Simple circle-shaped hit detection and debugging option
+- [x] Add bigger asteroids
 
 ## How to try it
 
@@ -160,9 +160,5 @@ Already implemented are the following:
   
   
 </details>
-
-## Changelog
-
-2022-09-19 - added circle shapes to visualize the collision radius of the gameobjects
 
 
