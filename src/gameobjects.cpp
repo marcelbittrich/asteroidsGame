@@ -38,11 +38,14 @@ SDL_Rect Ship::getRect()
 
 void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
 {
+
     double deltaX = 0;
     double deltaY = 0;
     double v_angle = 0;
     double v_angle_degree = 0; 
     double v_sum;
+
+    
 
     v_sum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
 
@@ -106,6 +109,9 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     rect.y = std::round(yPos);
     midPos[0] = xPos + width/2;
     midPos[1] = yPos + height/2;
+
+    
+
 }
 
 Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
@@ -252,7 +258,7 @@ bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
     for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it ++)
     {
         if ((it->firstObjectId == firstObject.id && it->secondObjectId == secondObject.id) || (it->firstObjectId == secondObject.id && it->secondObjectId == firstObject.id)) {
-            if (SDL_GetTicks() > (it->time + 3000))
+            if (SDL_GetTicks() > (it->time + 500))
             {
                 it->time = SDL_GetTicks();
                 return false;
@@ -317,4 +323,77 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
     }
 }
 
+SDL_Rect Shot::getRect()
+{
+    SDL_Rect rect;
+    rect.w = size;
+    rect.h = size;
+    rect.x = std::round(xPos);
+    rect.y = std::round(yPos);
+    return rect;
+}
+
+Shot::Shot(std::vector<double> midPos, std::vector<double> velocity)
+{
+    this->midPos[0]=midPos[0];
+    this->midPos[1]=midPos[1];
+    this->rect = getRect();
+    size = 200;
+    life = 3000;
+    creationTime = SDL_GetTicks();
+
+    xPos = midPos[0] - size/2;
+    yPos = midPos[1] - size/2;
+    v_angle = atan2(velocity[0],velocity[1]);
+
+    double colRadiusOffset = 0.6;
+    col_radius = size * colRadiusOffset;
+
+    colObjects.push_back(*this);
+}
+
+void Shot::update(int windowWidth, int windowHeight)
+{
+    xPos += velocity[0];
+    yPos += velocity[1];
+
+    if (xPos < 0 - rect.w){
+        xPos = windowWidth + rect.w;
+    }
+    if (xPos > windowWidth + rect.w){
+        xPos = 0 - rect.w;
+    }
+    if (yPos < 0 - rect.h){
+        yPos = windowHeight + rect.h;
+    }
+    if (yPos > windowHeight + rect.h){
+        yPos = 0 - rect.h;
+    }
+
+    rect.x = std::round(xPos);
+    rect.y = std::round(yPos);
+    midPos[0] = xPos + size/2;
+    midPos[1] = yPos + size/2;   
+}
+
+void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
+{
+    SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, v_angle, NULL, SDL_FLIP_NONE);
+}
+
+void shoot (Ship ship)
+{
+    std::vector<double> shotVelocityVector = {0, 0};
+    double vectorLength;
+    double shotVelocity;
+    
+    vectorLength = sqrt(pow(ship.velocity[0],2)+pow(ship.velocity[1],2));
+    shotVelocity = ship.getMaxVelocity() + 20;
+
+    shotVelocityVector[0] = ship.velocity[0]/vectorLength * shotVelocity;
+    shotVelocityVector[1] = ship.velocity[1]/vectorLength * shotVelocity;
+
+    Shot shot = Shot(ship.midPos, shotVelocityVector);
+    shots.push_back(shot);
+}
 

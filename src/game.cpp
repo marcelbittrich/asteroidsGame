@@ -7,6 +7,7 @@ SDL_Texture* playerTex;
 SDL_Texture* thrustPlayerTex;
 SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
+SDL_Texture* shotTex;
 SDL_Rect srcR;
 
 extern ControlBools controlBools;
@@ -17,6 +18,7 @@ background gameBackground;
 
 std::vector<double> velocity = {0.0, 0.0};
 std::vector<Asteroid> asteroids;
+std::vector<Shot> shots;
 std::vector<Gameobject> colObjects;
 
 Game::Game()
@@ -101,6 +103,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     asteroidTexMedium = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
+    image = IMG_Load("img/shot.png");
+    shotTex = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+
+
     gameBackground = background(windowwidth,windowheight,100);
 
     srcR.w = 300;
@@ -164,6 +171,17 @@ void Game::update()
             } 
     }
 
+    if (controlBools.isShooting)
+    {
+        shoot(ship);
+    }
+    
+    for (Shot &singleShot : shots)
+    {
+        singleShot.update(windowwidth, windowheight);
+    }
+    
+
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
     // gameBackground.update(colObjects);
@@ -176,7 +194,7 @@ void Game::render()
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
 
-    gameBackground.render(renderer);
+    //gameBackground.render(renderer);
 
     if (controlBools.giveThrust) {
         SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
@@ -195,6 +213,11 @@ void Game::render()
         drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
     }
 
+    for (Shot singleShot: shots)
+    {
+        singleShot.render(renderer,shotTex);
+    }
+    
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
