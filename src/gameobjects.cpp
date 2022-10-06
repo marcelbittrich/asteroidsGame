@@ -335,15 +335,18 @@ SDL_Rect Shot::getRect()
 
 Shot::Shot(std::vector<double> midPos, std::vector<double> velocity)
 {
+    this->velocity = velocity;
     this->midPos[0]=midPos[0];
     this->midPos[1]=midPos[1];
+
+    size = 20;
+    xPos = midPos[0] - size/2;
+    yPos = midPos[1] - size/2;
+
     this->rect = getRect();
-    size = 200;
     life = 3000;
     creationTime = SDL_GetTicks();
 
-    xPos = midPos[0] - size/2;
-    yPos = midPos[1] - size/2;
     v_angle = atan2(velocity[0],velocity[1]);
 
     double colRadiusOffset = 0.6;
@@ -381,14 +384,14 @@ void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
     SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, v_angle, NULL, SDL_FLIP_NONE);
 }
 
-void shoot (Ship ship)
+void shoot(Ship ship)
 {
     std::vector<double> shotVelocityVector = {0, 0};
     double vectorLength;
     double shotVelocity;
     
     vectorLength = sqrt(pow(ship.velocity[0],2)+pow(ship.velocity[1],2));
-    shotVelocity = ship.getMaxVelocity() + 20;
+    shotVelocity = ship.getMaxVelocity();
 
     shotVelocityVector[0] = ship.velocity[0]/vectorLength * shotVelocity;
     shotVelocityVector[1] = ship.velocity[1]/vectorLength * shotVelocity;

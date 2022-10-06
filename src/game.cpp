@@ -215,6 +215,8 @@ void Game::render()
 
     for (Shot singleShot: shots)
     {
+        SDL_SetRenderDrawColor(renderer,0,255,0,255);
+        drawcircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.col_radius));
         singleShot.render(renderer,shotTex);
     }
     
