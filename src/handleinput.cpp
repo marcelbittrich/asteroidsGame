@@ -24,6 +24,8 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                 case SDLK_LEFT:
                     controlBools->isTurningLeft = true;
                     break;
+                case SDLK_SPACE:
+                    controlBools->isShooting = true;
                 default:
                     break;
             }
@@ -42,6 +44,8 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                 case SDLK_LEFT:
                     controlBools->isTurningLeft = false;
                     break;
+                case SDLK_SPACE:
+                    controlBools->isShooting = false;
                 default:
                     break;
             }
@@ -58,6 +62,8 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
                     controlBools->isTurningLeft = true;
+                case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                    controlBools->isShooting = true;
             }
             break;
 
@@ -72,6 +78,8 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
                     controlBools->isTurningLeft = false;
+                case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                    controlBools->isShooting = false;
             }
             break;
         default:
