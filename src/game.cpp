@@ -173,14 +173,33 @@ void Game::update()
 
     if (controlBools.isShooting)
     {
-        shoot(ship);
+        if (shots.empty())
+        {
+            shoot(ship);
+        } else 
+        {    
+            auto lastShot = shots.end()-1;
+            Shot lastShotEnt = *lastShot;
+            Uint32 timeSinceLastShot;
+            timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
+            if(timeSinceLastShot > 50){
+                shoot(ship);
+            }
+        }
     }
     
     for (Shot &singleShot : shots)
-    {
+    {   
         singleShot.update(windowwidth, windowheight);
     }
-    
+    if (!shots.empty())
+    {
+        auto firstShot = shots.begin();
+        if (shotIsToOld(*firstShot))
+        {
+            shots.erase(firstShot);
+        }
+    }
 
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
@@ -216,7 +235,7 @@ void Game::render()
     for (Shot singleShot: shots)
     {
         SDL_SetRenderDrawColor(renderer,0,255,0,255);
-        drawcircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.col_radius));
+        //drawcircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.col_radius));
         singleShot.render(renderer,shotTex);
     }
     

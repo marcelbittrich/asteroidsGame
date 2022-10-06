@@ -333,7 +333,7 @@ SDL_Rect Shot::getRect()
     return rect;
 }
 
-Shot::Shot(std::vector<double> midPos, std::vector<double> velocity)
+Shot::Shot(std::vector<double> midPos, std::vector<double> velocity, double shotHeadingAngle)
 {
     this->velocity = velocity;
     this->midPos[0]=midPos[0];
@@ -347,8 +347,8 @@ Shot::Shot(std::vector<double> midPos, std::vector<double> velocity)
     life = 3000;
     creationTime = SDL_GetTicks();
 
-    v_angle = atan2(velocity[0],velocity[1]);
-
+    v_angle = shotHeadingAngle;
+    
     double colRadiusOffset = 0.6;
     col_radius = size * colRadiusOffset;
 
@@ -376,7 +376,7 @@ void Shot::update(int windowWidth, int windowHeight)
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
     midPos[0] = xPos + size/2;
-    midPos[1] = yPos + size/2;   
+    midPos[1] = yPos + size/2;
 }
 
 void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
@@ -385,18 +385,24 @@ void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
 }
 
 void shoot(Ship ship)
-{
+{   
+
     std::vector<double> shotVelocityVector = {0, 0};
-    double vectorLength;
+
+
     double shotVelocity;
-    
-    vectorLength = sqrt(pow(ship.velocity[0],2)+pow(ship.velocity[1],2));
     shotVelocity = ship.getMaxVelocity();
 
-    shotVelocityVector[0] = ship.velocity[0]/vectorLength * shotVelocity;
-    shotVelocityVector[1] = ship.velocity[1]/vectorLength * shotVelocity;
+    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity;
+    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity;
 
-    Shot shot = Shot(ship.midPos, shotVelocityVector);
+    Shot shot = Shot(ship.midPos, shotVelocityVector, ship.shipAngle);
     shots.push_back(shot);
+}
+
+bool shotIsToOld (Shot shot){   
+    Uint32 deltaTime = SDL_GetTicks() - shot.creationTime;
+    Uint32 maxLifeTime = 500;
+    return (maxLifeTime < deltaTime);
 }
 

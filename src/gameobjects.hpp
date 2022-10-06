@@ -66,13 +66,14 @@ class Shot : public Gameobject
         int life;
         double v_angle;
     public:
-        Shot(std::vector<double> midPos, std::vector<double> velocity);
+        Shot(std::vector<double> midPos, std::vector<double> velocity, double shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight);
         void render(SDL_Renderer*renderer, SDL_Texture *shotTex);
 };
 
 void shoot(Ship ship);
+bool shotIsToOld (Shot shot);
 
 
 //extern Ship ship;
