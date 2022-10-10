@@ -13,10 +13,10 @@ bgPoint::bgPoint(int xPos, int yPos)
     originPos.y = yPos;
     renderPos.x = originPos.x;
     renderPos.y = originPos.y;
+    color[0] = rand() %255;
     color[1] = rand() %255;
     color[2] = rand() %255;
-    color[3] = rand() %255;
-    color[4] = 255;
+    color[3] = 255;
     onOrigin = true;
 }
 
