@@ -42,7 +42,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     double deltaX = 0;
     double deltaY = 0;
     double v_angle = 0;
-    double v_angle_degree = 0; 
     double v_sum;
 
     
@@ -54,9 +53,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
         v_angle = atan2(velocity[0],velocity[1]);
         v_sum = std::max(v_sum - 0.01, 0.0);
     }    
-
-    v_angle_degree = v_angle*180/PI;
-    //std::cout << "direction heading: " << v_angle_degree << std::endl;
 
     
     velocity.at(0) = (sin(v_angle) * v_sum);
