@@ -8,27 +8,26 @@
 
 class bgPoint
 {
+private:
+    Uint8 color [4];
 public:
-    double xPos, yPos;
-
+    float xPos, yPos;
+    bool onOrigin;
     SDL_Point originPos;
     SDL_Point renderPos;
-
+    bgPoint();
     bgPoint(int xPos, int yPos);
     
     void update(Gameobject colObject);
     void render(SDL_Renderer *renderer);
     void returnToOrigin();
-    bool onOrigin;
-
-    std::vector<int> color = {255,0,0,255};
 };
 
 class background
 {
 private:
     int width, height, divider;
-    std::vector<bgPoint>pointCloud;
+    std::vector<std::vector<bgPoint>>pointCloud;
 public:
     background();
     background(int windowWidth, int windowHeight, int divider);

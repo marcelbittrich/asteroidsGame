@@ -203,7 +203,7 @@ void Game::update()
 
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
-    // gameBackground.update(colObjects);
+    gameBackground.update(colObjects);
 
 }
 
@@ -213,7 +213,7 @@ void Game::render()
     SDL_RenderClear(renderer);
     //this is where we would add stuff to render
 
-    //gameBackground.render(renderer);
+    gameBackground.render(renderer);
 
     if (controlBools.giveThrust) {
         SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
@@ -229,7 +229,7 @@ void Game::render()
         }
         SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
         SDL_SetRenderDrawColor(renderer,0,0,255,255);
-        drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
+        //drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
     }
 
     for (Shot singleShot: shots)
@@ -241,7 +241,7 @@ void Game::render()
     
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
+    //drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
 
     SDL_RenderPresent(renderer);
   
