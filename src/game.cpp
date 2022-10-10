@@ -12,7 +12,8 @@ SDL_Rect srcR;
 
 extern ControlBools controlBools;
 int windowwidth, windowheight;
-int thurstAnimationCounter = 0;
+int thurstAnimationCounter;
+int currentThrustAnimationTime = 0;
 
 background gameBackground;
 
@@ -20,6 +21,11 @@ std::vector<double> velocity = {0.0, 0.0};
 std::vector<Asteroid> asteroids;
 std::vector<Shot> shots;
 std::vector<Gameobject> colObjects;
+
+//Animation
+int maxthrustAnimationTime;
+int thrustAnimationPicCnt;
+int thrustAnimationSinglePicTime;
 
 Game::Game()
 {}
@@ -123,6 +129,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 
     initAsteroids(ship.rect, width, height);
+
+    //Animation Init
+    maxthrustAnimationTime = 500;
+    thrustAnimationPicCnt = 3;
+    thrustAnimationSinglePicTime = maxthrustAnimationTime / thrustAnimationPicCnt;
+
 }
 
 void Game::handleEvents()
@@ -142,9 +154,24 @@ void Game::update()
 
     ship.update(controlBools,windowwidth,windowheight);
 
-    thurstAnimationCounter = (thurstAnimationCounter + 1) % 3;
+    //Ship thrust animation
+    if (controlBools.giveThrust)
+    {
+        currentThrustAnimationTime += frameTime;
+        if (currentThrustAnimationTime > maxthrustAnimationTime)
+        {
+            currentThrustAnimationTime -= maxthrustAnimationTime;
+        }  
+        thurstAnimationCounter = (int)(currentThrustAnimationTime/thrustAnimationSinglePicTime);
+    } else
+    {
+        currentThrustAnimationTime = 0;
+        thurstAnimationCounter = 0;
+    }
     srcR.x = thurstAnimationCounter * 300;
-    //std::cout << thurstAnimationCounter << std::endl;
+
+
+
     for(Asteroid &asteroid : asteroids)
     {
         asteroid.update(windowwidth,windowheight);
@@ -171,6 +198,7 @@ void Game::update()
             } 
     }
 
+    //Make Shots
     if (controlBools.isShooting)
     {
         if (shots.empty())
@@ -187,7 +215,7 @@ void Game::update()
             }
         }
     }
-    
+    //Destroy Shots
     for (Shot &singleShot : shots)
     {   
         singleShot.update(windowwidth, windowheight);
@@ -201,8 +229,11 @@ void Game::update()
         }
     }
 
+    //Fill colObjects vector
     colObjects.push_back(ship);
+    colObjects.insert(colObjects.end(),shots.begin(),shots.end());
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
+
     gameBackground.update(colObjects);
 
 }

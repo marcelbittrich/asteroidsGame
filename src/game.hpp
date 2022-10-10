@@ -30,7 +30,8 @@ public:
     void clean();
 
     bool running() {return isRunning;}
-
+    Uint32 frameStart = 0; 
+    Uint32 frameTime = 0;
 private:
     bool isRunning;
     SDL_Window *window;

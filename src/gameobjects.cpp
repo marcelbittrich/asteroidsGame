@@ -259,7 +259,7 @@ bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
                 it->time = SDL_GetTicks();
                 return false;
             } else {
-                std::cout << "Did recently collide" << std::endl;
+                //std::cout << "Did recently collide" << std::endl;
                 return true;
             }
         }
