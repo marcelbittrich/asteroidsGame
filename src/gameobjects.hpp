@@ -21,6 +21,7 @@ class Gameobject
         std::vector<double> velocity {0, 0};
         std::vector<double> midPos {0, 0};
         SDL_Rect rect;
+        bool isVisible = true;
         //virtual void draw(); TODO 
         //virtual void update(); TODO
 };
@@ -74,6 +75,7 @@ class Shot : public Gameobject
 
 void shoot(Ship ship);
 bool shotIsToOld (Shot shot);
+std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, int windowWidth, int windowHeight);
 
 
 //extern Ship ship;

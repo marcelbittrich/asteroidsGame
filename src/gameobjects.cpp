@@ -105,9 +105,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     rect.y = std::round(yPos);
     midPos[0] = xPos + width/2;
     midPos[1] = yPos + height/2;
-
-    
-
 }
 
 Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
@@ -207,26 +204,21 @@ void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
 
 void Asteroid::update(int windowWidth, int windowHeight)
 {
-    xPos += velocity[0];
-    yPos += velocity[1];
-
-    if (xPos < 0 - rect.w){
-        xPos = windowWidth + rect.w;
+    if (isVisible)
+    {
+        midPos[0] += velocity[0];
+        midPos[1] += velocity[1];
     }
-    if (xPos > windowWidth + rect.w){
-        xPos = 0 - rect.w;
+    std::vector<double> newMidPosistion = calcPosIfLeaving(midPos, col_radius, windowWidth, windowHeight);
+    if (midPos != newMidPosistion)
+    {
+        isVisible = false;
     }
-    if (yPos < 0 - rect.h){
-        yPos = windowHeight + rect.h;
-    }
-    if (yPos > windowHeight + rect.h){
-        yPos = 0 - rect.h;
-    }
-
+    midPos = newMidPosistion;
+    xPos = midPos[0] - size / 2;
+    yPos = midPos[1] - size / 2;
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
-    midPos[0] = xPos + size/2;
-    midPos[1] = yPos + size/2;
 }
 
 
@@ -234,6 +226,7 @@ void Asteroid::update(int windowWidth, int windowHeight)
 
 bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 {
+    if (!firstObject.isVisible || !secondObject.isVisible) return false;
     double distance;
     distance = sqrt(pow((firstObject.xPos+firstObject.rect.w/2) - (secondObject.xPos+secondObject.rect.w/2),2) + pow((firstObject.yPos+firstObject.rect.h/2) - (secondObject.yPos+secondObject.rect.h/2),2));
    
@@ -353,26 +346,13 @@ Shot::Shot(std::vector<double> midPos, std::vector<double> velocity, double shot
 
 void Shot::update(int windowWidth, int windowHeight)
 {
-    xPos += velocity[0];
-    yPos += velocity[1];
-
-    if (xPos < 0 - rect.w){
-        xPos = windowWidth + rect.w;
-    }
-    if (xPos > windowWidth + rect.w){
-        xPos = 0 - rect.w;
-    }
-    if (yPos < 0 - rect.h){
-        yPos = windowHeight + rect.h;
-    }
-    if (yPos > windowHeight + rect.h){
-        yPos = 0 - rect.h;
-    }
-
+    midPos[0] += velocity[0];
+    midPos[1] += velocity[1];
+    midPos = calcPosIfLeaving(midPos, col_radius, windowWidth, windowHeight);
+    xPos = midPos[0] - size / 2;
+    yPos = midPos[1] - size / 2;
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
-    midPos[0] = xPos + size/2;
-    midPos[1] = yPos + size/2;
 }
 
 void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
@@ -402,3 +382,25 @@ bool shotIsToOld (Shot shot){
     return (maxLifeTime < deltaTime);
 }
 
+std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, int windowWidth, int windowHeight)
+{
+    std::vector<double> newMidPos = midPos;
+
+    if (midPos[0] < 0 - radius) // leave to left.
+    {
+        newMidPos[0] = windowWidth + radius;
+    
+    } else if (midPos[0] > windowWidth + radius) // leave to right.
+    {
+        newMidPos[0] = 0 - radius;
+    }
+
+    if (midPos[1] < 0 - radius) // leave to top.
+    {
+        newMidPos[1] = windowHeight + radius;
+    } else if (midPos[1] > windowHeight + radius) // leave to bottom.
+    {
+        newMidPos[1] = 0 - radius;
+    }
+    return newMidPos;
+}

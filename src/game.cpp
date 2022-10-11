@@ -195,7 +195,29 @@ void Game::update()
             {
                 //std::cout << "Kombination: " << i << ", " << j << std::endl;
                 asteroidsCollide(asteroids[i],asteroids[j]);
-            } 
+            }
+        
+    }
+    for (auto &asteroid : asteroids)
+    {
+        if (!asteroid.isVisible)
+        {
+            asteroid.isVisible = true;
+            bool canStayVisible = true;
+            for (auto otherAsteroid : asteroids)
+            {
+                if (asteroid.id == otherAsteroid.id) continue;
+                if (doesCollide(asteroid, otherAsteroid))
+                {
+                    canStayVisible = false;
+                    break;
+                }
+            }
+            if (!canStayVisible)
+            {
+                asteroid.isVisible = false;
+            }
+        }
     }
 
     //Make Shots
@@ -258,7 +280,10 @@ void Game::render()
         } else {
             asteroidTex = asteroidTexSmall;
         }
-        SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
+        if (asteroid.isVisible)
+        {
+            SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
+        }
         SDL_SetRenderDrawColor(renderer,0,0,255,255);
         //drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
     }

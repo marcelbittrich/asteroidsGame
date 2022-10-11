@@ -28,11 +28,6 @@ int main(int argc,char * argv[])
 		{
 			SDL_Delay((int)(frameDelay - game->frameTime));
 		}
-		else
-		{
-			SDL_Delay((int)frameDelay);
-		}
-
 	};
 	
 	game->clean();
