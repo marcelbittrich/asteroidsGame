@@ -130,10 +130,13 @@ void background::update(std::vector<Gameobject>colObjects)
 
         for (int i = gridPosX-w; i <= gridPosX+w; i++)
         {
-            for (int j = gridPosY-h; j <= gridPosY+h; j++)
+            if (i >= 0 && i <= divider-1)
             {
-                if (i >= 0 && i <= divider-1 && j >= 0 && j <= divider-1){
-                    pointCloud[i][j].update(object);
+                for (int j = gridPosY-h; j <= gridPosY+h; j++)
+                {
+                    if (j >= 0 && j <= divider-1){
+                        pointCloud[i][j].update(object);
+                    }
                 }
             }
         }
