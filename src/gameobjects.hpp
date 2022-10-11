@@ -17,7 +17,7 @@ class Gameobject
         int id;
         Gameobject() : id(newId++) {};
         double xPos, yPos;
-        double col_radius;
+        double colRadius;
         std::vector<double> velocity {0, 0};
         std::vector<double> midPos {0, 0};
         SDL_Rect rect;
@@ -30,7 +30,7 @@ class Gameobject
 class Ship : public Gameobject
 {
     private:
-        double v_max = 20;
+        double vMax = 20;
         double roatatingSpeed = 2.0;
         double thrust = 0.05;
         int width, height;
@@ -40,7 +40,7 @@ class Ship : public Gameobject
         Ship();
         Ship(double xPos, double yPos, int width, int height);
         void update(ControlBools controlBools, int windowWidth, int windowHeight);
-        double getMaxVelocity(){return v_max;};
+        double getMaxVelocity(){return vMax;};
 };
 
 class Asteroid : public Gameobject
@@ -65,7 +65,7 @@ class Shot : public Gameobject
         SDL_Rect getRect();
         int size;
         int life;
-        double v_angle;
+        double vAngle;
     public:
         Shot(std::vector<double> midPos, std::vector<double> velocity, double shotHeadingAngle);
         Uint32 creationTime;

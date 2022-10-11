@@ -285,19 +285,19 @@ void Game::render()
             SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
         }
         SDL_SetRenderDrawColor(renderer,0,0,255,255);
-        //drawcircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.col_radius));
+        //drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
 
     for (Shot singleShot: shots)
     {
         SDL_SetRenderDrawColor(renderer,0,255,0,255);
-        //drawcircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.col_radius));
+        //drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
         singleShot.render(renderer,shotTex);
     }
     
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    //drawcircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.col_radius));
+    //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
     SDL_RenderPresent(renderer);
   

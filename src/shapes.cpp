@@ -1,7 +1,7 @@
 #include "shapes.hpp"
 
 //mid point circle algorithm based on https://en.wikipedia.org/w/index.php?title=Midpoint_circle_algorithm&oldid=889172082#C_example
-void drawcircle(SDL_Renderer *renderer, int x0, int y0, int radius) 
+void drawCircle(SDL_Renderer *renderer, int x0, int y0, int radius) 
 {
     int x = radius-1;
     int y = 0;

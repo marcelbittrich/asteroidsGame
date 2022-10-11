@@ -14,7 +14,7 @@ Ship::Ship(double xPos, double yPos, int width, int height) : Gameobject()
     this->width = width;
     this->height = height;
     double colRadiusOffset = 0.6;
-    this->col_radius = (width/2 + height/2)/2*colRadiusOffset;
+    this->colRadius = (width/2 + height/2)/2*colRadiusOffset;
     rect = getRect();
     this->midPos[0] = xPos + width/2;
     this->midPos[1] = yPos + height/2;
@@ -41,28 +41,28 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
 
     double deltaX = 0;
     double deltaY = 0;
-    double v_angle = 0;
-    double v_sum;
+    double vAngle = 0;
+    double vSum;
 
     
 
-    v_sum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
+    vSum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
 
-    if (v_sum > 0)
+    if (vSum > 0)
     {
-        v_angle = atan2(velocity[0],velocity[1]);
-        v_sum = std::max(v_sum - 0.01, 0.0);
+        vAngle = atan2(velocity[0],velocity[1]);
+        vSum = std::max(vSum - 0.01, 0.0);
     }    
 
     
-    velocity.at(0) = (sin(v_angle) * v_sum);
-    velocity.at(1) = (cos(v_angle) * v_sum); 
+    velocity.at(0) = (sin(vAngle) * vSum);
+    velocity.at(1) = (cos(vAngle) * vSum); 
 
     if (controlBools.giveThrust)
     {
 
 
-        if (v_sum <= v_max)
+        if (vSum <= vMax)
         {
             deltaX = (sin(shipAngle*PI/180) * thrust);
             deltaY = -(cos(shipAngle*PI/180) * thrust); 
@@ -113,7 +113,7 @@ Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
     this->yPos = yPos;
     this->size = size;
     double colRadiusOffset = 0.6;
-    this->col_radius = size/2 * colRadiusOffset;
+    this->colRadius = size/2 * colRadiusOffset;
     rect = getRect();
     this->midPos[0] = xPos + size/2;
     this->midPos[1] = yPos + size/2;
@@ -209,7 +209,7 @@ void Asteroid::update(int windowWidth, int windowHeight)
         midPos[0] += velocity[0];
         midPos[1] += velocity[1];
     }
-    std::vector<double> newMidPosistion = calcPosIfLeaving(midPos, col_radius, windowWidth, windowHeight);
+    std::vector<double> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
     if (midPos != newMidPosistion)
     {
         isVisible = false;
@@ -230,7 +230,7 @@ bool doesCollide(Gameobject firstObject, Gameobject secondObject)
     double distance;
     distance = sqrt(pow((firstObject.xPos+firstObject.rect.w/2) - (secondObject.xPos+secondObject.rect.w/2),2) + pow((firstObject.yPos+firstObject.rect.h/2) - (secondObject.yPos+secondObject.rect.h/2),2));
    
-    return distance <= firstObject.col_radius + secondObject.col_radius;
+    return distance <= firstObject.colRadius + secondObject.colRadius;
 }
 
 
@@ -336,10 +336,10 @@ Shot::Shot(std::vector<double> midPos, std::vector<double> velocity, double shot
     life = 3000;
     creationTime = SDL_GetTicks();
 
-    v_angle = shotHeadingAngle;
+    vAngle = shotHeadingAngle;
     
     double colRadiusOffset = 0.6;
-    col_radius = size * colRadiusOffset;
+    colRadius = size * colRadiusOffset;
 
     colObjects.push_back(*this);
 }
@@ -348,7 +348,7 @@ void Shot::update(int windowWidth, int windowHeight)
 {
     midPos[0] += velocity[0];
     midPos[1] += velocity[1];
-    midPos = calcPosIfLeaving(midPos, col_radius, windowWidth, windowHeight);
+    midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
     xPos = midPos[0] - size / 2;
     yPos = midPos[1] - size / 2;
     rect.x = std::round(xPos);
@@ -357,7 +357,7 @@ void Shot::update(int windowWidth, int windowHeight)
 
 void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
 {
-    SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, v_angle, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
 }
 
 void shoot(Ship ship)

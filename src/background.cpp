@@ -61,7 +61,7 @@ void bgPoint::update(Gameobject colObject)
 {   
     float distance; 
     distance = sqrt(pow((colObject.midPos[0]) - (xPos),2) + pow((colObject.midPos[1]) - (yPos),2));
-    if (distance <= colObject.col_radius)
+    if (distance <= colObject.colRadius)
     {
         std::vector<float> vDistance;
         std::vector<float> nDistance;
@@ -73,8 +73,8 @@ void bgPoint::update(Gameobject colObject)
         nDistance.push_back(vDistance[0]/(distance));
         nDistance.push_back(vDistance[1]/(distance));
 
-        xPos = colObject.midPos[0] + nDistance[0] * colObject.col_radius;
-        yPos = colObject.midPos[1] + nDistance[1] * colObject.col_radius;
+        xPos = colObject.midPos[0] + nDistance[0] * colObject.colRadius;
+        yPos = colObject.midPos[1] + nDistance[1] * colObject.colRadius;
 
         renderPos.x = round(xPos);
         renderPos.y = round(yPos);
@@ -125,8 +125,8 @@ void background::update(std::vector<Gameobject>colObjects)
         int gridPosX = object.midPos[0]/divX;
         int gridPosY = object.midPos[1]/divY;
         //Size of detection box
-        int w = (int)(object.col_radius/divX);
-        int h = (int)(object.col_radius/divY);
+        int w = (int)(object.colRadius/divX);
+        int h = (int)(object.colRadius/divY);
 
         for (int i = gridPosX-w; i <= gridPosX+w; i++)
         {
