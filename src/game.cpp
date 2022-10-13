@@ -3,16 +3,15 @@
 
 Ship ship = Ship();
 
-SDL_Texture* playerTex;
-SDL_Texture* thrustPlayerTex;
+SDL_Texture* shipTex;
 SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
 SDL_Texture* shotTex;
-SDL_Rect srcR;
+
 
 extern ControlBools controlBools;
-int windowwidth, windowheight;
-int thurstAnimationCounter;
+int windowWidth, windowHeight;
+int thrustAnimationCounter;
 int currentThrustAnimationTime = 0;
 
 background gameBackground;
@@ -21,6 +20,8 @@ std::vector<double> velocity = {0.0, 0.0};
 std::vector<Asteroid> asteroids;
 std::vector<Shot> shots;
 std::vector<Gameobject> colObjects;
+
+
 
 //Animation
 int maxthrustAnimationTime;
@@ -48,8 +49,8 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         if(window)
         {
             std::cout << "Window created" << std::endl;
-            windowwidth = SDL_GetWindowSurface(window)->w;
-            windowheight = SDL_GetWindowSurface(window)->h;
+            windowWidth = SDL_GetWindowSurface(window)->w;
+            windowHeight = SDL_GetWindowSurface(window)->h;
         }
 
         renderer = SDL_CreateRenderer(window, -1, 0);
@@ -90,15 +91,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         }
     }
 
-    SDL_Surface* image = IMG_Load("img/ship.png");
+    SDL_Surface* image = IMG_Load("img/ship_thrustanimation.png");
     if (image == NULL) {
         std::cout << IMG_GetError();
     }
-    playerTex = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
-
-    image = IMG_Load("img/ship_thrustanimation.png");
-    thrustPlayerTex = SDL_CreateTextureFromSurface(renderer, image);
+    shipTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
     image = IMG_Load("img/asteroid_small1.png");
@@ -114,17 +111,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
 
 
-    gameBackground = background(windowwidth,windowheight,100);
-
-    srcR.w = 300;
-    srcR.h = 300;
-    srcR.x = 0;
-    srcR.y = 0;
-    double shipPosX = width/2-25;
-    double shipPosY = height/2-25;
+    gameBackground = background(windowWidth,windowHeight,100);
 
 
-    ship = Ship(shipPosX, shipPosY, 50, 50);
+
+    ship = initShip(windowWidth, windowHeight);
     colObjects.push_back(ship);
 
 
@@ -152,29 +143,11 @@ void Game::update()
 {
     colObjects.clear();
 
-    ship.update(controlBools,windowwidth,windowheight);
-
-    //Ship thrust animation
-    if (controlBools.giveThrust)
-    {
-        currentThrustAnimationTime += frameTime;
-        if (currentThrustAnimationTime > maxthrustAnimationTime)
-        {
-            currentThrustAnimationTime -= maxthrustAnimationTime;
-        }  
-        thurstAnimationCounter = (int)(currentThrustAnimationTime/thrustAnimationSinglePicTime);
-    } else
-    {
-        currentThrustAnimationTime = 0;
-        thurstAnimationCounter = 0;
-    }
-    srcR.x = thurstAnimationCounter * 300;
-
-
+    ship.update(controlBools,windowWidth,windowHeight);
 
     for(Asteroid &asteroid : asteroids)
     {
-        asteroid.update(windowwidth,windowheight);
+        asteroid.update(windowWidth,windowHeight);
     }
 
     for(Asteroid asteroid : asteroids)
@@ -182,8 +155,8 @@ void Game::update()
         if (doesCollide(ship,asteroid))
         {
             // std::cout << "Collision!!!!!!" << std::endl;
-            ship.xPos = windowwidth/2-ship.rect.w/2;
-            ship.yPos = windowheight/2-ship.rect.h/2;
+            ship.midPos[0] = windowWidth/2;
+            ship.midPos[1] = windowHeight/2;
             ship.velocity = {0,0};
         }
         
@@ -238,10 +211,13 @@ void Game::update()
         }
     }
     //Destroy Shots
-    for (Shot &singleShot : shots)
+ 
+    for (auto it = shots.begin(); it != shots.end(); it++)
     {   
-        singleShot.update(windowwidth, windowheight);
+        it->update(windowWidth, windowHeight);
     }
+
+
     if (!shots.empty())
     {
         auto firstShot = shots.begin();
@@ -250,6 +226,8 @@ void Game::update()
             shots.erase(firstShot);
         }
     }
+
+
 
     //Fill colObjects vector
     colObjects.push_back(ship);
@@ -264,15 +242,11 @@ void Game::render()
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
-    //this is where we would add stuff to render
 
     gameBackground.render(renderer);
 
-    if (controlBools.giveThrust) {
-        SDL_RenderCopyEx(renderer, thrustPlayerTex, &srcR, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
-    } else {
-        SDL_RenderCopyEx(renderer, playerTex, NULL, &ship.rect, ship.shipAngle, NULL, SDL_FLIP_NONE);
-    }
+    ship.render(renderer, shipTex);
+
     for(Asteroid asteroid: asteroids) {
         SDL_Texture* asteroidTex = nullptr;
         if (asteroid.size > 75) {

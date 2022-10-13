@@ -7,17 +7,17 @@
 
 int Gameobject::newId = 0;
 
-Ship::Ship(double xPos, double yPos, int width, int height) : Gameobject()
+Ship::Ship(double xPos, double yPos, int size) : Gameobject()
 {
     this->xPos = xPos;
     this->yPos = yPos;
-    this->width = width;
-    this->height = height;
+    this->size = size;
     double colRadiusOffset = 0.6;
-    this->colRadius = (width/2 + height/2)/2*colRadiusOffset;
+    this->colRadius = (size/2 + size/2)/2*colRadiusOffset;
     rect = getRect();
-    this->midPos[0] = xPos + width/2;
-    this->midPos[1] = yPos + height/2;
+    this->midPos[0] = xPos + size/2;
+    this->midPos[1] = yPos + size/2;
+    animationCounter = 0;
 }
 
 Ship::Ship() : Gameobject()
@@ -29,8 +29,8 @@ Ship::Ship() : Gameobject()
 SDL_Rect Ship::getRect()
 {
     SDL_Rect rect;
-    rect.w = width;
-    rect.h = height;
+    rect.w = size;
+    rect.h = size;
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
     return rect;
@@ -84,28 +84,42 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
         shipAngle -= roatatingSpeed;
     }
 
-    xPos += velocity.at(0);
-    yPos += velocity.at(1);
+    midPos[0] += velocity[0];
+    midPos[1] += velocity[1];
     // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
 
-    if (xPos < 0 - rect.w){
-        xPos = windowWidth + rect.w;
-    }
-    if (xPos > windowWidth + rect.w){
-        xPos = 0 - rect.w;
-    }
-    if (yPos < 0 - rect.h){
-        yPos = windowHeight + rect.h;
-    }
-    if (yPos > windowHeight + rect.h){
-        yPos = 0 - rect.h;
-    }
-
+    midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
+    xPos = midPos[0] - size / 2;
+    yPos = midPos[1] - size / 2;
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
-    midPos[0] = xPos + width/2;
-    midPos[1] = yPos + height/2;
+
+    //Animation update
+    if (controlBools.giveThrust)
+    {
+        if (SDL_GetTicks() - lastUpdated > 300){
+            animationCounter++;
+            animationCounter = animationCounter % 3 + 1;
+            lastUpdated = SDL_GetTicks();
+        }
+    }else
+    {
+        animationCounter = 0;
+    }
 }
+
+void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
+{
+    SDL_Rect srcR;
+    SDL_Rect destR = getRect();
+    srcR.w = 300;
+    srcR.h = 300;
+    srcR.x = srcR.w * animationCounter;
+    srcR.y = 0;
+    
+    SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+}
+
 
 Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
 {
@@ -127,78 +141,6 @@ SDL_Rect Asteroid::getRect()
     rect.x = std::round(xPos);
     rect.y = std::round(yPos);
     return rect;
-}
-
-
-SDL_Point getRandomPosition(
-    int windowWidth,
-    int windowHeight,
-    int objectWidth,
-    int objectHeight,
-    std::vector<SDL_Rect> gameObjects
-) {
-    int maxTries = 10000;
-    double minDistance = 50;
-    for (int i = 0; i < maxTries; i++) {
-        int x = rand() % windowWidth;
-        int y = rand() % windowHeight;
-        bool success = true;
-        for (SDL_Rect gameObject : gameObjects)
-        {
-            int gameObjectCenterX = gameObject.x + gameObject.w / 2;
-            int gameObjectCenterY = gameObject.y + gameObject.h / 2;
-            double distance = sqrt(std::pow(gameObjectCenterX - x, 2) + std::pow(gameObjectCenterY - y, 2));
-            if (distance < minDistance) {
-                std::cout << "RandomPosTry: " << i+1 << std::endl;
-                success = false;
-                break;
-            }
-        }
-        if (success) {
-            int new_x = std::round(x - objectWidth / 2);
-            int new_y = std::round(y - objectHeight / 2);
-            SDL_Point point = {new_x, new_y};
-            return point;
-        }
-    }
-    throw std::runtime_error("Max tries for getRandomPosition exceeded!");
-}
-
-double randomSign(){
-    if(rand()% 100 <= 49) return -1.0f;
-    return 1.0f; 
-}
-
-
-void initSingleAsteroid(std::vector<SDL_Rect> &gameObjects, int windowWidth, int windowHeight, int asteroidSize)
-{
-    int asteroidMinVel = 0;
-    int asteroidMaxVel = 100;
-    double asteroidVelMulti = 0.1;
-    SDL_Point randomPosition = getRandomPosition(
-        windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
-    );
-    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize);  
-    asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
-    std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
-    asteroids.push_back(asteroid);
-    gameObjects.push_back(asteroid.rect);
-    colObjects.push_back(asteroid);
-}
-
-void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
-{
-    int asteroidAmountSmall = 10;
-    int asteroidAmountMedium = 10;
-    std::vector<SDL_Rect> gameObjects = {shipRect};
-    for (int i=0; i < asteroidAmountSmall; i++)
-    {
-        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 50);
-    }
-    for (int i=0; i < asteroidAmountMedium; i++)
-    {
-        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 100);
-    }
 }
 
 
@@ -338,7 +280,7 @@ Shot::Shot(std::vector<double> midPos, std::vector<double> velocity, double shot
 
     vAngle = shotHeadingAngle;
     
-    double colRadiusOffset = 0.6;
+    double colRadiusOffset = 0.3;
     colRadius = size * colRadiusOffset;
 
     colObjects.push_back(*this);

@@ -33,13 +33,16 @@ class Ship : public Gameobject
         double vMax = 20;
         double roatatingSpeed = 2.0;
         double thrust = 0.05;
-        int width, height;
+        int size;
         SDL_Rect getRect();
+        Uint32 lastUpdated;
+        int animationCounter;
     public:
         double shipAngle;
         Ship();
-        Ship(double xPos, double yPos, int width, int height);
+        Ship(double xPos, double yPos, int size);
         void update(ControlBools controlBools, int windowWidth, int windowHeight);
+        void render(SDL_Renderer*renderer, SDL_Texture *shipTex);
         double getMaxVelocity(){return vMax;};
 };
 
@@ -54,7 +57,6 @@ class Asteroid : public Gameobject
         void update(int windowWidth, int windowHeight);
 };
 
-void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
 //void initShip(int windowWidth, int windowHeight);
 bool doesCollide(Gameobject firstObject, Gameobject secondObject);
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject);
@@ -80,8 +82,8 @@ std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, 
 
 //extern Ship ship;
 extern std::vector<Shot> shots;
-extern std::vector<Asteroid> asteroids;
 extern std::vector<Gameobject> colObjects;
+extern std::vector<Asteroid> asteroids;
 
 #endif
 

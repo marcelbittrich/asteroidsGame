@@ -14,6 +14,7 @@
 #include "gameobjects.hpp"
 #include "shapes.hpp"
 #include "background.hpp"
+#include "initialization.hpp"
 
 #define PI 3.14159265359
 
