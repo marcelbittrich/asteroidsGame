@@ -40,7 +40,7 @@ void bgPoint::returnToOrigin(){
 
     vChange.push_back(nDistance[0] * getBackVelocity);
     vChange.push_back(nDistance[1] * getBackVelocity);
-
+    
     if (sqrt(pow(vChange[0],2) + pow(vChange[1],2))>distance)
     {
         xPos = originPos.x; 
@@ -59,9 +59,11 @@ void bgPoint::returnToOrigin(){
 
 void bgPoint::update(Gameobject colObject)
 {   
-    float distance; 
-    distance = sqrt(pow((colObject.midPos[0]) - (xPos),2) + pow((colObject.midPos[1]) - (yPos),2));
-    if (distance <= colObject.colRadius)
+    float squareDistance; 
+    float squareColRadius;
+    squareDistance = pow((colObject.midPos[0]) - (xPos),2) + pow((colObject.midPos[1]) - (yPos),2);
+    squareColRadius = colObject.colRadius * colObject.colRadius;
+    if (squareDistance <= squareColRadius)
     {
         std::vector<float> vDistance;
         std::vector<float> nDistance;
@@ -70,8 +72,10 @@ void bgPoint::update(Gameobject colObject)
         vDistance.push_back(xDist);
         vDistance.push_back(yDist);
 
-        nDistance.push_back(vDistance[0]/(distance));
-        nDistance.push_back(vDistance[1]/(distance));
+        float distance = SDL_sqrtf(squareDistance);
+
+        nDistance.push_back(vDistance[0]/distance);
+        nDistance.push_back(vDistance[1]/distance);
 
         xPos = colObject.midPos[0] + nDistance[0] * colObject.colRadius;
         yPos = colObject.midPos[1] + nDistance[1] * colObject.colRadius;
@@ -140,7 +144,7 @@ void background::update(std::vector<Gameobject>colObjects)
                 for (int j = gridPosY-h; j <= gridPosY+h; j++)
                 {
                     if (j >= 0 && j <= divider-1){
-                        pointCloud[i][j].update(object);
+                        pointCloud[i][j].update(object);                    
                     }
                 }
             }
