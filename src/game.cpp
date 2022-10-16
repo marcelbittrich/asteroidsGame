@@ -23,11 +23,6 @@ std::vector<Gameobject> colObjects;
 
 
 
-//Animation
-int maxthrustAnimationTime;
-int thrustAnimationPicCnt;
-int thrustAnimationSinglePicTime;
-
 Game::Game()
 {}
 Game::~Game()
@@ -91,22 +86,22 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         }
     }
 
-    SDL_Surface* image = IMG_Load("img/ship_thrustanimation.png");
+    SDL_Surface* image = IMG_Load("../img/ship_thrustanimation.png");
     if (image == NULL) {
         std::cout << IMG_GetError();
     }
     shipTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("img/asteroid_small1.png");
+    image = IMG_Load("../img/asteroid_small1.png");
     asteroidTexSmall = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("img/asteroid_medium1.png");
+    image = IMG_Load("../img/asteroid_medium1.png");
     asteroidTexMedium = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("img/shot.png");
+    image = IMG_Load("../img/shot.png");
     shotTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
@@ -120,11 +115,6 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 
     initAsteroids(ship.rect, width, height);
-
-    //Animation Init
-    maxthrustAnimationTime = 500;
-    thrustAnimationPicCnt = 3;
-    thrustAnimationSinglePicTime = maxthrustAnimationTime / thrustAnimationPicCnt;
 
 }
 
@@ -162,6 +152,8 @@ void Game::update()
         
     }
 
+    
+
     for(decltype(asteroids.size()) i = 0; i != asteroids.size(); i++)
     {
         for (decltype(asteroids.size()) j = i+1; j != asteroids.size(); j++)
@@ -192,6 +184,7 @@ void Game::update()
             }
         }
     }
+    
 
     //Make Shots
     if (controlBools.isShooting)
@@ -205,7 +198,7 @@ void Game::update()
             Shot lastShotEnt = *lastShot;
             Uint32 timeSinceLastShot;
             timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
-            if(timeSinceLastShot > 50){
+            if(timeSinceLastShot > 100){
                 shoot(ship);
             }
         }
@@ -227,14 +220,34 @@ void Game::update()
         }
     }
 
-
+    auto it = shots.begin();
+    while (it != shots.end())
+    {   
+        bool hit = false;
+        for (auto asteroid : asteroids)
+        {
+            if (doesCollide(*it,asteroid))
+            {
+                it = shots.erase(it);
+                hit = true;
+                break;
+            } 
+        }
+        if(!hit) it++;
+    } 
+    
 
     //Fill colObjects vector
     colObjects.push_back(ship);
-    colObjects.insert(colObjects.end(),shots.begin(),shots.end());
+    colObjects.insert(colObjects.end(),shots.begin(),shots.end()); 
     colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
 
+
+    //Uint32 UpdateStart = SDL_GetTicks();
     gameBackground.update(colObjects);
+    //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
+
+    //std::cout << UpdateTime << std::endl;
 
 }
 
@@ -243,9 +256,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
 
-    gameBackground.render(renderer);
-
-    ship.render(renderer, shipTex);
+    gameBackground.render(renderer);   
 
     for(Asteroid asteroid: asteroids) {
         SDL_Texture* asteroidTex = nullptr;
@@ -269,6 +280,7 @@ void Game::render()
         singleShot.render(renderer,shotTex);
     }
     
+    ship.render(renderer, shipTex);
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
