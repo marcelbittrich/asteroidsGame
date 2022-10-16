@@ -309,10 +309,10 @@ void shoot(Ship ship)
 
 
     double shotVelocity;
-    shotVelocity = ship.getMaxVelocity();
+    shotVelocity = 15;//ship.getMaxVelocity();
 
-    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity;
-    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity;
+    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
+    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
 
     Shot shot = Shot(ship.midPos, shotVelocityVector, ship.shipAngle);
     shots.push_back(shot);
