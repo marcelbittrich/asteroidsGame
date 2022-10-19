@@ -125,7 +125,7 @@ background::background(int windowWidth, int windowHeight, int divider)
 
 void background::update(std::vector<Gameobject>colObjects)
 {   
-    for (auto object:colObjects)
+    for (const Gameobject &object:colObjects)
     {
         //Size of grid divisions
         int divX = width/divider;
@@ -163,9 +163,9 @@ void background::update(std::vector<Gameobject>colObjects)
 
 void background::render(SDL_Renderer *renderer)
 {
-    for (std::vector<bgPoint> bgPointColumn : pointCloud)
+    for (std::vector<bgPoint> &bgPointColumn : pointCloud)
     {
-        for (bgPoint singleBgPoint : bgPointColumn)
+        for (bgPoint &singleBgPoint : bgPointColumn)
             if (!singleBgPoint.onOrigin)
             {   
                 singleBgPoint.render(renderer);

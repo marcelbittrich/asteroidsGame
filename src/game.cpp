@@ -140,7 +140,7 @@ void Game::update()
         asteroid.update(windowWidth,windowHeight);
     }
 
-    for(Asteroid asteroid : asteroids)
+    for(const Asteroid &asteroid : asteroids)
     {
         if (doesCollide(ship,asteroid))
         {
@@ -163,13 +163,13 @@ void Game::update()
             }
         
     }
-    for (auto &asteroid : asteroids)
+    for (Asteroid &asteroid : asteroids)
     {
         if (!asteroid.isVisible)
         {
             asteroid.isVisible = true;
             bool canStayVisible = true;
-            for (auto otherAsteroid : asteroids)
+            for (Asteroid otherAsteroid : asteroids)
             {
                 if (asteroid.id == otherAsteroid.id) continue;
                 if (doesCollide(asteroid, otherAsteroid))
@@ -224,7 +224,7 @@ void Game::update()
     while (it != shots.end())
     {   
         bool hit = false;
-        for (auto asteroid : asteroids)
+        for (const Asteroid &asteroid : asteroids)
         {
             if (doesCollide(*it,asteroid))
             {
@@ -258,7 +258,7 @@ void Game::render()
 
     gameBackground.render(renderer);   
 
-    for(Asteroid asteroid: asteroids) {
+    for(const Asteroid &asteroid: asteroids) {
         SDL_Texture* asteroidTex = nullptr;
         if (asteroid.size > 75) {
             asteroidTex = asteroidTexMedium;
@@ -273,7 +273,7 @@ void Game::render()
         //drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
 
-    for (Shot singleShot: shots)
+    for (Shot &singleShot: shots)
     {
         SDL_SetRenderDrawColor(renderer,0,255,0,255);
         //drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
