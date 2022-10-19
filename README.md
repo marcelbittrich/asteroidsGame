@@ -24,6 +24,8 @@ At this moment we use the following file structure:
     │   ├── game.cpp                # Init, handleEvents, update, render and clear functions
     │   ├── handleinput.cpp         # Gamepad and keyboard input handling
     │   ├── gameobjects.cpp         # All gameobjects with collision
+    │   ├── initialization.cpp      # Functions to initialize gameobjects   
+    │   ├── background.cpp          # Matrix of points to visualize movement
     │   └── shapes.cpp              # Simple shapes for debugging
     ├── .gitignore
     └── README.md
