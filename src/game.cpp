@@ -114,7 +114,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     colObjects.push_back(ship);
 
 
-    initAsteroids(ship.rect, width, height);
+    initAsteroids(ship, width, height);
 
 }
 
@@ -224,15 +224,26 @@ void Game::update()
     while (it != shots.end())
     {   
         bool hit = false;
-        for (const Asteroid &asteroid : asteroids)
+
+        auto asteroidIt = asteroids.begin();
+        while (asteroidIt != asteroids.end())
         {
-            if (doesCollide(*it,asteroid))
+            if (doesCollide(*it, *asteroidIt))
             {
                 it = shots.erase(it);
+
                 hit = true;
+
+                if (asteroidIt->sizeType == AsteroidSizeType::Small)
+                {
+                    asteroidIt = asteroids.erase(asteroidIt);
+                    break;
+                }
                 break;
-            } 
+            }
+            if (!hit) asteroidIt++;
         }
+
         if(!hit) it++;
     } 
     
@@ -260,10 +271,12 @@ void Game::render()
 
     for(const Asteroid &asteroid: asteroids) {
         SDL_Texture* asteroidTex = nullptr;
-        if (asteroid.size > 75) {
+        if (asteroid.sizeType == AsteroidSizeType::Medium) {
             asteroidTex = asteroidTexMedium;
-        } else {
+        } else if (asteroid.sizeType == AsteroidSizeType::Small) {
             asteroidTex = asteroidTexSmall;
+        } else {
+            throw std::runtime_error("Unknown AsteroidSizeType for rendering");
         }
         if (asteroid.isVisible)
         {

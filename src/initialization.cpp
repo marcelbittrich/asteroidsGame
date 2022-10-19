@@ -10,31 +10,25 @@ Ship initShip(int windowWidth, int windowHeight){
 SDL_Point getRandomPosition(
     int windowWidth,
     int windowHeight,
-    int objectWidth,
-    int objectHeight,
-    std::vector<SDL_Rect> gameObjects
+    Gameobject newGameobject,
+    std::vector<Gameobject> gameobjects
 ) {
     int maxTries = 10000;
-    double minDistance = 50;
     for (int i = 0; i < maxTries; i++) {
         int x = rand() % windowWidth;
         int y = rand() % windowHeight;
         bool success = true;
-        for (SDL_Rect gameObject : gameObjects)
+        for (const Gameobject &gameobject : gameobjects)
         {
-            int gameObjectCenterX = gameObject.x + gameObject.w / 2;
-            int gameObjectCenterY = gameObject.y + gameObject.h / 2;
-            double distance = sqrt(std::pow(gameObjectCenterX - x, 2) + std::pow(gameObjectCenterY - y, 2));
-            if (distance < minDistance) {
+            double distance = sqrt(std::pow(gameobject.midPos[0] - x, 2) + std::pow(gameobject.midPos[1] - y, 2));
+            if (distance < gameobject.colRadius + newGameobject.colRadius) {
                 std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
                 break;
             }
         }
         if (success) {
-            int new_x = std::round(x - objectWidth / 2);
-            int new_y = std::round(y - objectHeight / 2);
-            SDL_Point point = {new_x, new_y};
+            SDL_Point point = {x, y};
             return point;
         }
     }
@@ -47,33 +41,37 @@ double randomSign(){
 }
 
 
-void initSingleAsteroid(std::vector<SDL_Rect> &gameObjects, int windowWidth, int windowHeight, int asteroidSize)
+void initSingleAsteroid(std::vector<Gameobject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
 {
     int asteroidMinVel = 0;
     int asteroidMaxVel = 100;
     double asteroidVelMulti = 0.1;
+    Asteroid asteroid = Asteroid(sizeType);  
     SDL_Point randomPosition = getRandomPosition(
-        windowWidth, windowHeight, asteroidSize, asteroidSize, gameObjects
+        windowWidth, windowHeight, asteroid, gameObjects
     );
-    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, asteroidSize);  
+    asteroid.xPos = randomPosition.x - asteroid.size / 2;
+    asteroid.yPos = randomPosition.y - asteroid.size / 2;
+    asteroid.midPos[0] = randomPosition.x;
+    asteroid.midPos[1] = randomPosition.y;
     asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
     std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
     asteroids.push_back(asteroid);
-    gameObjects.push_back(asteroid.rect);
+    gameObjects.push_back(asteroid);
     colObjects.push_back(asteroid);
 }
 
-void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight)
+void initAsteroids(Gameobject ship, int windowWidth, int windowHeight)
 {
     int asteroidAmountSmall = 10;
     int asteroidAmountMedium = 10;
-    std::vector<SDL_Rect> gameObjects = {shipRect};
+    std::vector<Gameobject> gameObjects = {ship};
     for (int i=0; i < asteroidAmountSmall; i++)
     {
-        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 50);
+        initSingleAsteroid(gameObjects, windowWidth, windowHeight, AsteroidSizeType::Small);
     }
     for (int i=0; i < asteroidAmountMedium; i++)
     {
-        initSingleAsteroid(gameObjects, windowWidth, windowHeight, 100);
+        initSingleAsteroid(gameObjects, windowWidth, windowHeight, AsteroidSizeType::Medium);
     }
 }

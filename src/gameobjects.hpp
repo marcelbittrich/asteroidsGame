@@ -46,14 +46,19 @@ class Ship : public Gameobject
         double getMaxVelocity(){return vMax;};
 };
 
+
+enum class AsteroidSizeType { Small, Medium };
+
+
 class Asteroid : public Gameobject
 {
     private:
         SDL_Rect getRect();
     public:
         int size;
+        AsteroidSizeType sizeType;
         //SDL_Rect rect;
-        Asteroid(double xPos, double yPos, int size);
+        Asteroid(AsteroidSizeType sizeType);
         void update(int windowWidth, int windowHeight);
 };
 

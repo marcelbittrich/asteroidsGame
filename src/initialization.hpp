@@ -8,7 +8,7 @@
 #include "game.hpp"
 
 Ship initShip(int windowWidth, int windowHeight);
-void initAsteroids(SDL_Rect shipRect, int windowWidth, int windowHeight);
+void initAsteroids(Gameobject ship, int windowWidth, int windowHeight);
 
 # endif 
 

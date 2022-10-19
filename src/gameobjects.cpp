@@ -121,16 +121,15 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 }
 
 
-Asteroid::Asteroid(double xPos, double yPos, int size) : Gameobject()
+Asteroid::Asteroid(AsteroidSizeType sizeType) : Gameobject()
 {
-    this->xPos = xPos;
-    this->yPos = yPos;
-    this->size = size;
+    this->sizeType = sizeType;
+    if (sizeType == AsteroidSizeType::Small) this->size = 50;
+    if (sizeType == AsteroidSizeType::Medium) this->size = 100;
+
     double colRadiusOffset = 0.6;
     this->colRadius = size/2 * colRadiusOffset;
     rect = getRect();
-    this->midPos[0] = xPos + size/2;
-    this->midPos[1] = yPos + size/2;
 }
 
 SDL_Rect Asteroid::getRect()
