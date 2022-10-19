@@ -57,6 +57,8 @@ Already implemented are the following:
 <details>
   <summary>Click here</summary>
   
+  You can either compile and run the game with the instruction given below or you can simply start the executale located under ./build.
+    
   ### Setup
   
   We are using VSC and GCC with MinGW to compile our game. You can learn how to get it [here](https://code.visualstudio.com/docs/cpp/config-mingw). After you installed it you have to create a `.vscode` folder in your project to change some settings (see next sections). This is most certainly not the only way how to run our code, but this is how we do it. If you want further guidance look [here](https://dev.to/giovannicodes/setup-sdl2-with-visual-studio-code-and-mingw64-on-windows-14c5).
@@ -105,7 +107,7 @@ Already implemented are the following:
                 "program": "${workspaceFolder}\\build\\game.exe",
                 "args": [],
                 "stopAtEntry": false,
-                "cwd": "${workspaceFolder}",
+                "cwd": "${workspaceFolder}\\build",
                 "environment": [],
                 "externalConsole": false,
                 "MIMode": "gdb",
