@@ -9,6 +9,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_gamecontroller.h"
+#include "SDL2/SDL_ttf.h"
 
 #include "handleinput.hpp"
 #include "gameobjects.hpp"

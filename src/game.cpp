@@ -7,12 +7,13 @@ SDL_Texture* shipTex;
 SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
 SDL_Texture* shotTex;
-
+TTF_Font* Font;
 
 extern ControlBools controlBools;
 int windowWidth, windowHeight;
 int thrustAnimationCounter;
 int currentThrustAnimationTime = 0;
+unsigned score;
 
 background gameBackground;
 
@@ -21,7 +22,8 @@ std::vector<Asteroid> asteroids;
 std::vector<Shot> shots;
 std::vector<Gameobject> colObjects;
 
-
+SDL_Rect Message_rect;
+SDL_Texture* Message;
 
 Game::Game()
 {}
@@ -39,6 +41,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     {
         IMG_Init(IMG_INIT_PNG);
         std::cout << "Subsystem Initialised!..." << std::endl;
+        if(TTF_Init()) std::cout << "Font System Initialised!...";
 
         window = SDL_CreateWindow(title, xpos, ypos, width, height, flags);
         if(window)
@@ -59,6 +62,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     } else {
         isRunning = false;
     }
+    
 
     printf("%i joysticks were found.\n", SDL_NumJoysticks() );
     for (int i = 1; i <= SDL_NumJoysticks(); ++i) {
@@ -116,6 +120,14 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     initAsteroids(ship, width, height);
 
+    Font = TTF_OpenFont("../font/Roboto-Black.ttf", 48);
+
+    Message_rect.x = 0;
+    Message_rect.y = 0;
+    Message_rect.w = 100; 
+    Message_rect.h = 50; 
+    
+    score = 0;
 }
 
 void Game::handleEvents()
@@ -135,11 +147,13 @@ void Game::update()
 
     ship.update(controlBools,windowWidth,windowHeight);
 
+    // Update Asteroid Position
     for(Asteroid &asteroid : asteroids)
     {
         asteroid.update(windowWidth,windowHeight);
     }
 
+    // Check Ship Collision
     for(const Asteroid &asteroid : asteroids)
     {
         if (doesCollide(ship,asteroid))
@@ -152,8 +166,7 @@ void Game::update()
         
     }
 
-    
-
+   // Check Asteroid Collision
     for(decltype(asteroids.size()) i = 0; i != asteroids.size(); i++)
     {
         for (decltype(asteroids.size()) j = i+1; j != asteroids.size(); j++)
@@ -203,8 +216,8 @@ void Game::update()
             }
         }
     }
+
     //Destroy Shots
- 
     for (auto it = shots.begin(); it != shots.end(); it++)
     {   
         it->update(windowWidth, windowHeight);
@@ -237,8 +250,16 @@ void Game::update()
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
                     asteroidIt = asteroids.erase(asteroidIt);
+                    score++;
                     break;
                 }
+                else if (asteroidIt->sizeType == AsteroidSizeType::Medium)
+                {   
+                    handleDistruction(*asteroidIt);  
+                    asteroidIt = asteroids.erase(asteroidIt);
+                    break;
+                }
+
                 break;
             }
             if (!hit) asteroidIt++;
@@ -269,7 +290,7 @@ void Game::render()
 
     gameBackground.render(renderer);   
 
-    for(const Asteroid &asteroid: asteroids) {
+    for(Asteroid &asteroid: asteroids) {
         SDL_Texture* asteroidTex = nullptr;
         if (asteroid.sizeType == AsteroidSizeType::Medium) {
             asteroidTex = asteroidTexMedium;
@@ -279,8 +300,9 @@ void Game::render()
             throw std::runtime_error("Unknown AsteroidSizeType for rendering");
         }
         if (asteroid.isVisible)
-        {
-            SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroid.rect, 0.0f, NULL, SDL_FLIP_NONE);
+        {   
+            SDL_Rect asteroidRect = asteroid.getRect();
+            SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
         }
         SDL_SetRenderDrawColor(renderer,0,0,255,255);
         //drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
@@ -297,14 +319,28 @@ void Game::render()
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
+    
+    std::string scoreString = std::to_string(score);
+    int scoreTargetLength = 5;
+    size_t fillLength = scoreTargetLength - scoreString.size();
+    std::string fullScoreString (fillLength, '0'); 
+    fullScoreString += scoreString;
 
+    const char *pscore = fullScoreString.c_str();
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, White); 
+    Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    SDL_FreeSurface(surfaceMessage);
+    SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+    
+    
+    
     SDL_RenderPresent(renderer);
   
 }
 
 void Game::clean()
 {
-    
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
     IMG_Quit();
