@@ -120,12 +120,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     initAsteroids(ship, width, height);
 
-    Font = TTF_OpenFont("../font/Roboto-Black.ttf", 48);
+    Font = TTF_OpenFont("../font/joystix_monospace.ttf", 48);
 
-    Message_rect.x = 0;
-    Message_rect.y = 0;
+    Message_rect.x = 16;
+    Message_rect.y = 9;
     Message_rect.w = 100; 
-    Message_rect.h = 50; 
+    Message_rect.h = 25; 
     
     score = 0;
 }
@@ -332,7 +332,7 @@ void Game::render()
     Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
     SDL_FreeSurface(surfaceMessage);
     SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-    
+    SDL_DestroyTexture(Message);
     
     
     SDL_RenderPresent(renderer);
@@ -343,6 +343,8 @@ void Game::clean()
 {
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
+    TTF_CloseFont(Font);
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
     std::cout << "Game Cleaned" << std::endl;
