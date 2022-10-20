@@ -345,3 +345,60 @@ std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, 
     }
     return newMidPos;
 }
+
+
+std::vector<float> normalize2DVector(std::vector<float> vector2D)
+{
+    SDL_assert(vector2D.size() == 2);
+    float factor = 1 / SDL_sqrtf(pow(vector2D[0],2) + pow(vector2D[1],2)); 
+    return {vector2D[0] * factor, vector2D[1] * factor};
+}
+
+std::vector<float> set2DVectorLength(std::vector<float> vector2D, float length)
+{
+    SDL_assert(vector2D.size() == 2);
+    std::vector<float> normalizedVector = normalize2DVector(vector2D);
+    return {normalizedVector[0]* length, normalizedVector[1] * length};
+}
+
+std::vector<float> rotate2DVector(std::vector<float> old2DVector, float angleInDegree)
+{
+    SDL_assert(old2DVector.size() == 2);
+    std::vector<float> rotated2DVector = {0,0};
+    
+    float angleInRadian = angleInDegree * PI / 180;
+    rotated2DVector[0] = old2DVector[0] * cosf(angleInRadian) - old2DVector[1] * sinf(angleInRadian);
+    rotated2DVector[1] = old2DVector[0] * sinf(angleInRadian) + old2DVector[1] * cosf(angleInRadian);
+
+    return rotated2DVector;
+}
+
+void handleDistruction(Asteroid destroyedAsteroid)
+{
+    Asteroid newAsteroid1 = Asteroid(AsteroidSizeType::Small);
+    Asteroid newAsteroid2 = Asteroid(AsteroidSizeType::Small);
+    
+    auto oldMidPos = destroyedAsteroid.midPos;
+    std::vector<float> oldVelocity (destroyedAsteroid.velocity.begin(), destroyedAsteroid.velocity.end());
+
+    std::vector<float> spawnDirection = rotate2DVector(oldVelocity, 90);
+    spawnDirection  = set2DVectorLength(spawnDirection,newAsteroid1.size/2);
+    newAsteroid1.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
+    newAsteroid1.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
+    newAsteroid1.xPos = newAsteroid1.midPos[0] - newAsteroid1.size/2;
+    newAsteroid1.yPos = newAsteroid1.midPos[1] - newAsteroid1.size/2;
+
+    spawnDirection = rotate2DVector(spawnDirection, 180);
+    newAsteroid2.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
+    newAsteroid2.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
+    newAsteroid2.xPos = newAsteroid2.midPos[0] - newAsteroid2.size/2;
+    newAsteroid2.yPos = newAsteroid2.midPos[1] - newAsteroid2.size/2;
+    
+    newAsteroid1.velocity = {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2};
+    newAsteroid2.velocity = {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2};
+
+    asteroids.push_back(newAsteroid1);
+    asteroids.push_back(newAsteroid2);
+    colObjects.push_back(newAsteroid1);
+    colObjects.push_back(newAsteroid2);
+}

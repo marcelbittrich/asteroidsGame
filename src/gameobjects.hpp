@@ -53,8 +53,9 @@ enum class AsteroidSizeType { Small, Medium };
 class Asteroid : public Gameobject
 {
     private:
-        SDL_Rect getRect();
+        
     public:
+        SDL_Rect getRect();
         int size;
         AsteroidSizeType sizeType;
         //SDL_Rect rect;
@@ -65,6 +66,7 @@ class Asteroid : public Gameobject
 //void initShip(int windowWidth, int windowHeight);
 bool doesCollide(Gameobject firstObject, Gameobject secondObject);
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject);
+void handleDistruction(Asteroid destoryedAsteroid);
 
 class Shot : public Gameobject
 {

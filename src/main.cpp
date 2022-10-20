@@ -8,7 +8,7 @@ bool showUpdateTime = false;
 bool showRenderTime = false;
 bool showFrameTime = false;
 bool showDelayedFrameTime = false;
-bool showFPS = true;
+bool showFPS = false;
 
 int main(int argc,char * argv[])
 {
