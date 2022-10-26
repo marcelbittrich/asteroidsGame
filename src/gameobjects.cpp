@@ -200,46 +200,50 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
 {
     if (doesCollide(firstObject, secondObject) && !didRecentlyCollide(firstObject, secondObject))
     {
-        // std::cout << "Asteroid Collision" << std::endl;
-        
-        //source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
+        // source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
 
-        //Stossnormale
+        // distance vector
         std::vector<float> normal;
         normal.push_back(secondObject.midPos[0]-firstObject.midPos[0]);
         normal.push_back(secondObject.midPos[1]-firstObject.midPos[1]);
-        //angle between object 1 and normal
-        std::valarray<float>n(normal.size());
-        std::copy(begin(normal), end(normal), begin(n));
+        
+        // angle between object 1 and normal
+        float f1 = (firstObject.velocity[0] * normal[0] + firstObject.velocity[1] * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]); 
+        // parallel component for object 1
+        std::vector<float> vp1 = {normal[0] * f1, normal[1] * f1};
+        // vertical component for object 1
+        std::vector<float> vv1 = {firstObject.velocity[0] - vp1[0], firstObject.velocity[1] - vp1[1]};
 
-        std::valarray<float>v1(firstObject.velocity.size());
-        std::copy(begin(firstObject.velocity), end(firstObject.velocity), begin(v1));
+        // angle between object 2 and normal
+        float f2 = (secondObject.velocity[0] * normal[0] + secondObject.velocity[1] * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
+        // parallel component for object 2 
+        std::vector<float> vp2 = {normal[0] * f2, normal[1] * f2};
+        // vertical component for object 2
+        std::valarray<float> vv2 = {secondObject.velocity[0] - vp2[0], secondObject.velocity[1] - vp2[1]};
 
+        int weightObject1 = PI * firstObject.colRadius * firstObject.colRadius;
+        int weightObject2 = PI * secondObject.colRadius * secondObject.colRadius;
 
-        float f1 = (v1[0]*n[0]+v1[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
-        //parallel component for object 1
-        std::valarray<float> vp1 = n * f1;  
-        //vertical component for object 1
-        std::valarray<float> vv1 = v1 - vp1;
+        if (weightObject1 == weightObject2)
+        {
+            firstObject.velocity[0] = vv1[0] + vp2[0];
+            firstObject.velocity[1] = vv1[1] + vp2[1];
+            secondObject.velocity[0] = vv2[0] + vp1[0];
+            secondObject.velocity[1] = vv2[1] + vp1[1];
+        } else {   
+            float weightFactorX = 2 * ((weightObject1 * vp1[0] + weightObject2 * vp2[0]) / (weightObject1 + weightObject2));
+            float weightFactorY = 2 * ((weightObject1 * vp1[1] + weightObject2 * vp2[1]) / (weightObject1 + weightObject2));
+            
+            vp1[0] = weightFactorX - vp1[0];
+            vp1[1] = weightFactorY - vp1[1];
+            vp2[0] = weightFactorX - vp2[0];
+            vp2[1] = weightFactorY - vp2[1];
 
-        std::valarray<float>v2(secondObject.velocity.size());
-        std::copy(begin(secondObject.velocity), end(secondObject.velocity), begin(v2));
-
-
-        float f2 = (v2[0]*n[0]+v2[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
-        //parallel component for object 2
-        std::valarray<float> vp2 = n * f2;  
-        //vertical component for object 2
-        std::valarray<float> vv2 = v2 - vp2;
-
-        //if both objects are equal in weight
-        v1 = vv1 + vp2;
-        v2 = vv2 + vp1;
-
-        firstObject.velocity[0] = v1[0];
-        firstObject.velocity[1] = v1[1];
-        secondObject.velocity[0] = v2[0];
-        secondObject.velocity[1] = v2[1];
+            firstObject.velocity[0] = vv1[0] + vp2[0];
+            firstObject.velocity[1] = vv1[1] + vp2[1];
+            secondObject.velocity[0] = vv2[0] + vp1[0];
+            secondObject.velocity[1] = vv2[1] + vp1[1];
+        }
     }
 }
 
