@@ -2,8 +2,8 @@
 
 Ship initShip(int windowWidth, int windowHeight){
     int size = 50;
-    double midPosX = windowWidth/2;
-    double midPosY = windowHeight/2;
+    float midPosX = windowWidth/2;
+    float midPosY = windowHeight/2;
     return Ship(midPosX, midPosY, size);
 }
 
@@ -20,7 +20,7 @@ SDL_Point getRandomPosition(
         bool success = true;
         for (const Gameobject &gameobject : gameobjects)
         {
-            double distance = sqrt(std::pow(gameobject.midPos[0] - x, 2) + std::pow(gameobject.midPos[1] - y, 2));
+            float distance = sqrt(std::pow(gameobject.midPos[0] - x, 2) + std::pow(gameobject.midPos[1] - y, 2));
             if (distance < gameobject.colRadius + newGameobject.colRadius) {
                 std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
@@ -35,7 +35,7 @@ SDL_Point getRandomPosition(
     throw std::runtime_error("Max tries for getRandomPosition exceeded!");
 }
 
-double randomSign(){
+float randomSign(){
     if(rand()% 100 <= 49) return -1.0f;
     return 1.0f; 
 }
@@ -45,14 +45,14 @@ void initSingleAsteroid(std::vector<Gameobject> &gameObjects, int windowWidth, i
 {
     int asteroidMinVel = 0;
     int asteroidMaxVel = 100;
-    double asteroidVelMulti = 0.1;
+    float asteroidVelMulti = 0.1;
     Asteroid asteroid = Asteroid(sizeType);  
     SDL_Point randomPosition = getRandomPosition(
         windowWidth, windowHeight, asteroid, gameObjects
     );
     asteroid.midPos[0] = randomPosition.x;
     asteroid.midPos[1] = randomPosition.y;
-    asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
+    asteroid.velocity = {randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
     std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
     asteroids.push_back(asteroid);
     gameObjects.push_back(asteroid);

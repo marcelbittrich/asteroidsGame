@@ -17,11 +17,11 @@ SDL_Rect Gameobject::getRect()
     return rect;
 }
 
-Ship::Ship(double midPosX, double midPosY, int size) : Gameobject()
+Ship::Ship(float midPosX, float midPosY, int size) : Gameobject()
 {
     this->width = size;
     this->height = size;
-    double colRadiusOffset = 0.6;
+    float colRadiusOffset = 0.6;
     this->colRadius = (width/2 + height/2)/2*colRadiusOffset;
     this->midPos = {midPosX, midPosY};
     animationCounter = 0;
@@ -36,10 +36,10 @@ Ship::Ship() : Gameobject()
 void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
 {
 
-    double deltaX = 0;
-    double deltaY = 0;
-    double vAngle = 0;
-    double vSum;
+    float deltaX = 0;
+    float deltaY = 0;
+    float vAngle = 0;
+    float vSum;
 
     vSum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
 
@@ -115,7 +115,7 @@ Asteroid::Asteroid(AsteroidSizeType sizeType) : Gameobject()
     if (sizeType == AsteroidSizeType::Small) size = 50;
     if (sizeType == AsteroidSizeType::Medium) size = 100;
 
-    double colRadiusOffset = 0.6;
+    float colRadiusOffset = 0.6;
     this->colRadius = size/2 * colRadiusOffset;
     this->width = size;
     this->height = size;
@@ -128,7 +128,7 @@ void Asteroid::update(int windowWidth, int windowHeight)
         midPos[0] += velocity[0];
         midPos[1] += velocity[1];
     }
-    std::vector<double> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
+    std::vector<float> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
     if (midPos != newMidPosistion)
     {
         isVisible = false;
@@ -158,7 +158,7 @@ void Asteroid::render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_
 bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 {
     if (!firstObject.isVisible || !secondObject.isVisible) return false;
-    double distance;
+    float distance;
     distance = sqrt(pow(firstObject.midPos[0] - secondObject.midPos[0], 2) + pow(firstObject.midPos[1] - secondObject.midPos[1], 2));
    
     return distance <= firstObject.colRadius + secondObject.colRadius;
@@ -205,32 +205,32 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
         //source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
 
         //Stossnormale
-        std::vector<double> normal;
+        std::vector<float> normal;
         normal.push_back(secondObject.midPos[0]-firstObject.midPos[0]);
         normal.push_back(secondObject.midPos[1]-firstObject.midPos[1]);
         //angle between object 1 and normal
-        std::valarray<double>n(normal.size());
+        std::valarray<float>n(normal.size());
         std::copy(begin(normal), end(normal), begin(n));
 
-        std::valarray<double>v1(firstObject.velocity.size());
+        std::valarray<float>v1(firstObject.velocity.size());
         std::copy(begin(firstObject.velocity), end(firstObject.velocity), begin(v1));
 
 
         float f1 = (v1[0]*n[0]+v1[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
         //parallel component for object 1
-        std::valarray<double> vp1 = n * f1;  
+        std::valarray<float> vp1 = n * f1;  
         //vertical component for object 1
-        std::valarray<double> vv1 = v1 - vp1;
+        std::valarray<float> vv1 = v1 - vp1;
 
-        std::valarray<double>v2(secondObject.velocity.size());
+        std::valarray<float>v2(secondObject.velocity.size());
         std::copy(begin(secondObject.velocity), end(secondObject.velocity), begin(v2));
 
 
-        double f2 = (v2[0]*n[0]+v2[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
+        float f2 = (v2[0]*n[0]+v2[1]*n[1])/(n[0]*n[0]+n[1]*n[1]); 
         //parallel component for object 2
-        std::valarray<double> vp2 = n * f2;  
+        std::valarray<float> vp2 = n * f2;  
         //vertical component for object 2
-        std::valarray<double> vv2 = v2 - vp2;
+        std::valarray<float> vv2 = v2 - vp2;
 
         //if both objects are equal in weight
         v1 = vv1 + vp2;
@@ -243,7 +243,7 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
     }
 }
 
-Shot::Shot(double midPosX, double midPosY, std::vector<double> velocity, double shotHeadingAngle)
+Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)
 {
     this->velocity = velocity;
     this->midPos = {midPosX, midPosY};
@@ -253,7 +253,7 @@ Shot::Shot(double midPosX, double midPosY, std::vector<double> velocity, double 
 
     vAngle = shotHeadingAngle;
     
-    double colRadiusOffset = 0.3;
+    float colRadiusOffset = 0.3;
     int size = 20;
     colRadius = size * colRadiusOffset;
     this->width = size;
@@ -277,10 +277,10 @@ void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
 
 void shoot(Ship ship)
 {   
-    std::vector<double> shotVelocityVector = {0, 0};
+    std::vector<float> shotVelocityVector = {0, 0};
 
 
-    double shotVelocity;
+    float shotVelocity;
     shotVelocity = 15;//ship.getMaxVelocity();
 
     shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
@@ -296,9 +296,9 @@ bool shotIsToOld (Shot shot){
     return (maxLifeTime < deltaTime);
 }
 
-std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, int windowWidth, int windowHeight)
+std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight)
 {
-    std::vector<double> newMidPos = midPos;
+    std::vector<float> newMidPos = midPos;
 
     if (midPos[0] < 0 - radius) // leave to left.
     {
@@ -352,7 +352,7 @@ void handleDistruction(Asteroid destroyedAsteroid)
     Asteroid newAsteroid2 = Asteroid(AsteroidSizeType::Small);
     
     auto oldMidPos = destroyedAsteroid.midPos;
-    std::vector<float> oldVelocity (destroyedAsteroid.velocity.begin(), destroyedAsteroid.velocity.end());
+    std::vector<float> oldVelocity = destroyedAsteroid.velocity;
 
     std::vector<float> spawnDirection = rotate2DVector(oldVelocity, 90);
     int newAsteroid1Size = newAsteroid1.width;

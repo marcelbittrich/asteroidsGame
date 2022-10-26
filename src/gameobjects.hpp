@@ -20,10 +20,9 @@ class Gameobject
         int height;
         int id;
         Gameobject() : id(newId++) {};
-        // double xPos, yPos;
-        double colRadius;
-        std::vector<double> velocity {0, 0};
-        std::vector<double> midPos {0, 0};
+        float colRadius;
+        std::vector<float> velocity {0, 0};
+        std::vector<float> midPos {0, 0};
         bool isVisible = true;
 };
 
@@ -31,18 +30,18 @@ class Gameobject
 class Ship : public Gameobject
 {
     private:
-        double vMax = 20;
-        double roatatingSpeed = 2.0;
-        double thrust = 0.05;
+        float vMax = 20;
+        float roatatingSpeed = 2.0;
+        float thrust = 0.05;
         Uint32 lastUpdated;
         int animationCounter;
     public:
-        double shipAngle;
+        float shipAngle = 0;
         Ship();
-        Ship(double midPosX, double midPosY, int size);
+        Ship(float midPosX, float midPosY, int size);
         void update(ControlBools controlBools, int windowWidth, int windowHeight);
         void render(SDL_Renderer*renderer, SDL_Texture *shipTex);
-        double getMaxVelocity(){return vMax;};
+        float getMaxVelocity(){return vMax;};
 };
 
 
@@ -67,9 +66,9 @@ class Shot : public Gameobject
 {
     private:
         int life;
-        double vAngle;
+        float vAngle = 0;
     public:
-        Shot(double midPosX, double midPosY, std::vector<double> velocity, double shotHeadingAngle);
+        Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight);
         void render(SDL_Renderer*renderer, SDL_Texture *shotTex);
@@ -77,7 +76,7 @@ class Shot : public Gameobject
 
 void shoot(Ship ship);
 bool shotIsToOld (Shot shot);
-std::vector<double> calcPosIfLeaving(std::vector<double> midPos, double radius, int windowWidth, int windowHeight);
+std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 
 
 //extern Ship ship;
