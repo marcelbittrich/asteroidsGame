@@ -7,16 +7,23 @@
 
 int Gameobject::newId = 0;
 
-Ship::Ship(double xPos, double yPos, int size) : Gameobject()
+SDL_Rect Gameobject::getRect()
 {
-    this->xPos = xPos;
-    this->yPos = yPos;
-    this->size = size;
+    SDL_Rect rect;
+    rect.w = width;
+    rect.h = height;
+    rect.x = std::round(midPos[0] - width / 2);
+    rect.y = std::round(midPos[1] - height / 2);
+    return rect;
+}
+
+Ship::Ship(double midPosX, double midPosY, int size) : Gameobject()
+{
+    this->width = size;
+    this->height = size;
     double colRadiusOffset = 0.6;
-    this->colRadius = (size/2 + size/2)/2*colRadiusOffset;
-    rect = getRect();
-    this->midPos[0] = xPos + size/2;
-    this->midPos[1] = yPos + size/2;
+    this->colRadius = (width/2 + height/2)/2*colRadiusOffset;
+    this->midPos = {midPosX, midPosY};
     animationCounter = 0;
 }
 
@@ -26,16 +33,6 @@ Ship::Ship() : Gameobject()
 }
 
 
-SDL_Rect Ship::getRect()
-{
-    SDL_Rect rect;
-    rect.w = size;
-    rect.h = size;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
-    return rect;
-}
-
 void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
 {
 
@@ -44,8 +41,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     double vAngle = 0;
     double vSum;
 
-    
-
     vSum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
 
     if (vSum > 0)
@@ -53,21 +48,17 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
         vAngle = atan2(velocity[0],velocity[1]);
         vSum = std::max(vSum - 0.01, 0.0);
     }    
-
     
     velocity.at(0) = (sin(vAngle) * vSum);
     velocity.at(1) = (cos(vAngle) * vSum); 
 
     if (controlBools.giveThrust)
     {
-
-
         if (vSum <= vMax)
         {
             deltaX = (sin(shipAngle*PI/180) * thrust);
             deltaY = -(cos(shipAngle*PI/180) * thrust); 
         }
-        
     }
 
     velocity.at(0) += deltaX;
@@ -89,10 +80,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
     // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
 
     midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
-    xPos = midPos[0] - size / 2;
-    yPos = midPos[1] - size / 2;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
 
     //Animation update
     if (controlBools.giveThrust)
@@ -123,25 +110,16 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 
 Asteroid::Asteroid(AsteroidSizeType sizeType) : Gameobject()
 {
+    int size;
     this->sizeType = sizeType;
-    if (sizeType == AsteroidSizeType::Small) this->size = 50;
-    if (sizeType == AsteroidSizeType::Medium) this->size = 100;
+    if (sizeType == AsteroidSizeType::Small) size = 50;
+    if (sizeType == AsteroidSizeType::Medium) size = 100;
 
     double colRadiusOffset = 0.6;
     this->colRadius = size/2 * colRadiusOffset;
-    rect = getRect();
+    this->width = size;
+    this->height = size;
 }
-
-SDL_Rect Asteroid::getRect()
-{
-    SDL_Rect rect;
-    rect.w = size;
-    rect.h = size;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
-    return rect;
-}
-
 
 void Asteroid::update(int windowWidth, int windowHeight)
 {
@@ -156,20 +134,32 @@ void Asteroid::update(int windowWidth, int windowHeight)
         isVisible = false;
     }
     midPos = newMidPosistion;
-    xPos = midPos[0] - size / 2;
-    yPos = midPos[1] - size / 2;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
 }
 
 
+void Asteroid::render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium)
+{
+    SDL_Texture* asteroidTex = nullptr;
+    if (sizeType == AsteroidSizeType::Medium) {
+        asteroidTex = asteroidTexMedium;
+    } else if (sizeType == AsteroidSizeType::Small) {
+        asteroidTex = asteroidTexSmall;
+    } else {
+        throw std::runtime_error("Unknown AsteroidSizeType for rendering");
+    }
+    if (isVisible)
+    {   
+        SDL_Rect asteroidRect = getRect();
+        SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
+    }
+}
 
 
 bool doesCollide(Gameobject firstObject, Gameobject secondObject)
 {
     if (!firstObject.isVisible || !secondObject.isVisible) return false;
     double distance;
-    distance = sqrt(pow((firstObject.xPos+firstObject.rect.w/2) - (secondObject.xPos+secondObject.rect.w/2),2) + pow((firstObject.yPos+firstObject.rect.h/2) - (secondObject.yPos+secondObject.rect.h/2),2));
+    distance = sqrt(pow(firstObject.midPos[0] - secondObject.midPos[0], 2) + pow(firstObject.midPos[1] - secondObject.midPos[1], 2));
    
     return distance <= firstObject.colRadius + secondObject.colRadius;
 }
@@ -208,7 +198,7 @@ bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
 
 void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
 {
-    if (doesCollide(firstObject,secondObject) && !didRecentlyCollide(firstObject, secondObject))
+    if (doesCollide(firstObject, secondObject) && !didRecentlyCollide(firstObject, secondObject))
     {
         // std::cout << "Asteroid Collision" << std::endl;
         
@@ -253,34 +243,21 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
     }
 }
 
-SDL_Rect Shot::getRect()
-{
-    SDL_Rect rect;
-    rect.w = size;
-    rect.h = size;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
-    return rect;
-}
-
-Shot::Shot(std::vector<double> midPos, std::vector<double> velocity, double shotHeadingAngle)
+Shot::Shot(double midPosX, double midPosY, std::vector<double> velocity, double shotHeadingAngle)
 {
     this->velocity = velocity;
-    this->midPos[0]=midPos[0];
-    this->midPos[1]=midPos[1];
+    this->midPos = {midPosX, midPosY};
 
-    size = 20;
-    xPos = midPos[0] - size/2;
-    yPos = midPos[1] - size/2;
-
-    this->rect = getRect();
     life = 3000;
     creationTime = SDL_GetTicks();
 
     vAngle = shotHeadingAngle;
     
     double colRadiusOffset = 0.3;
+    int size = 20;
     colRadius = size * colRadiusOffset;
+    this->width = size;
+    this->height = size;
 
     colObjects.push_back(*this);
 }
@@ -290,20 +267,16 @@ void Shot::update(int windowWidth, int windowHeight)
     midPos[0] += velocity[0];
     midPos[1] += velocity[1];
     midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
-    xPos = midPos[0] - size / 2;
-    yPos = midPos[1] - size / 2;
-    rect.x = std::round(xPos);
-    rect.y = std::round(yPos);
 }
 
 void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
 {
+    SDL_Rect rect = getRect();
     SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
 }
 
 void shoot(Ship ship)
 {   
-
     std::vector<double> shotVelocityVector = {0, 0};
 
 
@@ -313,7 +286,7 @@ void shoot(Ship ship)
     shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
     shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
 
-    Shot shot = Shot(ship.midPos, shotVelocityVector, ship.shipAngle);
+    Shot shot = Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
     shots.push_back(shot);
 }
 
@@ -382,17 +355,16 @@ void handleDistruction(Asteroid destroyedAsteroid)
     std::vector<float> oldVelocity (destroyedAsteroid.velocity.begin(), destroyedAsteroid.velocity.end());
 
     std::vector<float> spawnDirection = rotate2DVector(oldVelocity, 90);
-    spawnDirection  = set2DVectorLength(spawnDirection,newAsteroid1.size/2);
+    int newAsteroid1Size = newAsteroid1.width;
+    spawnDirection = set2DVectorLength(spawnDirection, newAsteroid1Size / 2);
     newAsteroid1.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
     newAsteroid1.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
-    newAsteroid1.xPos = newAsteroid1.midPos[0] - newAsteroid1.size/2;
-    newAsteroid1.yPos = newAsteroid1.midPos[1] - newAsteroid1.size/2;
 
+    int newAsteroid2Size = newAsteroid2.width;
     spawnDirection = rotate2DVector(spawnDirection, 180);
+    spawnDirection = set2DVectorLength(spawnDirection, newAsteroid2Size / 2);
     newAsteroid2.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
     newAsteroid2.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
-    newAsteroid2.xPos = newAsteroid2.midPos[0] - newAsteroid2.size/2;
-    newAsteroid2.yPos = newAsteroid2.midPos[1] - newAsteroid2.size/2;
     
     newAsteroid1.velocity = {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2};
     newAsteroid2.velocity = {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2};

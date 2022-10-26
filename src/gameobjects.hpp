@@ -13,17 +13,18 @@ class Gameobject
 {
     private:
         static int newId;
+    protected:
+        SDL_Rect getRect();
     public:
+        int width;
+        int height;
         int id;
         Gameobject() : id(newId++) {};
-        double xPos, yPos;
+        // double xPos, yPos;
         double colRadius;
         std::vector<double> velocity {0, 0};
         std::vector<double> midPos {0, 0};
-        SDL_Rect rect;
         bool isVisible = true;
-        //virtual void draw(); TODO 
-        //virtual void update(); TODO
 };
 
 
@@ -33,14 +34,12 @@ class Ship : public Gameobject
         double vMax = 20;
         double roatatingSpeed = 2.0;
         double thrust = 0.05;
-        int size;
-        SDL_Rect getRect();
         Uint32 lastUpdated;
         int animationCounter;
     public:
         double shipAngle;
         Ship();
-        Ship(double xPos, double yPos, int size);
+        Ship(double midPosX, double midPosY, int size);
         void update(ControlBools controlBools, int windowWidth, int windowHeight);
         void render(SDL_Renderer*renderer, SDL_Texture *shipTex);
         double getMaxVelocity(){return vMax;};
@@ -52,15 +51,11 @@ enum class AsteroidSizeType { Small, Medium };
 
 class Asteroid : public Gameobject
 {
-    private:
-        
     public:
-        SDL_Rect getRect();
-        int size;
         AsteroidSizeType sizeType;
-        //SDL_Rect rect;
         Asteroid(AsteroidSizeType sizeType);
         void update(int windowWidth, int windowHeight);
+        void render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
 };
 
 //void initShip(int windowWidth, int windowHeight);
@@ -71,12 +66,10 @@ void handleDistruction(Asteroid destoryedAsteroid);
 class Shot : public Gameobject
 {
     private:
-        SDL_Rect getRect();
-        int size;
         int life;
         double vAngle;
     public:
-        Shot(std::vector<double> midPos, std::vector<double> velocity, double shotHeadingAngle);
+        Shot(double midPosX, double midPosY, std::vector<double> velocity, double shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight);
         void render(SDL_Renderer*renderer, SDL_Texture *shotTex);

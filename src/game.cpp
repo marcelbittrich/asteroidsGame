@@ -291,33 +291,20 @@ void Game::render()
     gameBackground.render(renderer);   
 
     for(Asteroid &asteroid: asteroids) {
-        SDL_Texture* asteroidTex = nullptr;
-        if (asteroid.sizeType == AsteroidSizeType::Medium) {
-            asteroidTex = asteroidTexMedium;
-        } else if (asteroid.sizeType == AsteroidSizeType::Small) {
-            asteroidTex = asteroidTexSmall;
-        } else {
-            throw std::runtime_error("Unknown AsteroidSizeType for rendering");
-        }
-        if (asteroid.isVisible)
-        {   
-            SDL_Rect asteroidRect = asteroid.getRect();
-            SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
-        }
-        SDL_SetRenderDrawColor(renderer,0,0,255,255);
-        //drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
+        asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
+        // SDL_SetRenderDrawColor(renderer,0,0,255,255);
+        // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
 
     for (Shot &singleShot: shots)
     {
-        SDL_SetRenderDrawColor(renderer,0,255,0,255);
-        //drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
         singleShot.render(renderer,shotTex);
+        // SDL_SetRenderDrawColor(renderer,0,255,0,255);
+        // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
     
     ship.render(renderer, shipTex);
-
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
     
     std::string scoreString = std::to_string(score);
@@ -334,9 +321,7 @@ void Game::render()
     SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
     SDL_DestroyTexture(Message);
     
-    
     SDL_RenderPresent(renderer);
-  
 }
 
 void Game::clean()

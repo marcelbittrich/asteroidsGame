@@ -2,9 +2,9 @@
 
 Ship initShip(int windowWidth, int windowHeight){
     int size = 50;
-    double shipPosX = windowWidth/2-size/2;
-    double shipPosY = windowHeight/2-size/2;
-    return Ship(shipPosX, shipPosY, size);
+    double midPosX = windowWidth/2;
+    double midPosY = windowHeight/2;
+    return Ship(midPosX, midPosY, size);
 }
 
 SDL_Point getRandomPosition(
@@ -50,8 +50,6 @@ void initSingleAsteroid(std::vector<Gameobject> &gameObjects, int windowWidth, i
     SDL_Point randomPosition = getRandomPosition(
         windowWidth, windowHeight, asteroid, gameObjects
     );
-    asteroid.xPos = randomPosition.x - asteroid.size / 2;
-    asteroid.yPos = randomPosition.y - asteroid.size / 2;
     asteroid.midPos[0] = randomPosition.x;
     asteroid.midPos[1] = randomPosition.y;
     asteroid.velocity = {randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((double)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
