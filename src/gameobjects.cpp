@@ -219,7 +219,7 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
         // parallel component for object 2 
         std::vector<float> vp2 = {normal[0] * f2, normal[1] * f2};
         // vertical component for object 2
-        std::valarray<float> vv2 = {secondObject.velocity[0] - vp2[0], secondObject.velocity[1] - vp2[1]};
+        std::vector<float> vv2 = {secondObject.velocity[0] - vp2[0], secondObject.velocity[1] - vp2[1]};
 
         int weightObject1 = PI * firstObject.colRadius * firstObject.colRadius;
         int weightObject2 = PI * secondObject.colRadius * secondObject.colRadius;
@@ -239,10 +239,10 @@ void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
             vp2[0] = weightFactorX - vp2[0];
             vp2[1] = weightFactorY - vp2[1];
 
-            firstObject.velocity[0] = vv1[0] + vp2[0];
-            firstObject.velocity[1] = vv1[1] + vp2[1];
-            secondObject.velocity[0] = vv2[0] + vp1[0];
-            secondObject.velocity[1] = vv2[1] + vp1[1];
+            firstObject.velocity[0] = vv1[0] + vp1[0];
+            firstObject.velocity[1] = vv1[1] + vp1[1];
+            secondObject.velocity[0] = vv2[0] + vp2[0];
+            secondObject.velocity[1] = vv2[1] + vp2[1];
         }
     }
 }
