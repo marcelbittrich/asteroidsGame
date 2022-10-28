@@ -36,10 +36,8 @@ At this moment we use the following file structure:
 These are our future objective in no particular order:
 
 - [ ] Make a fun game!
-- [ ] Add shots to split or destroy asteroids
 - [ ] Make them all move and spawn at random positions
 - [ ] Add collectable items
-- [ ] Separate calculation from framerate
 - [ ] Add score and menu 
 
 ## Accomplished goals
@@ -51,6 +49,8 @@ Already implemented are the following:
 - [x] Rendering of small asteroids
 - [x] Simple circle-shaped hit detection and debugging option
 - [x] Add bigger asteroids
+- [x] Add shots to split or destroy asteroids
+- [x] Separate calculation from framerate
 
 ## How to try it
 
