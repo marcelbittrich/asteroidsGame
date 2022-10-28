@@ -2,8 +2,6 @@
 
 #define PI 3.14159265359
 
-#include <valarray>
-
 
 int Gameobject::newId = 0;
 
@@ -33,7 +31,7 @@ Ship::Ship() : Gameobject()
 }
 
 
-void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
+void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, float *deltaTime)
 {
 
     float deltaX = 0;
@@ -61,23 +59,25 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight)
         }
     }
 
-    velocity.at(0) += deltaX;
-    velocity.at(1) += deltaY;
+    //std::cout << game.frameTime << std::endl;
+
+    velocity.at(0) += deltaX * *deltaTime * 60;
+    velocity.at(1) += deltaY * *deltaTime * 60;
 
 
     if (controlBools.isTurningRight)
     {
-        shipAngle += roatatingSpeed;
+        shipAngle += roatatingSpeed * *deltaTime * 60;
     }
 
     if (controlBools.isTurningLeft)
     {
-        shipAngle -= roatatingSpeed;
+        shipAngle -= roatatingSpeed * *deltaTime * 60;
     }
 
-    midPos[0] += velocity[0];
-    midPos[1] += velocity[1];
-    // std::cout <<"Updated velocity: "<< velocity << " xPos: " << destR.x << " yPos: " << destR.y << std::endl;
+    midPos[0] += velocity[0] * *deltaTime * 60;
+    midPos[1] += velocity[1] * *deltaTime * 60;
+    std::cout <<"DeltaTime: "<< *deltaTime << std::endl;
 
     midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
 
@@ -121,12 +121,12 @@ Asteroid::Asteroid(AsteroidSizeType sizeType) : Gameobject()
     this->height = size;
 }
 
-void Asteroid::update(int windowWidth, int windowHeight)
+void Asteroid::update(int windowWidth, int windowHeight, float* deltaTime)
 {
     if (isVisible)
     {
-        midPos[0] += velocity[0];
-        midPos[1] += velocity[1];
+        midPos[0] += velocity[0] * *deltaTime * 60;
+        midPos[1] += velocity[1] * *deltaTime * 60;
     }
     std::vector<float> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
     if (midPos != newMidPosistion)
@@ -266,10 +266,10 @@ Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shot
     colObjects.push_back(*this);
 }
 
-void Shot::update(int windowWidth, int windowHeight)
+void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
 {
-    midPos[0] += velocity[0];
-    midPos[1] += velocity[1];
+    midPos[0] += velocity[0] * *deltaTime * 60;
+    midPos[1] += velocity[1] * *deltaTime * 60;
     midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 }
 

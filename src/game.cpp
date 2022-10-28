@@ -25,6 +25,8 @@ std::vector<Gameobject> colObjects;
 SDL_Rect Message_rect;
 SDL_Texture* Message;
 
+Uint32 lastUpdateTime = SDL_GetTicks();
+
 Game::Game()
 {}
 Game::~Game()
@@ -62,7 +64,6 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     } else {
         isRunning = false;
     }
-    
 
     printf("%i joysticks were found.\n", SDL_NumJoysticks() );
     for (int i = 1; i <= SDL_NumJoysticks(); ++i) {
@@ -143,25 +144,28 @@ void Game::handleEvents()
 
 void Game::update()
 {
+    Uint32 currentTime = SDL_GetTicks();
+    float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
+
     colObjects.clear();
 
-    ship.update(controlBools,windowWidth,windowHeight);
+    ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
     for(Asteroid &asteroid : asteroids)
     {
-        asteroid.update(windowWidth,windowHeight);
+        asteroid.update(windowWidth, windowHeight, &deltaTime);
     }
 
     // Check Ship Collision
     for(const Asteroid &asteroid : asteroids)
     {
-        if (doesCollide(ship,asteroid))
+        if (doesCollide(ship, asteroid))
         {
             // std::cout << "Collision!!!!!!" << std::endl;
-            ship.midPos[0] = windowWidth/2;
-            ship.midPos[1] = windowHeight/2;
-            ship.velocity = {0,0};
+            ship.midPos[0] = windowWidth / 2;
+            ship.midPos[1] = windowHeight / 2;
+            ship.velocity = {0, 0};
         }
         
     }
@@ -217,13 +221,13 @@ void Game::update()
         }
     }
 
-    //Destroy Shots
-    for (auto it = shots.begin(); it != shots.end(); it++)
-    {   
-        it->update(windowWidth, windowHeight);
+    //Update Shots
+    for (Shot &singleShot: shots)
+    {
+        singleShot.update(windowWidth, windowHeight, &deltaTime);
     }
 
-
+    //Destroy Shots
     if (!shots.empty())
     {
         auto firstShot = shots.begin();
@@ -271,16 +275,16 @@ void Game::update()
 
     //Fill colObjects vector
     colObjects.push_back(ship);
-    colObjects.insert(colObjects.end(),shots.begin(),shots.end()); 
-    colObjects.insert(colObjects.end(),asteroids.begin(),asteroids.end());
+    colObjects.insert(colObjects.end(), shots.begin(), shots.end()); 
+    colObjects.insert(colObjects.end(), asteroids.begin(), asteroids.end());
 
 
     //Uint32 UpdateStart = SDL_GetTicks();
-    gameBackground.update(colObjects);
+    gameBackground.update(colObjects, &deltaTime);
     //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
 
     //std::cout << UpdateTime << std::endl;
-
+    lastUpdateTime = currentTime;
 }
 
 void Game::render()

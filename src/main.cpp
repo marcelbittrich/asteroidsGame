@@ -14,7 +14,7 @@ int main(int argc,char * argv[])
 {
 
 	const int FPS = 60;
-	const float frameDelay = 1000.0f/FPS;
+	const float frameCapTime = 1000.0f/FPS;
 
 	game = new Game();
 
@@ -31,19 +31,20 @@ int main(int argc,char * argv[])
 		game->render();
 		Uint32 renderTime = SDL_GetTicks() - updateTime - game->frameStart;
 
-		game->frameTime = SDL_GetTicks() - game->frameStart;
+		Uint32 loopTime = SDL_GetTicks() - game->frameStart;
 
-		if(game->frameTime < frameDelay)
+		if(loopTime < frameCapTime)
 		{
-			SDL_Delay((int)(frameDelay - game->frameTime));
+			SDL_Delay((int)(frameCapTime - loopTime));
 		}
-		Uint32 delayedFrameTime = SDL_GetTicks() - game->frameStart;
+
+		game->frameTime = SDL_GetTicks() - game->frameStart;
 
 		if (showUpdateTime) std::cout << "Update Time: " << updateTime << " ";
 		if (showRenderTime) std::cout << "Render Time: " << renderTime << " ";
-		if (showFrameTime) std::cout << "Frame Time: " << game->frameTime << " ";
-		if (showDelayedFrameTime) std::cout << "Delayed Frame Time: " << delayedFrameTime << " ";
-		if (showFPS) std::cout << "FPS: " << 1000/delayedFrameTime << " ";
+		if (showFrameTime) std::cout << "Frame Time: " << loopTime  << " ";
+		if (showDelayedFrameTime) std::cout << "Delayed Frame Time: " << game->frameTime << " ";
+		if (showFPS) std::cout << "FPS: " << 1000/game->frameTime << " ";
  		if (showUpdateTime || showRenderTime|| showFrameTime || showDelayedFrameTime || showFPS) std::cout << std::endl;
 	};
 	

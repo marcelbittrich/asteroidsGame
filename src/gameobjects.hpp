@@ -39,7 +39,7 @@ class Ship : public Gameobject
         float shipAngle = 0;
         Ship();
         Ship(float midPosX, float midPosY, int size);
-        void update(ControlBools controlBools, int windowWidth, int windowHeight);
+        void update(ControlBools controlBools, int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *shipTex);
         float getMaxVelocity(){return vMax;};
 };
@@ -53,7 +53,7 @@ class Asteroid : public Gameobject
     public:
         AsteroidSizeType sizeType;
         Asteroid(AsteroidSizeType sizeType);
-        void update(int windowWidth, int windowHeight);
+        void update(int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
 };
 
@@ -70,7 +70,7 @@ class Shot : public Gameobject
     public:
         Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle);
         Uint32 creationTime;
-        void update(int windowWidth, int windowHeight);
+        void update(int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *shotTex);
 };
 

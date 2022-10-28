@@ -20,7 +20,7 @@ bgPoint::bgPoint(int xPos, int yPos)
     onOrigin = true;
 }
 
-void bgPoint::returnToOrigin(){
+void bgPoint::returnToOrigin(float *deltaTime){
     float minVelocity = 0.5;
     float steepness = 0.005;
     float distance; 
@@ -36,7 +36,7 @@ void bgPoint::returnToOrigin(){
     float distanceDependentVelocity = steepness*pow(distance,2);
 
     float getBackVelocity;
-    getBackVelocity = std::max(minVelocity,distanceDependentVelocity);
+    getBackVelocity = std::max(minVelocity,distanceDependentVelocity) * *deltaTime * 60;
 
     vChange.push_back(nDistance[0] * getBackVelocity);
     vChange.push_back(nDistance[1] * getBackVelocity);
@@ -123,7 +123,7 @@ background::background(int windowWidth, int windowHeight, int divider)
     }  
 }
 
-void background::update(std::vector<Gameobject>colObjects)
+void background::update(std::vector<Gameobject>colObjects, float *updateTime)
 {   
     for (const Gameobject &object:colObjects)
     {
@@ -155,7 +155,7 @@ void background::update(std::vector<Gameobject>colObjects)
         for (bgPoint &singleBgPoint : bgPointColumn)
             if (!singleBgPoint.onOrigin)
             {   
-                singleBgPoint.returnToOrigin();
+                singleBgPoint.returnToOrigin(updateTime);
             }    
     }
 }

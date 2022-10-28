@@ -20,7 +20,7 @@ public:
     
     void update(Gameobject colObject);
     void render(SDL_Renderer *renderer);
-    void returnToOrigin();
+    void returnToOrigin(float *deltaTime);
 };
 
 class background
@@ -31,7 +31,7 @@ private:
 public:
     background();
     background(int windowWidth, int windowHeight, int divider);
-    void update(std::vector<Gameobject>colObjects);
+    void update(std::vector<Gameobject>colObjects, float *deltaTime);
     void render(SDL_Renderer *renderer);
 
     //debug
