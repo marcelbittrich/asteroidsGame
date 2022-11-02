@@ -18,7 +18,7 @@ public:
     bgPoint();
     bgPoint(int xPos, int yPos);
     
-    void update(Gameobject colObject);
+    void update(GameObject colObject);
     void render(SDL_Renderer *renderer);
     void returnToOrigin(float *deltaTime);
 };
@@ -31,7 +31,7 @@ private:
 public:
     background();
     background(int windowWidth, int windowHeight, int divider);
-    void update(std::vector<Gameobject>colObjects, float *deltaTime);
+    void update(std::vector<GameObject>colObjects, float *deltaTime);
     void render(SDL_Renderer *renderer);
 
     //debug

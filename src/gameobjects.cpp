@@ -3,9 +3,9 @@
 #define PI 3.14159265359
 
 
-int Gameobject::newId = 0;
+int GameObject::newId = 0;
 
-SDL_Rect Gameobject::getRect()
+SDL_Rect GameObject::getRect()
 {
     SDL_Rect rect;
     rect.w = width;
@@ -15,7 +15,7 @@ SDL_Rect Gameobject::getRect()
     return rect;
 }
 
-Ship::Ship(float midPosX, float midPosY, int size) : Gameobject()
+Ship::Ship(float midPosX, float midPosY, int size) : GameObject()
 {
     this->width = size;
     this->height = size;
@@ -25,7 +25,7 @@ Ship::Ship(float midPosX, float midPosY, int size) : Gameobject()
     animationCounter = 0;
 }
 
-Ship::Ship() : Gameobject()
+Ship::Ship() : GameObject()
 {
 
 }
@@ -108,7 +108,7 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 }
 
 
-Asteroid::Asteroid(AsteroidSizeType sizeType) : Gameobject()
+Asteroid::Asteroid(AsteroidSizeType sizeType) : GameObject()
 {
     int size;
     this->sizeType = sizeType;
@@ -155,7 +155,7 @@ void Asteroid::render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_
 }
 
 
-bool doesCollide(Gameobject firstObject, Gameobject secondObject)
+bool doesCollide(GameObject firstObject, GameObject secondObject)
 {
     if (!firstObject.isVisible || !secondObject.isVisible) return false;
     float distance;
@@ -173,7 +173,7 @@ struct CollisionOccurrence {
 
 std::vector<CollisionOccurrence> recentCollisions = {};
 
-bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
+bool didRecentlyCollide(GameObject firstObject, GameObject secondObject)
 {
     for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it ++)
     {
@@ -196,7 +196,7 @@ bool didRecentlyCollide(Gameobject firstObject, Gameobject secondObject)
     return false;
 }
 
-void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject)
+void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
 {
     if (doesCollide(firstObject, secondObject) && !didRecentlyCollide(firstObject, secondObject))
     {

@@ -57,7 +57,7 @@ void bgPoint::returnToOrigin(float *deltaTime){
     }
 }
 
-void bgPoint::update(Gameobject colObject)
+void bgPoint::update(GameObject colObject)
 {   
     float squareDistance; 
     float squareColRadius;
@@ -123,9 +123,9 @@ background::background(int windowWidth, int windowHeight, int divider)
     }  
 }
 
-void background::update(std::vector<Gameobject>colObjects, float *updateTime)
+void background::update(std::vector<GameObject>colObjects, float *updateTime)
 {   
-    for (const Gameobject &object:colObjects)
+    for (const GameObject &object:colObjects)
     {
         //Size of grid divisions
         int divX = width/divider;

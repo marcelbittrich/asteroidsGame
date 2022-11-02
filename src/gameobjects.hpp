@@ -9,7 +9,7 @@
 #include "handleinput.hpp"
 
 
-class Gameobject
+class GameObject
 {
     private:
         static int newId;
@@ -19,7 +19,7 @@ class Gameobject
         int width;
         int height;
         int id;
-        Gameobject() : id(newId++) {};
+        GameObject() : id(newId++) {};
         float colRadius;
         std::vector<float> velocity {0, 0};
         std::vector<float> midPos {0, 0};
@@ -27,7 +27,7 @@ class Gameobject
 };
 
 
-class Ship : public Gameobject
+class Ship : public GameObject
 {
     private:
         float vMax = 20;
@@ -48,7 +48,7 @@ class Ship : public Gameobject
 enum class AsteroidSizeType { Small, Medium };
 
 
-class Asteroid : public Gameobject
+class Asteroid : public GameObject
 {
     public:
         AsteroidSizeType sizeType;
@@ -58,11 +58,11 @@ class Asteroid : public Gameobject
 };
 
 //void initShip(int windowWidth, int windowHeight);
-bool doesCollide(Gameobject firstObject, Gameobject secondObject);
-void asteroidsCollide(Gameobject &firstObject, Gameobject &secondObject);
+bool doesCollide(GameObject firstObject, GameObject secondObject);
+void asteroidsCollide(GameObject &firstObject, GameObject &secondObject);
 void handleDistruction(Asteroid destoryedAsteroid);
 
-class Shot : public Gameobject
+class Shot : public GameObject
 {
     private:
         int life;
@@ -81,7 +81,7 @@ std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int
 
 //extern Ship ship;
 extern std::vector<Shot> shots;
-extern std::vector<Gameobject> colObjects;
+extern std::vector<GameObject> colObjects;
 extern std::vector<Asteroid> asteroids;
 
 #endif

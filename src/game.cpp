@@ -20,7 +20,7 @@ background gameBackground;
 std::vector<double> velocity = {0.0, 0.0};
 std::vector<Asteroid> asteroids;
 std::vector<Shot> shots;
-std::vector<Gameobject> colObjects;
+std::vector<GameObject> colObjects;
 
 SDL_Rect Message_rect;
 SDL_Texture* Message;

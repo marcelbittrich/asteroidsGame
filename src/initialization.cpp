@@ -10,18 +10,18 @@ Ship initShip(int windowWidth, int windowHeight){
 SDL_Point getRandomPosition(
     int windowWidth,
     int windowHeight,
-    Gameobject newGameobject,
-    std::vector<Gameobject> gameobjects
+    GameObject newGameObject,
+    std::vector<GameObject> gameObjects
 ) {
     int maxTries = 10000;
     for (int i = 0; i < maxTries; i++) {
         int x = rand() % windowWidth;
         int y = rand() % windowHeight;
         bool success = true;
-        for (const Gameobject &gameobject : gameobjects)
+        for (const GameObject &gameObject : gameObjects)
         {
-            float distance = sqrt(std::pow(gameobject.midPos[0] - x, 2) + std::pow(gameobject.midPos[1] - y, 2));
-            if (distance < gameobject.colRadius + newGameobject.colRadius) {
+            float distance = sqrt(std::pow(gameObject.midPos[0] - x, 2) + std::pow(gameObject.midPos[1] - y, 2));
+            if (distance < gameObject.colRadius + newGameObject.colRadius) {
                 std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
                 break;
@@ -41,7 +41,7 @@ float randomSign(){
 }
 
 
-void initSingleAsteroid(std::vector<Gameobject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
+void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
 {
     int asteroidMinVel = 0;
     int asteroidMaxVel = 100;
@@ -59,11 +59,11 @@ void initSingleAsteroid(std::vector<Gameobject> &gameObjects, int windowWidth, i
     colObjects.push_back(asteroid);
 }
 
-void initAsteroids(Gameobject ship, int windowWidth, int windowHeight)
+void initAsteroids(GameObject ship, int windowWidth, int windowHeight)
 {
     int asteroidAmountSmall = 10;
     int asteroidAmountMedium = 10;
-    std::vector<Gameobject> gameObjects = {ship};
+    std::vector<GameObject> gameObjects = {ship};
     for (int i=0; i < asteroidAmountSmall; i++)
     {
         initSingleAsteroid(gameObjects, windowWidth, windowHeight, AsteroidSizeType::Small);
