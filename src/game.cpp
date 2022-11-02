@@ -129,6 +129,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     Message_rect.h = 25; 
     
     score = 0;
+    lastUpdateTime = SDL_GetTicks();
 }
 
 void Game::handleEvents()
