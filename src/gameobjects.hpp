@@ -55,6 +55,7 @@ class Asteroid : public GameObject
         Asteroid(AsteroidSizeType sizeType);
         void update(int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
+        static std::vector<Asteroid> asteroids;
 };
 
 //void initShip(int windowWidth, int windowHeight);
@@ -68,6 +69,7 @@ class Shot : public GameObject
         int life;
         float vAngle = 0;
     public:
+        static std::vector<Shot*> shots;
         Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight, float *deltaTime);
@@ -78,11 +80,6 @@ void shoot(Ship ship);
 bool shotIsToOld (Shot shot);
 std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 
-
-//extern Ship ship;
-extern std::vector<Shot> shots;
-extern std::vector<GameObject> colObjects;
-extern std::vector<Asteroid> asteroids;
 
 #endif
 

@@ -2,7 +2,6 @@
 
 #define PI 3.14159265359
 
-
 int GameObject::newId = 0;
 
 SDL_Rect GameObject::getRect()
@@ -77,7 +76,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
 
     midPos[0] += velocity[0] * *deltaTime * 60;
     midPos[1] += velocity[1] * *deltaTime * 60;
-    std::cout <<"DeltaTime: "<< *deltaTime << std::endl;
 
     midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
 
@@ -106,6 +104,8 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
     
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
 }
+
+std::vector<Asteroid> Asteroid::asteroids;
 
 
 Asteroid::Asteroid(AsteroidSizeType sizeType) : GameObject()
@@ -247,6 +247,8 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     }
 }
 
+std::vector<Shot*> Shot::shots;
+
 Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)
 {
     this->velocity = velocity;
@@ -263,7 +265,7 @@ Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shot
     this->width = size;
     this->height = size;
 
-    colObjects.push_back(*this);
+    shots.push_back(this);
 }
 
 void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
@@ -290,8 +292,7 @@ void shoot(Ship ship)
     shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
     shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
 
-    Shot shot = Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
-    shots.push_back(shot);
+    new Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
 }
 
 bool shotIsToOld (Shot shot){   
@@ -373,8 +374,6 @@ void handleDistruction(Asteroid destroyedAsteroid)
     newAsteroid1.velocity = {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2};
     newAsteroid2.velocity = {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2};
 
-    asteroids.push_back(newAsteroid1);
-    asteroids.push_back(newAsteroid2);
-    colObjects.push_back(newAsteroid1);
-    colObjects.push_back(newAsteroid2);
+    Asteroid::asteroids.push_back(newAsteroid1);
+    Asteroid::asteroids.push_back(newAsteroid2);
 }

@@ -40,6 +40,4 @@ private:
     SDL_Renderer *renderer;
 };
 
-
-
 #endif /* game_hpp */

@@ -54,9 +54,8 @@ void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, i
     asteroid.midPos[1] = randomPosition.y;
     asteroid.velocity = {randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
     std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
-    asteroids.push_back(asteroid);
+    Asteroid::asteroids.push_back(asteroid);
     gameObjects.push_back(asteroid);
-    colObjects.push_back(asteroid);
 }
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)

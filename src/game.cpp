@@ -18,8 +18,6 @@ unsigned score;
 background gameBackground;
 
 std::vector<double> velocity = {0.0, 0.0};
-std::vector<Asteroid> asteroids;
-std::vector<Shot> shots;
 std::vector<GameObject> colObjects;
 
 SDL_Rect Message_rect;
@@ -148,18 +146,16 @@ void Game::update()
     Uint32 currentTime = SDL_GetTicks();
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
 
-    colObjects.clear();
-
     ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
-    for(Asteroid &asteroid : asteroids)
+    for(Asteroid &asteroid : Asteroid::asteroids)
     {
         asteroid.update(windowWidth, windowHeight, &deltaTime);
     }
 
     // Check Ship Collision
-    for(const Asteroid &asteroid : asteroids)
+    for(const Asteroid &asteroid : Asteroid::asteroids)
     {
         if (doesCollide(ship, asteroid))
         {
@@ -172,22 +168,22 @@ void Game::update()
     }
 
    // Check Asteroid Collision
-    for(decltype(asteroids.size()) i = 0; i != asteroids.size(); i++)
+    for(decltype(Asteroid::asteroids.size()) i = 0; i != Asteroid::asteroids.size(); i++)
     {
-        for (decltype(asteroids.size()) j = i+1; j != asteroids.size(); j++)
+        for (decltype(Asteroid::asteroids.size()) j = i+1; j != Asteroid::asteroids.size(); j++)
             {
                 //std::cout << "Kombination: " << i << ", " << j << std::endl;
-                asteroidsCollide(asteroids[i],asteroids[j]);
+                asteroidsCollide(Asteroid::asteroids[i], Asteroid::asteroids[j]);
             }
         
     }
-    for (Asteroid &asteroid : asteroids)
+    for (Asteroid &asteroid : Asteroid::asteroids)
     {
         if (!asteroid.isVisible)
         {
             asteroid.isVisible = true;
             bool canStayVisible = true;
-            for (Asteroid otherAsteroid : asteroids)
+            for (Asteroid otherAsteroid : Asteroid::asteroids)
             {
                 if (asteroid.id == otherAsteroid.id) continue;
                 if (doesCollide(asteroid, otherAsteroid))
@@ -207,13 +203,13 @@ void Game::update()
     //Make Shots
     if (controlBools.isShooting)
     {
-        if (shots.empty())
+        if (Shot::shots.empty())
         {
             shoot(ship);
         } else 
         {    
-            auto lastShot = shots.end()-1;
-            Shot lastShotEnt = *lastShot;
+            auto lastShot = Shot::shots.end()-1;
+            Shot lastShotEnt = **lastShot;
             Uint32 timeSinceLastShot;
             timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
             if(timeSinceLastShot > 100){
@@ -223,45 +219,47 @@ void Game::update()
     }
 
     //Update Shots
-    for (Shot &singleShot: shots)
+    for (Shot *singleShot: Shot::shots)
     {
-        singleShot.update(windowWidth, windowHeight, &deltaTime);
+        singleShot->update(windowWidth, windowHeight, &deltaTime);
     }
 
     //Destroy Shots
-    if (!shots.empty())
+    if (!Shot::shots.empty())
     {
-        auto firstShot = shots.begin();
-        if (shotIsToOld(*firstShot))
+        auto firstShot = Shot::shots.begin();
+        if (shotIsToOld(**firstShot))
         {
-            shots.erase(firstShot);
+            delete *firstShot;
+            Shot::shots.erase(firstShot);
         }
     }
 
-    auto it = shots.begin();
-    while (it != shots.end())
+    auto it = Shot::shots.begin();
+    while (it != Shot::shots.end())
     {   
         bool hit = false;
 
-        auto asteroidIt = asteroids.begin();
-        while (asteroidIt != asteroids.end())
+        auto asteroidIt = Asteroid::asteroids.begin();
+        while (asteroidIt != Asteroid::asteroids.end())
         {
-            if (doesCollide(*it, *asteroidIt))
+            if (doesCollide(**it, *asteroidIt))
             {
-                it = shots.erase(it);
+                delete *it;
+                it = Shot::shots.erase(it);
 
                 hit = true;
 
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
-                    asteroidIt = asteroids.erase(asteroidIt);
+                    asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;
                 }
                 else if (asteroidIt->sizeType == AsteroidSizeType::Medium)
                 {   
                     handleDistruction(*asteroidIt);  
-                    asteroidIt = asteroids.erase(asteroidIt);
+                    asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     break;
                 }
 
@@ -272,12 +270,17 @@ void Game::update()
 
         if(!hit) it++;
     } 
-    
+
 
     //Fill colObjects vector
+    colObjects.clear();
     colObjects.push_back(ship);
-    colObjects.insert(colObjects.end(), shots.begin(), shots.end()); 
-    colObjects.insert(colObjects.end(), asteroids.begin(), asteroids.end());
+    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it++)
+    {
+        colObjects.push_back(**it);
+    }
+    //colObjects.insert(colObjects.end(), *(Shot::shots.begin()), *(Shot::shots.end())); 
+    colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
 
 
     //Uint32 UpdateStart = SDL_GetTicks();
@@ -295,15 +298,17 @@ void Game::render()
 
     gameBackground.render(renderer);   
 
-    for(Asteroid &asteroid: asteroids) {
+    for(Asteroid &asteroid: Asteroid::asteroids) {
         asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
         // SDL_SetRenderDrawColor(renderer,0,0,255,255);
         // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
+    // Shot(200, 300, ship.velocity, 0);
 
-    for (Shot &singleShot: shots)
+    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
     {
-        singleShot.render(renderer,shotTex);
+        std::cout << "render" << std::endl;
+        (*it)->render(renderer,shotTex);
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
