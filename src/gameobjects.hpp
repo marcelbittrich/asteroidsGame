@@ -52,10 +52,12 @@ class Asteroid : public GameObject
 {
     public:
         AsteroidSizeType sizeType;
-        Asteroid(AsteroidSizeType sizeType);
+        Asteroid(float midPosX, float midPosY, std::vector<float> velocity, AsteroidSizeType sizeType);
         void update(int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
         static std::vector<Asteroid> asteroids;
+        static float getColRadius(int size);
+        static int getSize(AsteroidSizeType sizeType);
 };
 
 //void initShip(int windowWidth, int windowHeight);
@@ -69,7 +71,7 @@ class Shot : public GameObject
         int life;
         float vAngle = 0;
     public:
-        static std::vector<Shot*> shots;
+        static std::vector<Shot> shots;
         Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight, float *deltaTime);

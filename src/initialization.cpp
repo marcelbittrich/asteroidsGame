@@ -10,7 +10,7 @@ Ship initShip(int windowWidth, int windowHeight){
 SDL_Point getRandomPosition(
     int windowWidth,
     int windowHeight,
-    GameObject newGameObject,
+    float colRadius,
     std::vector<GameObject> gameObjects
 ) {
     int maxTries = 10000;
@@ -21,7 +21,7 @@ SDL_Point getRandomPosition(
         for (const GameObject &gameObject : gameObjects)
         {
             float distance = sqrt(std::pow(gameObject.midPos[0] - x, 2) + std::pow(gameObject.midPos[1] - y, 2));
-            if (distance < gameObject.colRadius + newGameObject.colRadius) {
+            if (distance < gameObject.colRadius + colRadius) {
                 std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
                 break;
@@ -46,15 +46,13 @@ void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, i
     int asteroidMinVel = 0;
     int asteroidMaxVel = 100;
     float asteroidVelMulti = 0.1;
-    Asteroid asteroid = Asteroid(sizeType);  
+    int size = Asteroid::getSize(sizeType);
+    float colRadius = Asteroid::getColRadius(size);
     SDL_Point randomPosition = getRandomPosition(
-        windowWidth, windowHeight, asteroid, gameObjects
+        windowWidth, windowHeight, colRadius, gameObjects
     );
-    asteroid.midPos[0] = randomPosition.x;
-    asteroid.midPos[1] = randomPosition.y;
-    asteroid.velocity = {randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
-    std::cout << "Asteroidgeschwidigkeit: " << asteroid.velocity[0] << ", " << asteroid.velocity[1] <<std::endl; 
-    Asteroid::asteroids.push_back(asteroid);
+    std::vector<float> velocity = {randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
+    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, velocity, sizeType);  
     gameObjects.push_back(asteroid);
 }
 

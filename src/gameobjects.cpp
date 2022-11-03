@@ -107,18 +107,31 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 
 std::vector<Asteroid> Asteroid::asteroids;
 
-
-Asteroid::Asteroid(AsteroidSizeType sizeType) : GameObject()
+int Asteroid::getSize(AsteroidSizeType sizeType)
 {
     int size;
-    this->sizeType = sizeType;
     if (sizeType == AsteroidSizeType::Small) size = 50;
     if (sizeType == AsteroidSizeType::Medium) size = 100;
+    return size;
+}
 
+float Asteroid::getColRadius(int size)
+{
     float colRadiusOffset = 0.6;
-    this->colRadius = size/2 * colRadiusOffset;
+    return size/2 * colRadiusOffset;
+}
+
+
+Asteroid::Asteroid(float midPosX, float midPosY, std::vector<float> velocity, AsteroidSizeType sizeType) : GameObject()
+{
+    this->midPos = {midPosX, midPosY};
+    this->sizeType = sizeType;
+    this->velocity = velocity;
+    int size = getSize(sizeType);
+    this->colRadius = getColRadius(size);
     this->width = size;
     this->height = size;
+    asteroids.push_back(*this);
 }
 
 void Asteroid::update(int windowWidth, int windowHeight, float* deltaTime)
@@ -247,7 +260,7 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     }
 }
 
-std::vector<Shot*> Shot::shots;
+std::vector<Shot> Shot::shots;
 
 Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)
 {
@@ -265,7 +278,7 @@ Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shot
     this->width = size;
     this->height = size;
 
-    shots.push_back(this);
+    shots.push_back(*this);
 }
 
 void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
@@ -292,7 +305,7 @@ void shoot(Ship ship)
     shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
     shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
 
-    new Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
+    Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
 }
 
 bool shotIsToOld (Shot shot){   
@@ -353,27 +366,26 @@ std::vector<float> rotate2DVector(std::vector<float> old2DVector, float angleInD
 
 void handleDistruction(Asteroid destroyedAsteroid)
 {
-    Asteroid newAsteroid1 = Asteroid(AsteroidSizeType::Small);
-    Asteroid newAsteroid2 = Asteroid(AsteroidSizeType::Small);
+    int newAsteroidSize = Asteroid::getSize(AsteroidSizeType::Small);
     
     auto oldMidPos = destroyedAsteroid.midPos;
     std::vector<float> oldVelocity = destroyedAsteroid.velocity;
 
     std::vector<float> spawnDirection = rotate2DVector(oldVelocity, 90);
-    int newAsteroid1Size = newAsteroid1.width;
-    spawnDirection = set2DVectorLength(spawnDirection, newAsteroid1Size / 2);
-    newAsteroid1.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
-    newAsteroid1.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
+    spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
+    Asteroid(
+        spawnDirection[0] + destroyedAsteroid.midPos[0],
+        spawnDirection[1] + destroyedAsteroid.midPos[1],
+        {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2},
+        AsteroidSizeType::Small
+    );
 
-    int newAsteroid2Size = newAsteroid2.width;
     spawnDirection = rotate2DVector(spawnDirection, 180);
-    spawnDirection = set2DVectorLength(spawnDirection, newAsteroid2Size / 2);
-    newAsteroid2.midPos[0] = spawnDirection[0] + destroyedAsteroid.midPos[0]; 
-    newAsteroid2.midPos[1] = spawnDirection[1] + destroyedAsteroid.midPos[1]; 
-    
-    newAsteroid1.velocity = {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2};
-    newAsteroid2.velocity = {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2};
-
-    Asteroid::asteroids.push_back(newAsteroid1);
-    Asteroid::asteroids.push_back(newAsteroid2);
+    spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
+    Asteroid(
+        spawnDirection[0] + destroyedAsteroid.midPos[0],
+        spawnDirection[1] + destroyedAsteroid.midPos[1],
+        {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2},
+        AsteroidSizeType::Small
+    );
 }

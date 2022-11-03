@@ -209,7 +209,7 @@ void Game::update()
         } else 
         {    
             auto lastShot = Shot::shots.end()-1;
-            Shot lastShotEnt = **lastShot;
+            Shot lastShotEnt = *lastShot;
             Uint32 timeSinceLastShot;
             timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
             if(timeSinceLastShot > 100){
@@ -219,18 +219,17 @@ void Game::update()
     }
 
     //Update Shots
-    for (Shot *singleShot: Shot::shots)
+    for (Shot &singleShot: Shot::shots)
     {
-        singleShot->update(windowWidth, windowHeight, &deltaTime);
+        singleShot.update(windowWidth, windowHeight, &deltaTime);
     }
 
     //Destroy Shots
     if (!Shot::shots.empty())
     {
         auto firstShot = Shot::shots.begin();
-        if (shotIsToOld(**firstShot))
+        if (shotIsToOld(*firstShot))
         {
-            delete *firstShot;
             Shot::shots.erase(firstShot);
         }
     }
@@ -243,9 +242,8 @@ void Game::update()
         auto asteroidIt = Asteroid::asteroids.begin();
         while (asteroidIt != Asteroid::asteroids.end())
         {
-            if (doesCollide(**it, *asteroidIt))
+            if (doesCollide(*it, *asteroidIt))
             {
-                delete *it;
                 it = Shot::shots.erase(it);
 
                 hit = true;
@@ -275,11 +273,7 @@ void Game::update()
     //Fill colObjects vector
     colObjects.clear();
     colObjects.push_back(ship);
-    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it++)
-    {
-        colObjects.push_back(**it);
-    }
-    //colObjects.insert(colObjects.end(), *(Shot::shots.begin()), *(Shot::shots.end())); 
+    colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end()); 
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
 
 
@@ -308,7 +302,7 @@ void Game::render()
     for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
     {
         std::cout << "render" << std::endl;
-        (*it)->render(renderer,shotTex);
+        it->render(renderer,shotTex);
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
