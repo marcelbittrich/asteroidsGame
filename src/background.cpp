@@ -89,12 +89,15 @@ void bgPoint::update(GameObject colObject)
 void bgPoint::render(SDL_Renderer *renderer)
 {
     float pointSizeScale = 1.5f;
-    SDL_RenderSetScale(renderer, pointSizeScale, pointSizeScale);
+    int logicWidth = 0;
+    int logicHeight = 0;
+    SDL_RenderGetLogicalSize(renderer, &logicWidth, &logicHeight);
+    SDL_RenderSetLogicalSize(renderer, round(logicWidth/pointSizeScale), round(logicHeight/pointSizeScale));
     int scaledPosX = round(renderPos.x/pointSizeScale); 
     int scaledPosY = round(renderPos.y/pointSizeScale); 
     SDL_SetRenderDrawColor(renderer, color[0], color[1], color[2], color[3]);
     SDL_RenderDrawPoint(renderer,scaledPosX,scaledPosY);
-    SDL_RenderSetScale(renderer, 1.0f, 1.0f);
+    SDL_RenderSetLogicalSize(renderer, logicWidth, logicHeight);
 }
 
 background::background()

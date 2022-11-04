@@ -43,18 +43,20 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         std::cout << "Subsystem Initialised!..." << std::endl;
         if(TTF_Init()) std::cout << "Font System Initialised!...";
 
-        window = SDL_CreateWindow(title, xpos, ypos, width, height, flags);
+        window = SDL_CreateWindow(title, xpos, ypos, width, height, SDL_WINDOW_RESIZABLE);
         if(window)
         {
             std::cout << "Window created" << std::endl;
-            windowWidth = SDL_GetWindowSurface(window)->w;
-            windowHeight = SDL_GetWindowSurface(window)->h;
+            windowWidth = 800;
+            windowHeight = 600;
         }
 
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer)
         {
-            SDL_SetRenderDrawColor(renderer,0,0,0,0);
+            SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
+            SDL_RenderSetLogicalSize(renderer,windowWidth,windowHeight);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
             SDL_RenderClear(renderer);
             std::cout << "Renderer created!" << std::endl;
         }
@@ -128,6 +130,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     
     score = 0;
     lastUpdateTime = SDL_GetTicks();
+
 }
 
 void Game::handleEvents()
@@ -303,7 +306,6 @@ void Game::render()
         // SDL_SetRenderDrawColor(renderer,0,0,255,255);
         // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
-    // Shot(200, 300, ship.velocity, 0);
 
     for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
     {
@@ -312,17 +314,17 @@ void Game::render()
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
-    
+
     ship.render(renderer, shipTex);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
-    
+
     std::string scoreString = std::to_string(score);
     int scoreTargetLength = 5;
     size_t fillLength = scoreTargetLength - scoreString.size();
     std::string fullScoreString (fillLength, '0'); 
     fullScoreString += scoreString;
-
+ 
     const char *pscore = fullScoreString.c_str();
     SDL_Color White = {255, 255, 255};
     SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, White); 
@@ -330,7 +332,7 @@ void Game::render()
     SDL_FreeSurface(surfaceMessage);
     SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
     SDL_DestroyTexture(Message);
-    
+
     SDL_RenderPresent(renderer);
 }
 
