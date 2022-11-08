@@ -311,8 +311,11 @@ void Game::update()
 
 void Game::render()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
+    SDL_Rect playArea = {0, 0, windowWidth, windowHeight};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderFillRect(renderer, &playArea);
 
     gameBackground.render(renderer);   
 
