@@ -26,6 +26,7 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
                 case SDLK_SPACE:
                     controlBools->isShooting = true;
+                    break;
                 default:
                     break;
             }
@@ -46,11 +47,33 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
                 case SDLK_SPACE:
                     controlBools->isShooting = false;
+                    break;
                 default:
                     break;
             }
             break;
-  
+
+        case SDL_MOUSEBUTTONDOWN:
+            switch (event.button.button)
+            {
+                case SDL_BUTTON_LEFT:
+                    controlBools->isLeftClicking = true;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case SDL_MOUSEBUTTONUP:
+            switch (event.button.button)
+            {
+                case SDL_BUTTON_LEFT:
+                    controlBools->isLeftClicking = false;
+                    break;    
+                default:
+                    break;
+            }
+            break;
+
         case SDL_CONTROLLERBUTTONDOWN:
             switch (event.cbutton.button)
             {
@@ -66,9 +89,10 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                 case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
                     controlBools->isShooting = true;
                     break;
+                default:
+                    break;
             }
             break;
-
         case SDL_CONTROLLERBUTTONUP:
             switch (event.cbutton.button)
             {
@@ -84,8 +108,11 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                 case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
                     controlBools->isShooting = false;
                     break;
+                default:
+                    break;
             }
             break;
+            
         default:
             break;
     }

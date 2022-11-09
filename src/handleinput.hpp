@@ -8,6 +8,7 @@ struct controlbools {
     bool isTurningRight;
     bool isTurningLeft;
     bool isShooting;
+    bool isLeftClicking;
 };
 typedef controlbools ControlBools;
 
