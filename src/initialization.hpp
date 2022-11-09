@@ -10,6 +10,8 @@
 Ship initShip(int windowWidth, int windowHeight);
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight);
 
+std::vector<float> getRandomVelocity (float minVelocity, float maxVelocity);
+
 # endif 
 
 

@@ -40,20 +40,30 @@ float randomSign(){
     return 1.0f; 
 }
 
+float getRandomValue (float min, float max)
+{
+    float randomValue = (rand() % 1001) / 1000.0f * (max - min);
+    return randomValue;
+}
+
+std::vector<float> getRandomVelocity (float minVelocity, float maxVelocity)
+{
+    std::vector<float> velocity = {0,0};
+    velocity[0] = randomSign() * getRandomValue(minVelocity, maxVelocity); 
+    velocity[1] = randomSign() * getRandomValue(minVelocity, maxVelocity);
+    return velocity;
+}
 
 void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
 {
-    int asteroidMinVel = 0;
-    int asteroidMaxVel = 100;
-    float asteroidVelMulti = 0.1;
+    float asteroidMinVel = 0;
+    float asteroidMaxVel = 1;
     int size = Asteroid::getSize(sizeType);
     float colRadius = Asteroid::getColRadius(size);
     SDL_Point randomPosition = getRandomPosition(
         windowWidth, windowHeight, colRadius, gameObjects
     );
-    std::vector<float> velocity = {randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10,randomSign()*asteroidVelMulti*((float)(rand() % (asteroidMaxVel-asteroidMinVel) + asteroidMinVel))/10};
-    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, velocity, sizeType);  
-    gameObjects.push_back(asteroid);
+    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, getRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);  
 }
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)

@@ -16,17 +16,18 @@ We try to separate the code in a sensible manner. Our goal is to keep it as easy
 At this moment we use the following file structure:
 
     .
-    ├── SDL2                    # All SDL files
-    ├── build                   # Compiled files with necessary dll files
-    ├── img                     # Files to creat textures for the gameobjects
-    ├── src                     # Source files
-    │   ├── main.cpp                # Main function with gameloop
-    │   ├── game.cpp                # Init, handleEvents, update, render and clear functions
-    │   ├── handleinput.cpp         # Gamepad and keyboard input handling
-    │   ├── gameobjects.cpp         # All gameobjects with collision
-    │   ├── initialization.cpp      # Functions to initialize gameobjects   
-    │   ├── background.cpp          # Matrix of points to visualize movement
-    │   └── shapes.cpp              # Simple shapes for debugging
+    ├── SDL2                    # all SDL files
+    ├── build                   # compiled files with necessary dll files
+    ├── img                     # files to creat textures for the gameobjects
+    ├── src                     # source files
+    │   ├── main                # main function with gameloop
+    │   ├── game                # init, handleEvents, update, render and clear functions
+    │   ├── handleinput         # gamepad, mouse and keyboard input handling
+    │   ├── gameobjects         # all gameobjects with collision
+    │   ├── initialization      # functions to initialize gameobjects   
+    │   ├── background          # matrix of points to visualize movement
+    │   ├── shapes              # simple shapes for debugging
+    │   └── UIelements          # all UI elements 
     ├── .gitignore
     └── README.md
 
@@ -35,10 +36,10 @@ At this moment we use the following file structure:
 
 These are our future objective in no particular order:
 
-- [ ] Make a fun game!
-- [ ] Make them all move and spawn at random positions
+- [ ] Make asteroids move and spawn at random positions
 - [ ] Add collectable items
 - [ ] Add score and menu 
+- [ ] Finish with a fun game!
 
 ## Accomplished goals
 
@@ -46,8 +47,8 @@ Already implemented are the following:
 
 - [x] Controllable ship with animations
 - [x] Keyboard and gamepad input handling
-- [x] Rendering of small asteroids
-- [x] Simple circle-shaped hit detection and debugging option
+- [x] Rendering of asteroids
+- [x] circle-shaped collision detection and debugging option
 - [x] Add bigger asteroids
 - [x] Add shots to split or destroy asteroids
 - [x] Separate calculation from framerate

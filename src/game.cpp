@@ -25,6 +25,13 @@ SDL_Texture* Message;
 
 Uint32 lastUpdateTime = SDL_GetTicks();
 
+int shotCounter = 0;
+int maxShotCounter = 1000;
+bool canShoot = true;
+ShotMeter shotMeter;
+
+bool newClick = true;
+
 Game::Game()
 {}
 Game::~Game()
@@ -43,18 +50,20 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         std::cout << "Subsystem Initialised!..." << std::endl;
         if(TTF_Init()) std::cout << "Font System Initialised!...";
 
-        window = SDL_CreateWindow(title, xpos, ypos, width, height, flags);
+        window = SDL_CreateWindow(title, xpos, ypos, width, height, SDL_WINDOW_RESIZABLE);
         if(window)
         {
             std::cout << "Window created" << std::endl;
-            windowWidth = SDL_GetWindowSurface(window)->w;
-            windowHeight = SDL_GetWindowSurface(window)->h;
+            windowWidth = 1280;
+            windowHeight = 720;
         }
 
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer)
         {
-            SDL_SetRenderDrawColor(renderer,0,0,0,0);
+            SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
+            SDL_RenderSetLogicalSize(renderer,windowWidth,windowHeight);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
             std::cout << "Renderer created!" << std::endl;
         }
@@ -117,17 +126,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     colObjects.push_back(ship);
 
 
-    initAsteroids(ship, width, height);
+    initAsteroids(ship, windowWidth, windowHeight);
 
     Font = TTF_OpenFont("../font/joystix_monospace.ttf", 48);
 
-    Message_rect.x = 16;
-    Message_rect.y = 9;
-    Message_rect.w = 100; 
-    Message_rect.h = 25; 
-    
+    Message_rect = {16, 9, 100, 25};
     score = 0;
+
     lastUpdateTime = SDL_GetTicks();
+    //shotMeter = ShotMeter(16, 50, 204, 24);
+    shotMeter = ShotMeter(&ship, 0, 25, 40, 6);
 }
 
 void Game::handleEvents()
@@ -145,7 +153,24 @@ void Game::update()
 {
     Uint32 currentTime = SDL_GetTicks();
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
+    lastUpdateTime = currentTime;
 
+    if (controlBools.isLeftClicking && newClick)
+    {
+        newClick = false;
+        int mouseXPos, mouseYPos;
+        SDL_GetMouseState(&mouseXPos, &mouseYPos);
+        std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
+        spawnAsteroid(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 2.0f), AsteroidSizeType::Small, colObjects);
+    }
+    
+    if (!controlBools.isLeftClicking)
+    {
+        newClick = true;
+    }
+
+
+    // Update Ship
     ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
@@ -199,24 +224,36 @@ void Game::update()
         }
     }
     
-
     //Make Shots
-    if (controlBools.isShooting)
+    if (controlBools.isShooting && canShoot)
     {
         if (Shot::shots.empty())
         {
-            shoot(ship);
+            if(shotCounter < maxShotCounter)
+            {
+                shoot(ship);
+                shotCounter = shotCounter + 100;
+            }
         } else 
         {    
             auto lastShot = Shot::shots.end()-1;
             Shot lastShotEnt = *lastShot;
             Uint32 timeSinceLastShot;
             timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
-            if(timeSinceLastShot > 100){
+            if(timeSinceLastShot > 250 && shotCounter < maxShotCounter){
                 shoot(ship);
+                shotCounter = shotCounter + 100;            
             }
         }
     }
+
+    int shotDecay = 100;
+    shotCounter = std::max((int)(shotCounter - shotDecay * deltaTime), 0); 
+
+    if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
+    if (shotCounter >= maxShotCounter)                  canShoot = false;
+
+    shotMeter.update(shotCounter, maxShotCounter, &ship);
 
     //Update Shots
     for (Shot &singleShot: Shot::shots)
@@ -282,13 +319,15 @@ void Game::update()
     //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
 
     //std::cout << UpdateTime << std::endl;
-    lastUpdateTime = currentTime;
 }
 
 void Game::render()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
+    SDL_Rect playArea = {0, 0, windowWidth, windowHeight};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderFillRect(renderer, &playArea);
 
     gameBackground.render(renderer);   
 
@@ -297,7 +336,6 @@ void Game::render()
         // SDL_SetRenderDrawColor(renderer,0,0,255,255);
         // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
-    // Shot(200, 300, ship.velocity, 0);
 
     for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
     {
@@ -306,26 +344,27 @@ void Game::render()
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
-    
+
     ship.render(renderer, shipTex);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
-    
-    std::string scoreString = std::to_string(score);
+
+    std::string scoreString = std::to_string(colObjects.size());
     int scoreTargetLength = 5;
     size_t fillLength = scoreTargetLength - scoreString.size();
     std::string fullScoreString (fillLength, '0'); 
     fullScoreString += scoreString;
-
+ 
     const char *pscore = fullScoreString.c_str();
-    SDL_Color White = {255, 255, 255};
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, White); 
+    SDL_Color white = {255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, white); 
     Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
     SDL_FreeSurface(surfaceMessage);
     SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
     SDL_DestroyTexture(Message);
-    
-    SDL_RenderPresent(renderer);
+
+    // ShotMeter
+    shotMeter.render(renderer,canShoot);
 }
 
 void Game::clean()
