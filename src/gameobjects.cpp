@@ -247,6 +247,24 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     }
 }
 
+void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::vector<GameObject> gameobjects)
+{
+    Asteroid newAsteroid = Asteroid(sizeType);
+    newAsteroid.midPos = {(float)xPos, (float)yPos};
+    newAsteroid.velocity = velocity;
+
+    bool isSafeToSpawn = true;
+    for (auto it = gameobjects.begin(); it < gameobjects.end(); it++)
+    {
+        if (doesCollide(newAsteroid, *it))
+        {
+            isSafeToSpawn = false;
+            break;
+        }
+    }  
+    if (isSafeToSpawn) Asteroid::asteroids.push_back(newAsteroid);
+}
+
 std::vector<Shot*> Shot::shots;
 
 Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)

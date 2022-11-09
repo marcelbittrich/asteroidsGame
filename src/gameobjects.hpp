@@ -80,6 +80,7 @@ void shoot(Ship ship);
 bool shotIsToOld (Shot shot);
 std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 
+void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::vector<GameObject> gameobjects);
 
 #endif
 

@@ -30,6 +30,8 @@ int maxShotCounter = 1000;
 bool canShoot = true;
 ShotMeter shotMeter;
 
+bool newClick = true;
+
 Game::Game()
 {}
 Game::~Game()
@@ -151,7 +153,24 @@ void Game::update()
 {
     Uint32 currentTime = SDL_GetTicks();
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
+    lastUpdateTime = currentTime;
 
+    if (controlBools.isLeftClicking && newClick)
+    {
+        newClick = false;
+        int mouseXPos, mouseYPos;
+        SDL_GetMouseState(&mouseXPos, &mouseYPos);
+        std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
+        spawnAsteroid(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 2.0f), AsteroidSizeType::Small, colObjects);
+    }
+    
+    if (!controlBools.isLeftClicking)
+    {
+        newClick = true;
+    }
+
+
+    // Update Ship
     ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
@@ -306,7 +325,6 @@ void Game::update()
     //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
 
     //std::cout << UpdateTime << std::endl;
-    lastUpdateTime = currentTime;
 }
 
 void Game::render()
@@ -336,7 +354,7 @@ void Game::render()
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
-    std::string scoreString = std::to_string(score);
+    std::string scoreString = std::to_string(colObjects.size());
     int scoreTargetLength = 5;
     size_t fillLength = scoreTargetLength - scoreString.size();
     std::string fullScoreString (fillLength, '0'); 
