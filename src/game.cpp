@@ -13,21 +13,22 @@ extern ControlBools controlBools;
 int windowWidth, windowHeight;
 int thrustAnimationCounter;
 int currentThrustAnimationTime = 0;
-unsigned score;
+
 
 background gameBackground;
 
 std::vector<double> velocity = {0.0, 0.0};
 std::vector<GameObject> colObjects;
 
-SDL_Rect Message_rect;
-SDL_Texture* Message;
+SDL_Rect scoreMessageRect;
+SDL_Texture* scoreMessage;
+SDL_Rect lifeMessageRect;
+SDL_Texture* lifeMessage;
+unsigned score;
+unsigned life;
 
 Uint32 lastUpdateTime = SDL_GetTicks();
 
-int shotCounter = 0;
-int maxShotCounter = 1000;
-bool canShoot = true;
 ShotMeter shotMeter;
 
 bool newClick = true;
@@ -128,10 +129,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     initAsteroids(ship, windowWidth, windowHeight);
 
-    Font = TTF_OpenFont("../font/joystix_monospace.ttf", 48);
+    Font = TTF_OpenFont("../font/joystix_monospace.ttf", 24);
 
-    Message_rect = {16, 9, 100, 25};
+    scoreMessageRect = {16, 9, 0, 0};
+    lifeMessageRect = {windowWidth - 32, 9, 0, 0};
     score = 0;
+    life = 5;
 
     lastUpdateTime = SDL_GetTicks();
     //shotMeter = ShotMeter(16, 50, 204, 24);
@@ -151,6 +154,8 @@ void Game::handleEvents()
 
 void Game::update()
 {
+    if(life == 0) return;
+    
     Uint32 currentTime = SDL_GetTicks();
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
     lastUpdateTime = currentTime;
@@ -184,10 +189,8 @@ void Game::update()
     {
         if (doesCollide(ship, asteroid))
         {
-            // std::cout << "Collision!!!!!!" << std::endl;
-            ship.midPos[0] = windowWidth / 2;
-            ship.midPos[1] = windowHeight / 2;
-            ship.velocity = {0, 0};
+            ship.respawn(renderer);
+            life--;
         }
         
     }
@@ -225,35 +228,11 @@ void Game::update()
     }
     
     //Make Shots
-    if (controlBools.isShooting && canShoot)
-    {
-        if (Shot::shots.empty())
-        {
-            if(shotCounter < maxShotCounter)
-            {
-                shoot(ship);
-                shotCounter = shotCounter + 100;
-            }
-        } else 
-        {    
-            auto lastShot = Shot::shots.end()-1;
-            Shot lastShotEnt = *lastShot;
-            Uint32 timeSinceLastShot;
-            timeSinceLastShot = SDL_GetTicks() - lastShotEnt.creationTime;
-            if(timeSinceLastShot > 250 && shotCounter < maxShotCounter){
-                shoot(ship);
-                shotCounter = shotCounter + 100;            
-            }
-        }
+    if (controlBools.isShooting){
+        ship.shoot();
     }
 
-    int shotDecay = 100;
-    shotCounter = std::max((int)(shotCounter - shotDecay * deltaTime), 0); 
-
-    if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
-    if (shotCounter >= maxShotCounter)                  canShoot = false;
-
-    shotMeter.update(shotCounter, maxShotCounter, &ship);
+    shotMeter.update(ship.getShotCounter(), ship.getMaxShotCounter(), &ship);
 
     //Update Shots
     for (Shot &singleShot: Shot::shots)
@@ -318,7 +297,8 @@ void Game::update()
     gameBackground.update(colObjects, &deltaTime);
     //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
 
-    //std::cout << UpdateTime << std::endl;
+    //std::cout << UpdateTime << std::endl; 
+
 }
 
 void Game::render()
@@ -339,7 +319,6 @@ void Game::render()
 
     for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
     {
-        std::cout << "render" << std::endl;
         it->render(renderer,shotTex);
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
@@ -349,7 +328,7 @@ void Game::render()
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
-    std::string scoreString = std::to_string(colObjects.size());
+    std::string scoreString = std::to_string(score);
     int scoreTargetLength = 5;
     size_t fillLength = scoreTargetLength - scoreString.size();
     std::string fullScoreString (fillLength, '0'); 
@@ -358,13 +337,23 @@ void Game::render()
     const char *pscore = fullScoreString.c_str();
     SDL_Color white = {255, 255, 255};
     SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, white); 
-    Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    scoreMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
     SDL_FreeSurface(surfaceMessage);
-    SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-    SDL_DestroyTexture(Message);
+    SDL_QueryTexture(scoreMessage, NULL, NULL, &scoreMessageRect.w, &scoreMessageRect.h);
+    SDL_RenderCopy(renderer, scoreMessage, NULL, &scoreMessageRect);
+    SDL_DestroyTexture(scoreMessage);
+
+    std::string lifeString = std::to_string(life);
+    const char *plife = lifeString.c_str();
+    surfaceMessage = TTF_RenderText_Solid(Font, plife, white); 
+    lifeMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    SDL_FreeSurface(surfaceMessage);
+    SDL_QueryTexture(lifeMessage, NULL, NULL, &lifeMessageRect.w, &lifeMessageRect.h);
+    SDL_RenderCopy(renderer, lifeMessage, NULL, &lifeMessageRect);
+    SDL_DestroyTexture(lifeMessage);
 
     // ShotMeter
-    shotMeter.render(renderer,canShoot);
+    shotMeter.render(renderer, ship.canShoot);
 }
 
 void Game::clean()
