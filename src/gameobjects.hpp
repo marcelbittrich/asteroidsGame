@@ -33,15 +33,24 @@ class Ship : public GameObject
         float vMax = 20;
         float roatatingSpeed = 2.0;
         float thrust = 0.05;
+        Uint32 lastShot;
         Uint32 lastUpdated;
         int animationCounter;
+        int shotCounter = 0;
+        int maxShotCounter = 1000;
+        float timeNotVisible = 0;
     public:
         float shipAngle = 0;
         Ship();
         Ship(float midPosX, float midPosY, int size);
         void update(ControlBools controlBools, int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *shipTex);
+        void shoot();
+        void respawn(SDL_Renderer *renderer);
         float getMaxVelocity(){return vMax;};
+        int getShotCounter(){return shotCounter;};
+        int getMaxShotCounter(){return maxShotCounter;};
+        bool canShoot = true;
 };
 
 
@@ -78,7 +87,6 @@ class Shot : public GameObject
         void render(SDL_Renderer*renderer, SDL_Texture *shotTex);
 };
 
-void shoot(Ship ship);
 bool shotIsToOld (Shot shot);
 std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 

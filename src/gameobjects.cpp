@@ -31,7 +31,24 @@ Ship::Ship() : GameObject()
 
 
 void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, float *deltaTime)
-{
+{  
+    if (isVisible)
+    {
+        int shotDecay = 100;
+        shotCounter = std::max((int)(shotCounter - shotDecay * *deltaTime), 0);
+        if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
+        if (shotCounter >= maxShotCounter)                  canShoot = false;
+    } else
+    {
+        canShoot = false;
+        shotCounter = maxShotCounter + 1;
+        timeNotVisible += *deltaTime;
+        if (timeNotVisible > 3){
+            timeNotVisible = 0;
+            isVisible = true;
+            shotCounter = 0;
+        } 
+    }
 
     float deltaX = 0;
     float deltaY = 0;
@@ -101,8 +118,64 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
     srcR.h = 300;
     srcR.x = srcR.w * animationCounter;
     srcR.y = 0;
-    
+
+    float timeDivider = 0.25f;
+    int stepValue = timeNotVisible / timeDivider;
+
+    if(isVisible || stepValue % 2 == 1) 
+    {
+        SDL_SetTextureColorMod(shipTex, 255, 255, 255);
+    } 
+    else
+    {
+        SDL_SetTextureColorMod(shipTex, 100, 100, 100);
+    }
+
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+}
+
+void Ship::respawn(SDL_Renderer *renderer){
+    int windowWidth, windowHeight;
+    SDL_RenderGetLogicalSize(renderer, &windowWidth, &windowHeight);
+    midPos = {(float)windowWidth/2, (float)windowHeight/2};
+
+    velocity = {0, 0};
+
+    isVisible = false;
+}
+
+void createShot(Ship ship) {
+    std::vector<float> shotVelocityVector = {0, 0};
+    float shotVelocity;
+    shotVelocity = 15;
+    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
+    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
+
+    Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
+}
+
+void Ship::shoot()
+{   
+    if(canShoot)
+        {
+        if (Shot::shots.empty())
+        {
+            if(shotCounter < maxShotCounter)
+            {
+                createShot(*this);
+                shotCounter = shotCounter + 100;
+            }
+        } else 
+        {    
+            auto lastShot = Shot::shots.end()-1;
+            //Shot lastShotEnt = *lastShot;
+            Uint32 timeSinceLastShot = SDL_GetTicks() - lastShot->creationTime;
+            if(timeSinceLastShot > 250 && shotCounter < maxShotCounter){
+                createShot(*this);
+                shotCounter = shotCounter + 100;            
+            }
+        }
+    }
 }
 
 std::vector<Asteroid> Asteroid::asteroids;
@@ -318,20 +391,6 @@ void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
 {
     SDL_Rect rect = getRect();
     SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
-}
-
-void shoot(Ship ship)
-{   
-    std::vector<float> shotVelocityVector = {0, 0};
-
-
-    float shotVelocity;
-    shotVelocity = 15;//ship.getMaxVelocity();
-
-    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
-    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
-
-    Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
 }
 
 bool shotIsToOld (Shot shot){   
