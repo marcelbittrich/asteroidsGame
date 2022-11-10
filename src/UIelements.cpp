@@ -38,5 +38,4 @@ void ShotMeter::render(SDL_Renderer *renderer, bool canShoot)
     SDL_RenderFillRect(renderer, &background2);
     canShoot ? SDL_SetRenderDrawColor(renderer,0,200,0,255) : SDL_SetRenderDrawColor(renderer,200,0,0,255);
     SDL_RenderFillRect(renderer, &meterBar);
-    SDL_RenderPresent(renderer);
 }

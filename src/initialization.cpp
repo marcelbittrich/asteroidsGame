@@ -21,7 +21,11 @@ SDL_Point getRandomPosition(
         for (const GameObject &gameObject : gameObjects)
         {
             float distance = sqrt(std::pow(gameObject.midPos[0] - x, 2) + std::pow(gameObject.midPos[1] - y, 2));
-            if (distance < gameObject.colRadius + colRadius) {
+
+            float objectColRadius;
+            (gameObject.id == 1) ? objectColRadius = 200 : objectColRadius = gameObject.colRadius;
+            
+            if (distance < objectColRadius + colRadius) {
                 std::cout << "RandomPosTry: " << i+1 << std::endl;
                 success = false;
                 break;
@@ -68,8 +72,8 @@ void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, i
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)
 {
-    int asteroidAmountSmall = 10;
-    int asteroidAmountMedium = 10;
+    int asteroidAmountSmall = 1;
+    int asteroidAmountMedium = 1;
     std::vector<GameObject> gameObjects = {ship};
     for (int i=0; i < asteroidAmountSmall; i++)
     {

@@ -27,6 +27,9 @@ SDL_Texture* lifeMessage;
 unsigned score;
 unsigned life;
 
+float timeSinceLastAsteroid = 0;
+int difficulty = 1;
+
 Uint32 lastUpdateTime = SDL_GetTicks();
 
 ShotMeter shotMeter;
@@ -134,7 +137,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     scoreMessageRect = {16, 9, 0, 0};
     lifeMessageRect = {windowWidth - 32, 9, 0, 0};
     score = 0;
-    life = 5;
+    life = 1;
 
     lastUpdateTime = SDL_GetTicks();
     //shotMeter = ShotMeter(16, 50, 204, 24);
@@ -189,13 +192,31 @@ void Game::update()
     {
         if (doesCollide(ship, asteroid))
         {
-            ship.respawn(renderer);
-            life--;
+            if(--life == 0) break;
+            ship.respawn(renderer);  
         }
         
     }
 
-   // Check Asteroid Collision
+    // Spawn New Asteroids
+    timeSinceLastAsteroid += deltaTime;
+    if (timeSinceLastAsteroid >= 5)
+    {
+        timeSinceLastAsteroid = 0;
+
+        std::cout << "Spawn small asteroid" << std::endl;      
+        initSingleAsteroid (colObjects, windowWidth, windowHeight, AsteroidSizeType::Small);
+        if (difficulty % 5 == 0)
+        {
+            std::cout << "Spawn medium asteroid" << std::endl; 
+            initSingleAsteroid (colObjects, windowWidth, windowHeight, AsteroidSizeType::Medium);
+        } 
+        
+        difficulty++;
+    }
+
+
+    // Check Asteroid Collision
     for(decltype(Asteroid::asteroids.size()) i = 0; i != Asteroid::asteroids.size(); i++)
     {
         for (decltype(Asteroid::asteroids.size()) j = i+1; j != Asteroid::asteroids.size(); j++)
@@ -306,7 +327,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
     SDL_Rect playArea = {0, 0, windowWidth, windowHeight};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &playArea);
 
     gameBackground.render(renderer);   
@@ -354,6 +375,14 @@ void Game::render()
 
     // ShotMeter
     shotMeter.render(renderer, ship.canShoot);
+
+    if (life == 0) {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+        SDL_RenderFillRect(renderer, &playArea);
+    }
+
+    SDL_RenderPresent(renderer);
 }
 
 void Game::clean()
