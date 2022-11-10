@@ -113,12 +113,11 @@ background::background(int windowWidth, int windowHeight, int divider)
 
     for (int i = 0; i < divider; i++)
     {
-        int xPos = width/divider * i + width/divider/2;
+        int xPos = width/(float)divider * i + width/(float)divider/2.0f;
         std::vector<bgPoint> bgPointColumn;
         for (int j = 0; j < divider; j++)
         {
-            int yPos = height/divider * j + height/divider/2;
-
+            int yPos = height/(float)divider * j + height/(float)divider/2.0f;
             bgPoint newPoint(xPos,yPos); 
             bgPointColumn.push_back(newPoint);
         }
@@ -128,11 +127,11 @@ background::background(int windowWidth, int windowHeight, int divider)
 
 void background::update(std::vector<GameObject>colObjects, float *updateTime)
 {   
-    for (const GameObject &object:colObjects)
+    for (const GameObject &object : colObjects)
     {
         //Size of grid divisions
-        int divX = width/divider;
-        int divY = height/divider;
+        float divX = width/(float)divider;
+        float divY = height/(float)divider;
         //Grid position of colObject
         int gridPosX = object.midPos[0]/divX;
         int gridPosY = object.midPos[1]/divY;
