@@ -6,6 +6,8 @@
 #include <vector>
 #include <stdexcept>
 #include <list>
+#include <numeric>
+//#include <algorithm>
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"

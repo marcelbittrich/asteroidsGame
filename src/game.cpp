@@ -8,7 +8,7 @@ SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
 SDL_Texture* shotTex;
 SDL_Texture* bombTex;
-TTF_Font* Font;
+TTF_Font* font;
 
 extern ControlBools controlBools;
 int windowWidth, windowHeight;
@@ -21,15 +21,16 @@ background gameBackground;
 std::vector<double> velocity = {0.0, 0.0};
 std::list<GameObject> colObjects;
 
-SDL_Rect scoreMessageRect;
-SDL_Texture* scoreMessage;
-SDL_Rect lifeMessageRect;
-SDL_Texture* lifeMessage;
-SDL_Rect bombMessageRect;
-SDL_Texture* bombMessage;
+UICounter UIScore;
+UICounter UILife;
+UICounter UIBomb;
+UICounter UIFPS;
+
 unsigned score;
 unsigned life;
 unsigned bombCount;
+unsigned FPS;
+std::vector<int> FPSVector;
 
 float timeSinceLastAsteroid = 0;
 int difficulty = 1;
@@ -132,26 +133,25 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     gameBackground = background(windowWidth,windowHeight,100);
 
-
-
     ship = initShip(windowWidth, windowHeight);
     colObjects.push_back(ship);
 
-
     initAsteroids(ship, windowWidth, windowHeight);
 
-    Font = TTF_OpenFont("../font/joystix_monospace.ttf", 24);
+    font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
 
-    scoreMessageRect = {16, 9, 0, 0};
-    lifeMessageRect = {windowWidth - 32, 9, 0, 0};
-    bombMessageRect = {windowWidth - 32, 59, 0, 0};
     score = 0;
     life = 5;
     bombCount = 0;
 
     lastUpdateTime = SDL_GetTicks();
-    //shotMeter = ShotMeter(16, 50, 204, 24);
+
     shotMeter = ShotMeter(&ship, 0, 25, 40, 6);
+    SDL_Color white = {255, 255, 255, 255};
+    UIScore = UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
+    UILife = UICounter("Lifes", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UIBomb = UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 }
 
 void Game::handleEvents()
@@ -231,6 +231,7 @@ void Game::update()
     }
 
     // Spawn New Asteroids
+
     timeSinceLastAsteroid += deltaTime;
     if (timeSinceLastAsteroid >= 5)
     {
@@ -393,7 +394,39 @@ void Game::update()
 
     gameBackground.update(colObjects, &deltaTime);
 
+    if (frameTime != 0)
+    {
+        FPS = 1000/frameTime;
+        if (FPSVector.size() >= 10)
+        {
+            FPSVector.insert(FPSVector.begin(), FPS);
+            FPSVector.pop_back();
+        } 
+        else
+        {
+            FPSVector.insert(FPSVector.begin(), FPS);
+        }   
+    } else
+    {
+        FPS = 0;
+    }
 
+    int averageFPS;
+    if (!FPSVector.empty())
+    {
+        auto count = (float)(FPSVector.size());
+        averageFPS = std::reduce(FPSVector.begin(), FPSVector.end())/count;
+    } else
+    {
+        averageFPS = 0;
+    }
+    
+    UIScore.update(score, renderer);
+
+    UIFPS.update(averageFPS, renderer);
+    UILife.update(life, renderer);
+
+    UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
 }
 
 void Game::render()
@@ -428,38 +461,10 @@ void Game::render()
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
-    std::string scoreString = std::to_string(score);
-    int scoreTargetLength = 5;
-    size_t fillLength = scoreTargetLength - scoreString.size();
-    std::string fullScoreString (fillLength, '0'); 
-    fullScoreString += scoreString;
- 
-    const char *pscore = fullScoreString.c_str();
-    SDL_Color white = {255, 255, 255};
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Font, pscore, white); 
-    scoreMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-    SDL_FreeSurface(surfaceMessage);
-    SDL_QueryTexture(scoreMessage, NULL, NULL, &scoreMessageRect.w, &scoreMessageRect.h);
-    SDL_RenderCopy(renderer, scoreMessage, NULL, &scoreMessageRect);
-    SDL_DestroyTexture(scoreMessage);
-
-    std::string lifeString = std::to_string(life);
-    const char *plife = lifeString.c_str();
-    surfaceMessage = TTF_RenderText_Solid(Font, plife, white); 
-    lifeMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-    SDL_FreeSurface(surfaceMessage);
-    SDL_QueryTexture(lifeMessage, NULL, NULL, &lifeMessageRect.w, &lifeMessageRect.h);
-    SDL_RenderCopy(renderer, lifeMessage, NULL, &lifeMessageRect);
-    SDL_DestroyTexture(lifeMessage);
-
-    std::string bombString = std::to_string(bombCount);
-    const char *pbomb = bombString.c_str();
-    surfaceMessage = TTF_RenderText_Solid(Font, pbomb, white); 
-    bombMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-    SDL_FreeSurface(surfaceMessage);
-    SDL_QueryTexture(bombMessage, NULL, NULL, &bombMessageRect.w, &bombMessageRect.h);
-    SDL_RenderCopy(renderer, bombMessage, NULL, &bombMessageRect);
-    SDL_DestroyTexture(bombMessage);
+    UIScore.render(renderer);
+    UILife.render(renderer);
+    UIBomb.render(renderer);
+    UIFPS.render(renderer);
 
     // ShotMeter
     shotMeter.render(renderer, ship.canShoot);
@@ -477,7 +482,7 @@ void Game::clean()
 {
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
-    TTF_CloseFont(Font);
+    TTF_CloseFont(font);
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
