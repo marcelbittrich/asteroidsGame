@@ -3,6 +3,7 @@
 
 #include "SDL2/SDL.h"
 #include <vector>
+#include <list>
 #include "gameobjects.hpp"
 
 
@@ -31,7 +32,7 @@ private:
 public:
     background();
     background(int windowWidth, int windowHeight, int divider);
-    void update(std::vector<GameObject>colObjects, float *deltaTime);
+    void update(std::list<GameObject>colObjects, float *deltaTime);
     void render(SDL_Renderer *renderer);
 
     //debug

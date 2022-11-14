@@ -4,6 +4,7 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <list>
 #include <stdexcept>
 
 #include "handleinput.hpp"
@@ -64,7 +65,7 @@ class Asteroid : public GameObject
         Asteroid(float midPosX, float midPosY, std::vector<float> velocity, AsteroidSizeType sizeType);
         void update(int windowWidth, int windowHeight, float *deltaTime);
         void render(SDL_Renderer*renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
-        static std::vector<Asteroid> asteroids;
+        static std::list<Asteroid> asteroids;
         static float getColRadius(int size);
         static int getSize(AsteroidSizeType sizeType);
 };
@@ -73,6 +74,7 @@ class Asteroid : public GameObject
 bool doesCollide(GameObject firstObject, GameObject secondObject);
 void asteroidsCollide(GameObject &firstObject, GameObject &secondObject);
 void handleDistruction(Asteroid destoryedAsteroid);
+void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects);
 
 class Shot : public GameObject
 {
@@ -80,7 +82,7 @@ class Shot : public GameObject
         int life;
         float vAngle = 0;
     public:
-        static std::vector<Shot> shots;
+        static std::list<Shot> shots;
         Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle);
         Uint32 creationTime;
         void update(int windowWidth, int windowHeight, float *deltaTime);
@@ -88,9 +90,28 @@ class Shot : public GameObject
 };
 
 bool shotIsToOld (Shot shot);
-std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 
-void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::vector<GameObject> gameobjects);
+class Bomb : public GameObject
+{
+    private:
+        float angle = 0.0f;
+    public:
+        static std::list<Bomb> bombs;
+        static std::list<Bomb*> pCollectedBombs;
+        Bomb(int xPos, int yPos, std::vector<float> velocity);
+        Uint32 creationTime;
+        Uint32 ignitionTime;
+        void update(int windowWidth, int windowHeight, float *deltaTime, Ship *ship);
+        void render(SDL_Renderer*renderer, SDL_Texture *bombTex);
+        void collect();
+        void explode();
+        bool isDead = false;
+        bool isExploding = false;
+        bool isCollected = false;
+};
+
+
+std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight);
 
 #endif
 

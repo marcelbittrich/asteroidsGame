@@ -11,7 +11,7 @@ SDL_Point getRandomPosition(
     int windowWidth,
     int windowHeight,
     float colRadius,
-    std::vector<GameObject> gameObjects
+    std::list<GameObject> gameObjects
 ) {
     int maxTries = 10000;
     for (int i = 0; i < maxTries; i++) {
@@ -58,7 +58,7 @@ std::vector<float> getRandomVelocity (float minVelocity, float maxVelocity)
     return velocity;
 }
 
-void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
+void initSingleAsteroid(std::list<GameObject> &gameObjects, int windowWidth, int windowHeight, AsteroidSizeType sizeType)
 {
     float asteroidMinVel = 0;
     float asteroidMaxVel = 1;
@@ -72,9 +72,9 @@ void initSingleAsteroid(std::vector<GameObject> &gameObjects, int windowWidth, i
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)
 {
-    int asteroidAmountSmall = 1;
-    int asteroidAmountMedium = 1;
-    std::vector<GameObject> gameObjects = {ship};
+    int asteroidAmountSmall = 10;
+    int asteroidAmountMedium = 10;
+    std::list<GameObject> gameObjects = {ship};
     for (int i=0; i < asteroidAmountSmall; i++)
     {
         initSingleAsteroid(gameObjects, windowWidth, windowHeight, AsteroidSizeType::Small);

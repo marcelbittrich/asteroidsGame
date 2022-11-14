@@ -167,9 +167,9 @@ void Ship::shoot()
             }
         } else 
         {    
-            auto lastShot = Shot::shots.end()-1;
+            //auto lastShot = Shot::shots.end() - 1;
             //Shot lastShotEnt = *lastShot;
-            Uint32 timeSinceLastShot = SDL_GetTicks() - lastShot->creationTime;
+            Uint32 timeSinceLastShot = SDL_GetTicks() - Shot::shots.back().creationTime;
             if(timeSinceLastShot > 250 && shotCounter < maxShotCounter){
                 createShot(*this);
                 shotCounter = shotCounter + 100;            
@@ -178,7 +178,7 @@ void Ship::shoot()
     }
 }
 
-std::vector<Asteroid> Asteroid::asteroids;
+std::list<Asteroid> Asteroid::asteroids;
 
 int Asteroid::getSize(AsteroidSizeType sizeType)
 {
@@ -359,7 +359,7 @@ void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSize
     }
 }
 
-std::vector<Shot> Shot::shots;
+std::list<Shot> Shot::shots;
 
 Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)
 {
@@ -473,4 +473,74 @@ void handleDistruction(Asteroid destroyedAsteroid)
         {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2},
         AsteroidSizeType::Small
     );
+}
+
+std::list<Bomb> Bomb::bombs;
+std::list<Bomb*> Bomb::pCollectedBombs;
+
+Bomb::Bomb(int xPos, int yPos, std::vector<float> velocity)
+{
+    midPos[0] = xPos;
+    midPos[1] = yPos;
+    this-> velocity = velocity;
+    creationTime = SDL_GetTicks();
+    isVisible = true;
+
+    int size = 50;
+    width = size;
+    height = size;
+
+    float colRadiusOffset = 0.3;
+    colRadius = size * colRadiusOffset;
+
+    bombs.push_back(*this);
+}
+
+void Bomb::update(int windowWidth, int windowHeight, float *deltaTime, Ship *ship)
+{
+    if (!isCollected && !isExploding)
+    {
+        midPos[0] += velocity[0] * *deltaTime * 60;
+        midPos[1] += velocity[1] * *deltaTime * 60;
+        midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
+
+        angle += 10 * *deltaTime; 
+    } 
+    if (isCollected && !isExploding)
+    {
+        midPos = ship->midPos;
+    } 
+    if (isExploding)
+    {
+        float explosionVelocity = 20.0f;
+        float timeSinceIgnition = (SDL_GetTicks() - ignitionTime) / 1000.0f;
+        colRadius += timeSinceIgnition * explosionVelocity;
+        if (timeSinceIgnition > 1.0f)
+        {
+            isDead = true;
+        }
+    }
+}
+
+void Bomb::render(SDL_Renderer*renderer, SDL_Texture *bombTex)
+{
+    if (isVisible)
+    {
+        SDL_Rect rect = getRect();
+        SDL_RenderCopyEx(renderer, bombTex, NULL, &rect, angle, NULL, SDL_FLIP_NONE); 
+    }
+}
+
+void Bomb::collect()
+{
+    isCollected = true;
+    isVisible = false;
+    pCollectedBombs.push_back(this);
+}
+
+void Bomb::explode()
+{
+    isExploding = true;
+    isVisible = true;
+    ignitionTime = SDL_GetTicks();
 }

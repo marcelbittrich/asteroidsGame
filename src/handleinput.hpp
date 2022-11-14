@@ -9,6 +9,7 @@ struct controlbools {
     bool isTurningLeft;
     bool isShooting;
     bool isLeftClicking;
+    bool isUsingBomb;
 };
 typedef controlbools ControlBools;
 

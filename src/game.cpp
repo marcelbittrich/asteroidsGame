@@ -7,6 +7,7 @@ SDL_Texture* shipTex;
 SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
 SDL_Texture* shotTex;
+SDL_Texture* bombTex;
 TTF_Font* Font;
 
 extern ControlBools controlBools;
@@ -18,14 +19,17 @@ int currentThrustAnimationTime = 0;
 background gameBackground;
 
 std::vector<double> velocity = {0.0, 0.0};
-std::vector<GameObject> colObjects;
+std::list<GameObject> colObjects;
 
 SDL_Rect scoreMessageRect;
 SDL_Texture* scoreMessage;
 SDL_Rect lifeMessageRect;
 SDL_Texture* lifeMessage;
+SDL_Rect bombMessageRect;
+SDL_Texture* bombMessage;
 unsigned score;
 unsigned life;
+unsigned bombCount;
 
 float timeSinceLastAsteroid = 0;
 int difficulty = 1;
@@ -35,6 +39,7 @@ Uint32 lastUpdateTime = SDL_GetTicks();
 ShotMeter shotMeter;
 
 bool newClick = true;
+bool newBombIgnition = true;
 
 Game::Game()
 {}
@@ -121,6 +126,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     shotTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
+    image = IMG_Load("../img/bomb.png");
+    bombTex = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
 
     gameBackground = background(windowWidth,windowHeight,100);
 
@@ -136,8 +144,10 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     scoreMessageRect = {16, 9, 0, 0};
     lifeMessageRect = {windowWidth - 32, 9, 0, 0};
+    bombMessageRect = {windowWidth - 32, 59, 0, 0};
     score = 0;
-    life = 1;
+    life = 5;
+    bombCount = 0;
 
     lastUpdateTime = SDL_GetTicks();
     //shotMeter = ShotMeter(16, 50, 204, 24);
@@ -169,14 +179,27 @@ void Game::update()
         int mouseXPos, mouseYPos;
         SDL_GetMouseState(&mouseXPos, &mouseYPos);
         std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
-        spawnAsteroid(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 2.0f), AsteroidSizeType::Small, colObjects);
-    }
-    
-    if (!controlBools.isLeftClicking)
+        Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
+    } else if (!controlBools.isLeftClicking)
     {
         newClick = true;
     }
 
+    if (controlBools.isUsingBomb && newBombIgnition)
+    {
+        newBombIgnition = false;
+        if (!Bomb::pCollectedBombs.empty())
+        {
+            auto it = Bomb::pCollectedBombs.begin();
+            (*it)->explode();
+            Bomb::pCollectedBombs.erase(it);
+        }
+    } else if (!controlBools.isUsingBomb)
+    {
+        newBombIgnition = true;
+    }
+
+    bombCount = Bomb::pCollectedBombs.size();
 
     // Update Ship
     ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
@@ -187,7 +210,7 @@ void Game::update()
         asteroid.update(windowWidth, windowHeight, &deltaTime);
     }
 
-    // Check Ship Collision
+    // Check Ship Collision Asteroids
     for(const Asteroid &asteroid : Asteroid::asteroids)
     {
         if (doesCollide(ship, asteroid))
@@ -196,6 +219,15 @@ void Game::update()
             ship.respawn(renderer);  
         }
         
+    }
+
+    // Check Ship Collision Asteroids
+    for(Bomb &bomb : Bomb::bombs)
+    {
+        if (!bomb.isExploding && doesCollide(ship, bomb))
+        {
+            bomb.collect(); 
+        }    
     }
 
     // Spawn New Asteroids
@@ -217,15 +249,18 @@ void Game::update()
 
 
     // Check Asteroid Collision
-    for(decltype(Asteroid::asteroids.size()) i = 0; i != Asteroid::asteroids.size(); i++)
+    for(auto it1 = Asteroid::asteroids.begin(); it1 != Asteroid::asteroids.end(); it1++)
     {
-        for (decltype(Asteroid::asteroids.size()) j = i+1; j != Asteroid::asteroids.size(); j++)
-            {
-                //std::cout << "Kombination: " << i << ", " << j << std::endl;
-                asteroidsCollide(Asteroid::asteroids[i], Asteroid::asteroids[j]);
-            }
+        for (auto it2 = std::next(it1, 1); it2 != Asteroid::asteroids.end(); it2++)
+        {
+            //std::cout << "Kombination: " << i << ", " << j << std::endl;
+            asteroidsCollide(*it1, *it2);
+        }
         
     }
+
+
+
     for (Asteroid &asteroid : Asteroid::asteroids)
     {
         if (!asteroid.isVisible)
@@ -306,19 +341,58 @@ void Game::update()
         if(!hit) it++;
     } 
 
+    // Update Bombs
+    for (auto bombIt =  Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
+    {
+        bombIt->update(windowWidth, windowHeight, &deltaTime, &ship);
+
+        if (bombIt->isExploding)
+        {   
+            bool hit = false;
+            auto asteroidIt = Asteroid::asteroids.begin();
+            while (asteroidIt != Asteroid::asteroids.end())
+            {
+                std::cout << "Bomb colRadius: " << bombIt->colRadius << std::endl;  
+                if (doesCollide(*bombIt, *asteroidIt))
+                {
+                    hit = true;
+                    asteroidIt = Asteroid::asteroids.erase(asteroidIt);
+                }   
+                else
+                {
+                    hit = false;
+                }
+                if (!hit) asteroidIt++;
+            }
+        }
+        
+    }
+
+    // Destoy Bombs
+    if (!Bomb::bombs.empty())
+    {   
+        auto bombIt = Bomb::bombs.begin();
+        while (bombIt != Bomb::bombs.end())
+        {
+            bool didErase = false;
+            if (bombIt->isDead)
+            {
+                bombIt = Bomb::bombs.erase(bombIt);
+                didErase = true;
+            }
+            if (!didErase) bombIt++;
+        }
+    }
 
     //Fill colObjects vector
     colObjects.clear();
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end()); 
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
+    colObjects.insert(colObjects.end(), Bomb::bombs.begin(), Bomb::bombs.end());
 
-
-    //Uint32 UpdateStart = SDL_GetTicks();
     gameBackground.update(colObjects, &deltaTime);
-    //Uint32 UpdateTime = SDL_GetTicks()- UpdateStart;
 
-    //std::cout << UpdateTime << std::endl; 
 
 }
 
@@ -331,6 +405,11 @@ void Game::render()
     SDL_RenderFillRect(renderer, &playArea);
 
     gameBackground.render(renderer);   
+
+    for (Bomb &bomb: Bomb::bombs)
+    {
+        bomb.render(renderer, bombTex);
+    }
 
     for(Asteroid &asteroid: Asteroid::asteroids) {
         asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
@@ -372,6 +451,15 @@ void Game::render()
     SDL_QueryTexture(lifeMessage, NULL, NULL, &lifeMessageRect.w, &lifeMessageRect.h);
     SDL_RenderCopy(renderer, lifeMessage, NULL, &lifeMessageRect);
     SDL_DestroyTexture(lifeMessage);
+
+    std::string bombString = std::to_string(bombCount);
+    const char *pbomb = bombString.c_str();
+    surfaceMessage = TTF_RenderText_Solid(Font, pbomb, white); 
+    bombMessage = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    SDL_FreeSurface(surfaceMessage);
+    SDL_QueryTexture(bombMessage, NULL, NULL, &bombMessageRect.w, &bombMessageRect.h);
+    SDL_RenderCopy(renderer, bombMessage, NULL, &bombMessageRect);
+    SDL_DestroyTexture(bombMessage);
 
     // ShotMeter
     shotMeter.render(renderer, ship.canShoot);

@@ -125,7 +125,7 @@ background::background(int windowWidth, int windowHeight, int divider)
     }  
 }
 
-void background::update(std::vector<GameObject>colObjects, float *updateTime)
+void background::update(std::list<GameObject>colObjects, float *updateTime)
 {   
     for (const GameObject &object : colObjects)
     {
