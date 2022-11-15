@@ -57,26 +57,32 @@ void bgPoint::returnToOrigin(float *deltaTime){
 
 void bgPoint::update(GameObject colObject)
 {   
-    squareDistance = (colObject.midPos[0] - xPos) * (colObject.midPos[0] - xPos) + (colObject.midPos[1] - yPos) * (colObject.midPos[1] - yPos);
-    squareColRadius = colObject.colRadius * colObject.colRadius;
-    if (squareDistance <= squareColRadius)
+    if (xPos > colObject.midPos[0] - colObject.colRadius 
+    && xPos < colObject.midPos[0] + colObject.colRadius
+    && yPos > colObject.midPos[1] - colObject.colRadius
+    && yPos < colObject.midPos[1] + colObject.colRadius)
     {
-        float xDist = xPos - colObject.midPos[0];
-        float yDist = yPos - colObject.midPos[1];
-        vDistance[0] = xDist;
-        vDistance[1] = yDist;
-
+        squareDistance = (colObject.midPos[0] - xPos) * (colObject.midPos[0] - xPos) + (colObject.midPos[1] - yPos) * (colObject.midPos[1] - yPos);
+        squareColRadius = colObject.colRadius * colObject.colRadius;
         float distance = SDL_sqrtf(squareDistance);
 
-        nDistance[0] = vDistance[0]/distance;
-        nDistance[1] = vDistance[1]/distance;
+        if (squareDistance <= squareColRadius)
+        {
+            float xDist = xPos - colObject.midPos[0];
+            float yDist = yPos - colObject.midPos[1];
+            vDistance[0] = xDist;
+            vDistance[1] = yDist;
 
-        xPos = colObject.midPos[0] + nDistance[0] * colObject.colRadius;
-        yPos = colObject.midPos[1] + nDistance[1] * colObject.colRadius;
+            nDistance[0] = vDistance[0]/distance;
+            nDistance[1] = vDistance[1]/distance;
 
-        renderPos.x = round(xPos);
-        renderPos.y = round(yPos);
-        onOrigin = false;
+            xPos = colObject.midPos[0] + nDistance[0] * colObject.colRadius;
+            yPos = colObject.midPos[1] + nDistance[1] * colObject.colRadius;
+
+            renderPos.x = round(xPos);
+            renderPos.y = round(yPos);
+            onOrigin = false;
+        }
     }
 }
 
@@ -120,27 +126,32 @@ background::background(int windowWidth, int windowHeight, int divider)
 }
 
 void background::update(std::list<GameObject>colObjects, float *updateTime)
-{       
+{      
+    int updatePointOperations = 0; 
     for (const GameObject &object : colObjects)
     {
-        //Size of grid divisions
-        float divX = width/(float)divider;
-        float divY = height/(float)divider;
-        //Grid position of colObject
-        int gridPosX = object.midPos[0]/divX;
-        int gridPosY = object.midPos[1]/divY;
-        //Size of detection box
-        int w = (int)(object.colRadius/divX);
-        int h = (int)(object.colRadius/divY);
+        if (object.isVisible)
+        {              
+            //Size of grid divisions
+            float divX = width/(float)divider;
+            float divY = height/(float)divider;
+            //Grid position of colObject
+            int gridPosX = object.midPos[0]/divX;
+            int gridPosY = object.midPos[1]/divY;
+            //Size of detection box
+            int w = (int)(object.colRadius/divX);
+            int h = (int)(object.colRadius/divY);
 
-        for (int i = gridPosX-w; i <= gridPosX+w; i++)
-        {
-            if (i >= 0 && i <= divider-1)
+            for (int i = gridPosX-w; i <= gridPosX+w; i++)
             {
-                for (int j = gridPosY-h; j <= gridPosY+h; j++)
+                if (i >= 0 && i <= divider-1)
                 {
-                    if (j >= 0 && j <= divider-1){
-                        pointCloud[i][j].update(object);                  
+                    for (int j = gridPosY-h; j <= gridPosY+h; j++)
+                    {
+                        if (j >= 0 && j <= divider-1){
+                            pointCloud[i][j].update(object); 
+                            updatePointOperations++;                 
+                        }
                     }
                 }
             }
@@ -153,8 +164,10 @@ void background::update(std::list<GameObject>colObjects, float *updateTime)
             if (!singleBgPoint.onOrigin)
             {   
                 singleBgPoint.returnToOrigin(updateTime);
+                updatePointOperations++;
             }    
     }
+    //std::cout << "Update Point Operations: " << updatePointOperations << std::endl;
 }
 
 
