@@ -72,8 +72,8 @@ void initSingleAsteroid(std::list<GameObject> &gameObjects, int windowWidth, int
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)
 {
-    int asteroidAmountSmall = 10;
-    int asteroidAmountMedium = 10;
+    int asteroidAmountSmall = 5;
+    int asteroidAmountMedium = 5;
     std::list<GameObject> gameObjects = {ship};
     for (int i=0; i < asteroidAmountSmall; i++)
     {

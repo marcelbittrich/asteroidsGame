@@ -35,7 +35,6 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
     if (isVisible)
     {
         shotCounter = std::max((shotCounter - shotDecay * *deltaTime), 0.0f);
-        std::cout << shotCounter << std::endl;
         if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
         if (shotCounter >= maxShotCounter)                  canShoot = false;
     } else
@@ -333,14 +332,14 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     }
 }
 
-void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::vector<GameObject> gameobjects)
+void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects)
 {
     GameObject collisionObject = GameObject();
     collisionObject.midPos = {(float)xPos, (float)yPos};
     collisionObject.colRadius = Asteroid::getColRadius(Asteroid::getSize(sizeType));
 
     bool isSafeToSpawn = true;
-    for (auto it = gameobjects.begin(); it < gameobjects.end(); it++)
+    for (auto it = gameobjects.begin(); it != gameobjects.end(); it++)
     {
         if (doesCollide(collisionObject, *it))
         {
@@ -514,7 +513,7 @@ void Bomb::update(int windowWidth, int windowHeight, float *deltaTime, Ship *shi
     {
         float explosionVelocity = 20.0f;
         float timeSinceIgnition = (SDL_GetTicks() - ignitionTime) / 1000.0f;
-        colRadius += timeSinceIgnition * explosionVelocity;
+        colRadius += timeSinceIgnition * explosionVelocity* *deltaTime * 60;
         if (timeSinceIgnition > 1.0f)
         {
             isDead = true;

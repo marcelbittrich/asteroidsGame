@@ -32,8 +32,8 @@ unsigned bombCount;
 unsigned FPS;
 std::vector<int> FPSVector;
 
-float timeSinceLastAsteroid = 0;
-int difficulty = 1;
+float timeSinceLastAsteroidWave = 0;
+int asteroidWave = 1;
 
 Uint32 lastUpdateTime = SDL_GetTicks();
 
@@ -216,7 +216,8 @@ void Game::update()
         if (doesCollide(ship, asteroid))
         {
             if(--life == 0) break;
-            ship.respawn(renderer);  
+            ship.respawn(renderer);
+            asteroidWave = 1;  
         }
         
     }
@@ -231,22 +232,26 @@ void Game::update()
     }
 
     // Spawn New Asteroids
+    timeSinceLastAsteroidWave += deltaTime;
+    if (timeSinceLastAsteroidWave >= 5)
+    {      
+        std::cout << "Spawn small ";
+        SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
+        std::vector<float> randomVelocity1 = getRandomVelocity(0, 0.5*asteroidWave);
+        spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, colObjects);
 
-    timeSinceLastAsteroid += deltaTime;
-    if (timeSinceLastAsteroid >= 5)
-    {
-        timeSinceLastAsteroid = 0;
-
-        std::cout << "Spawn small asteroid" << std::endl;      
-        initSingleAsteroid (colObjects, windowWidth, windowHeight, AsteroidSizeType::Small);
-        if (difficulty % 5 == 0)
+        if (asteroidWave % 3 == 0)
         {
-            std::cout << "Spawn medium asteroid" << std::endl; 
-            initSingleAsteroid (colObjects, windowWidth, windowHeight, AsteroidSizeType::Medium);
-        } 
-        
-        difficulty++;
+            std::cout << "and large "; 
+            SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
+            std::vector<float> randomVelocity2 = getRandomVelocity(0, 0.5*asteroidWave);
+            spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
+        }
+        std::cout << "asteroid" << std::endl; 
+        timeSinceLastAsteroidWave = 0;
+        asteroidWave++;
     }
+    
 
 
     // Check Asteroid Collision
@@ -323,6 +328,7 @@ void Game::update()
 
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
+                    if(rand() % 5 ==0) Bomb(asteroidIt->midPos[0], asteroidIt->midPos[1], getRandomVelocity(0.0f, 0.5f));
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;

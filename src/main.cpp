@@ -13,7 +13,7 @@ bool showFPS = false;
 int main(int argc,char * argv[])
 {
 
-	const int TargetFPS = 120;
+	const int TargetFPS = 1000;
 	const float frameCapTime = 1000.0f/TargetFPS;
 
 	game = new Game();
