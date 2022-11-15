@@ -37,8 +37,9 @@ class Ship : public GameObject
         Uint32 lastShot;
         Uint32 lastUpdated;
         int animationCounter;
-        int shotCounter = 0;
-        int maxShotCounter = 1000;
+        float shotCounter = 0.0f;
+        float shotDecay = 150.0;
+        float maxShotCounter = 1000.0f;
         float timeNotVisible = 0;
     public:
         float shipAngle = 0;

@@ -34,8 +34,8 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
 {  
     if (isVisible)
     {
-        int shotDecay = 100;
-        shotCounter = std::max((int)(shotCounter - shotDecay * *deltaTime), 0);
+        shotCounter = std::max((shotCounter - shotDecay * *deltaTime), 0.0f);
+        std::cout << shotCounter << std::endl;
         if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
         if (shotCounter >= maxShotCounter)                  canShoot = false;
     } else
@@ -60,7 +60,7 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
     if (vSum > 0)
     {
         vAngle = atan2(velocity[0],velocity[1]);
-        vSum = std::max(vSum - 0.01, 0.0);
+        vSum = std::max(vSum - 0.01 * *deltaTime * 60, 0.0);
     }    
     
     velocity.at(0) = (sin(vAngle) * vSum);
