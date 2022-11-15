@@ -19,6 +19,13 @@ public:
     bgPoint();
     bgPoint(int xPos, int yPos);
     
+    std::vector<float> vDistance = {0.0f, 0.0f};
+    std::vector<float> nDistance = {0.0f, 0.0f};
+    std::vector<float> vChange = {0.0f, 0.0f};
+
+    float squareDistance; 
+    float squareColRadius;
+
     void update(GameObject colObject);
     void render(SDL_Renderer *renderer);
     void returnToOrigin(float *deltaTime);
