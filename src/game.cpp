@@ -11,6 +11,7 @@ SDL_Texture* bombTex;
 TTF_Font* font;
 
 extern ControlBools controlBools;
+
 int windowWidth, windowHeight;
 int thrustAnimationCounter;
 int currentThrustAnimationTime = 0;
@@ -36,6 +37,8 @@ float timeSinceLastAsteroidWave = 0;
 int asteroidWave = 1;
 
 Uint32 lastUpdateTime = SDL_GetTicks();
+
+GameMenu gameMenu;
 
 ShotMeter shotMeter;
 
@@ -131,14 +134,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     bombTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
+    font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
+ 
+    gameMenu = GameMenu(windowWidth, windowHeight);
+
     gameBackground = background(windowWidth,windowHeight,100);
 
     ship = initShip(windowWidth, windowHeight);
     colObjects.push_back(ship);
 
     initAsteroids(ship, windowWidth, windowHeight);
-
-    font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
 
     score = 0;
     life = 5;
@@ -167,6 +172,12 @@ void Game::handleEvents()
 
 void Game::update()
 {
+    if (state == STATE_IN_MENU)
+    {
+        gameMenu.update(&state, &controlBools);
+        if(state == STATE_IN_MENU)return;
+    }
+    
     if(life == 0) return;
     
     Uint32 currentTime = SDL_GetTicks();
@@ -437,6 +448,12 @@ void Game::update()
 
 void Game::render()
 {
+    if (state == STATE_IN_MENU)
+    {
+        gameMenu.render(renderer);
+        return;
+    }
+    
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
     SDL_Rect playArea = {0, 0, windowWidth, windowHeight};
@@ -493,4 +510,9 @@ void Game::clean()
     IMG_Quit();
     SDL_Quit();
     std::cout << "Game Cleaned" << std::endl;
+}
+
+void Game::reset()
+{
+
 }

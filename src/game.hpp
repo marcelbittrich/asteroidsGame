@@ -1,6 +1,3 @@
-#ifndef GAME_HPP
-#define GAME_HPP
-
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -20,8 +17,19 @@
 #include "background.hpp"
 #include "initialization.hpp"
 #include "UIelements.hpp"
+#include "menu.hpp"
+
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #define PI 3.14159265359
+
+enum GameState {
+    STATE_IN_MENU,
+    STATE_IN_GAME,
+    STATE_RESET,
+    STATE_PAUSE
+};
 
 class Game {
 public:
@@ -34,14 +42,17 @@ public:
     void update();
     void render();
     void clean();
+    void reset();
+
+    bool isRunning;
+    SDL_Renderer *renderer;
 
     bool running() {return isRunning;}
     Uint32 frameStart = 0; 
     Uint32 frameTime = 0;
+    GameState state;
 private:
-    bool isRunning;
     SDL_Window *window;
-    SDL_Renderer *renderer;
 };
 
 #endif /* game_hpp */
