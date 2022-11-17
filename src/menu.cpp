@@ -20,13 +20,14 @@ void GameMenu::update(GameState *state, ControlBools *controlbools)
         && menuRect.y < clickPosY
         && menuRect.y + menuRect.h > clickPosY)
         {
-            *state = STATE_IN_GAME;
+            *state = STATE_RESET;
         }  
     }
 }
 
 void GameMenu::render(SDL_Renderer *renderer)
 {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);

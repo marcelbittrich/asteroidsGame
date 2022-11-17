@@ -146,7 +146,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     initAsteroids(ship, windowWidth, windowHeight);
 
     score = 0;
-    life = 5;
+    life = 1;
     bombCount = 0;
 
     lastUpdateTime = SDL_GetTicks();
@@ -175,7 +175,7 @@ void Game::update()
     if (state == STATE_IN_MENU)
     {
         gameMenu.update(&state, &controlBools);
-        if(state == STATE_IN_MENU)return;
+        if(state == STATE_IN_MENU) return;
     }
     
     if(life == 0) return;
@@ -226,7 +226,11 @@ void Game::update()
     {
         if (doesCollide(ship, asteroid))
         {
-            if(--life == 0) break;
+            if(--life == 0) 
+            {
+            state = STATE_IN_MENU;
+            break;
+            }
             ship.respawn(renderer);
             asteroidWave = 1;  
         }
@@ -444,6 +448,8 @@ void Game::update()
     UILife.update(life, renderer);
 
     UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
+
+    std::cout << ship.id << std::endl; 
 }
 
 void Game::render()
@@ -514,5 +520,27 @@ void Game::clean()
 
 void Game::reset()
 {
+    GameObject::resetId();
+    Asteroid::asteroids.clear();
+    Shot::shots.clear();
+    Bomb::bombs.clear();
+    Bomb::pCollectedBombs.clear();
 
+    colObjects.clear();
+
+    timeSinceLastAsteroidWave = 0;
+    asteroidWave = 1;
+
+    score = 0;
+    life = 1;
+    bombCount = 0;
+
+    ship = initShip(windowWidth, windowHeight);
+    colObjects.push_back(ship);
+
+    initAsteroids(ship, windowWidth, windowHeight);
+
+    lastUpdateTime = SDL_GetTicks();
+
+    state = STATE_IN_GAME;
 }

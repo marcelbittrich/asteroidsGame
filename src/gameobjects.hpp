@@ -25,6 +25,7 @@ class GameObject
         std::vector<float> velocity {0, 0};
         std::vector<float> midPos {0, 0};
         bool isVisible = true;
+        static void resetId(){newId = 1;};
 };
 
 
