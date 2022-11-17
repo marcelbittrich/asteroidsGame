@@ -1,15 +1,26 @@
 # include "menu.hpp"
 
-GameMenu::GameMenu(TTF_Font *font, SDL_Renderer *renderer, int width, int height)
+GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height)
 {
     this->width = width;
     this->height = height;
     this->font = font;
+    this->fontHuge = fontHuge;
     this->renderer = renderer;
 
-    startButtonRect = { 50, 80, width - 100, 80};
     SDL_Color color = { 255, 255, 255, 255 };
-    startButtonTextRect = {};
+
+    SDL_Surface *gameOverTextSurface = TTF_RenderText_Solid(fontHuge, "Game Over", color);
+    gameOverTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverTextSurface);
+    SDL_FreeSurface(gameOverTextSurface);
+
+    SDL_QueryTexture(gameOverTextTexture, NULL, NULL, &gameOverTextRect.w, &gameOverTextRect.h);
+
+    gameOverTextRect.x = width / 2 - gameOverTextRect.w / 2;
+    gameOverTextRect.y = 100;
+
+
+    startButtonRect = { 50, 400, width - 100, 80};
     SDL_Surface *startButtonSurface = TTF_RenderText_Solid(font, "Start", color);
     startButtonTexture = SDL_CreateTextureFromSurface(renderer, startButtonSurface);
     SDL_FreeSurface(startButtonSurface);
@@ -45,6 +56,9 @@ void GameMenu::render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+
+    SDL_RenderCopy(renderer, gameOverTextTexture, NULL, &gameOverTextRect);
+
     SDL_RenderFillRect(renderer, &startButtonRect);
 
     SDL_RenderCopy(renderer, startButtonTexture, NULL, &startButtonTextRect);
@@ -62,7 +76,7 @@ void GameMenu::render()
     SDL_FreeSurface(scoreTextSurface);
     SDL_QueryTexture(scoreTextTexture, NULL, NULL, &scoreTextRect.w, &scoreTextRect.h);
     scoreTextRect.x = width / 2 - scoreTextRect.w / 2;
-    scoreTextRect.y = 10;
+    scoreTextRect.y = 300;
     SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRect);
     SDL_DestroyTexture(scoreTextTexture);
 

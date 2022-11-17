@@ -9,6 +9,7 @@ SDL_Texture* asteroidTexMedium;
 SDL_Texture* shotTex;
 SDL_Texture* bombTex;
 TTF_Font* font;
+TTF_Font* fontHuge;
 
 extern ControlBools controlBools;
 
@@ -137,10 +138,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
 
     font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
+    fontHuge = TTF_OpenFont("../font/joystix_monospace.ttf", 120);
 
     gameSave = GameSave();
  
-    gameMenu = GameMenu(font, renderer, windowWidth, windowHeight);
+    gameMenu = GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
     gameMenu.highscore = gameSave.highscore;
 
     gameBackground = background(windowWidth,windowHeight,100);

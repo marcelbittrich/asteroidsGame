@@ -14,15 +14,18 @@ class GameMenu
     private:
         int width, height;
         TTF_Font *font;
+        TTF_Font *fontHuge;
+        SDL_Rect gameOverTextRect;
         SDL_Rect startButtonRect;
         SDL_Rect startButtonTextRect;
         SDL_Rect scoreTextRect;
+        SDL_Texture *gameOverTextTexture;
         SDL_Texture *startButtonTexture;
         SDL_Texture *scoreTextTexture;
         SDL_Renderer *renderer;
     public:
         GameMenu(){};
-        GameMenu(TTF_Font *font, SDL_Renderer *renderer, int width, int height);
+        GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
         void update(GameState *state, ControlBools *controlBools);
         void render();
         int score;
