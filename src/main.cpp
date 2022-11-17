@@ -20,7 +20,7 @@ int main(int argc,char * argv[])
 	game = new Game();
 	game->state = STATE_IN_GAME;
 
-	game->init("SDL-Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
+	game->init("Asteroid Game Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
 
 	while (game->running())
 	{

@@ -33,8 +33,8 @@ class Ship : public GameObject
 {
     private:
         float vMax = 20;
-        float roatatingSpeed = 2.0;
-        float thrust = 0.05;
+        float roatatingSpeed = 3.0;
+        float thrust = 0.10;
         Uint32 lastShot;
         Uint32 lastUpdated;
         int animationCounter;
