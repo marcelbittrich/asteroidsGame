@@ -27,6 +27,8 @@ UICounter UILife;
 UICounter UIBomb;
 UICounter UIFPS;
 
+GameSave gameSave;
+
 unsigned score;
 unsigned life;
 unsigned bombCount;
@@ -135,8 +137,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_FreeSurface(image);
 
     font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
+
+    gameSave = GameSave();
  
     gameMenu = GameMenu(font, renderer, windowWidth, windowHeight);
+    gameMenu.highscore = gameSave.highscore;
 
     gameBackground = background(windowWidth,windowHeight,100);
 
@@ -175,10 +180,20 @@ void Game::update()
     if (state == STATE_IN_MENU)
     {
         gameMenu.update(&state, &controlBools);
-        if(state == STATE_IN_MENU) return;
+        if(state != STATE_IN_GAME) return;
     }
     
-    if(life == 0) return;
+    if(life == 0)
+    {
+        state = STATE_IN_MENU;
+        gameMenu.score = score;
+        if (score > gameSave.highscore) {
+            gameMenu.highscore = score;
+            gameSave.highscore = score;
+            gameSave.write();
+        }
+        return;
+    }
     
     Uint32 currentTime = SDL_GetTicks();
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
@@ -228,8 +243,7 @@ void Game::update()
         {
             if(--life == 0) 
             {
-            state = STATE_IN_MENU;
-            break;
+                break;
             }
             ship.respawn(renderer);
             asteroidWave = 1;  

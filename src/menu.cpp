@@ -18,6 +18,8 @@ GameMenu::GameMenu(TTF_Font *font, SDL_Renderer *renderer, int width, int height
 
     startButtonTextRect.x = startButtonRect.x + startButtonRect.w / 2 - startButtonTextRect.w / 2;
     startButtonTextRect.y = startButtonRect.y + startButtonRect.h / 2 - startButtonTextRect.h / 2;
+
+    scoreTextRect = {};
 }
 
 void GameMenu::update(GameState *state, ControlBools *controlbools)
@@ -46,5 +48,23 @@ void GameMenu::render()
     SDL_RenderFillRect(renderer, &startButtonRect);
 
     SDL_RenderCopy(renderer, startButtonTexture, NULL, &startButtonTextRect);
+
+    SDL_Color color = { 255, 255, 255, 255 };
+    std::string scoreMessage = "";
+    if (score == highscore) {
+        scoreMessage = std::to_string(score) + " NEW HIGHSCORE!!!!!!!111!";
+    } else {
+        scoreMessage = std::to_string(score) + " (Highscore: " + std::to_string(highscore) + ") Booooo!";
+    }
+   
+    SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(font, scoreMessage.c_str(), color);
+    scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
+    SDL_FreeSurface(scoreTextSurface);
+    SDL_QueryTexture(scoreTextTexture, NULL, NULL, &scoreTextRect.w, &scoreTextRect.h);
+    scoreTextRect.x = width / 2 - scoreTextRect.w / 2;
+    scoreTextRect.y = 10;
+    SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRect);
+    SDL_DestroyTexture(scoreTextTexture);
+
     SDL_RenderPresent(renderer);
 }

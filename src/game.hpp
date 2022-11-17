@@ -18,6 +18,7 @@
 #include "initialization.hpp"
 #include "UIelements.hpp"
 #include "menu.hpp"
+#include "gamesave.hpp"
 
 #ifndef GAME_HPP
 #define GAME_HPP

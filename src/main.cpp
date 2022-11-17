@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "gamesave.hpp"
 
 
 Game *game = nullptr;
