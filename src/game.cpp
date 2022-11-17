@@ -136,7 +136,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
  
-    gameMenu = GameMenu(windowWidth, windowHeight);
+    gameMenu = GameMenu(font, renderer, windowWidth, windowHeight);
 
     gameBackground = background(windowWidth,windowHeight,100);
 
@@ -448,15 +448,13 @@ void Game::update()
     UILife.update(life, renderer);
 
     UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
-
-    std::cout << ship.id << std::endl; 
 }
 
 void Game::render()
 {
     if (state == STATE_IN_MENU)
     {
-        gameMenu.render(renderer);
+        gameMenu.render();
         return;
     }
     

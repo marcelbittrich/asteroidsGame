@@ -12,14 +12,17 @@
 class GameMenu 
 {
     private:
-        std::list<SDL_Rect> menuRects;
         int width, height;
+        TTF_Font *font;
+        SDL_Rect startButtonRect;
+        SDL_Rect startButtonTextRect;
+        SDL_Texture *startButtonTexture;
+        SDL_Renderer *renderer;
     public:
         GameMenu(){};
-        GameMenu(int width, int height);
+        GameMenu(TTF_Font *font, SDL_Renderer *renderer, int width, int height);
         void update(GameState *state, ControlBools *controlBools);
-        void render(SDL_Renderer *renderer);
-        SDL_Rect menuRect;
+        void render();
 };
 
 #endif // MENU_HPP
