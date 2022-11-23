@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "handleinput.hpp"
+#include "shapes.hpp"
 
 
 class GameObject

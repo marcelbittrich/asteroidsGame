@@ -111,6 +111,28 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
 
 void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 {
+    //inner triangle
+    SDL_Color black = {0, 0, 0, 255};
+    SDL_Color meterColor;
+    if (canShoot)
+    {
+        meterColor = {0, 200, 0, 255};
+    } else {
+        meterColor = {200, 0, 0, 255};
+    }
+    
+    SDL_Point shipNose;
+    float noseDistanceToMid = height * 0.42;
+    shipNose.x = midPos[0] + SDL_sinf(shipAngle/180 * PI) * noseDistanceToMid;
+    shipNose.y = midPos[1] - SDL_cosf(shipAngle/180 * PI) * noseDistanceToMid;
+
+    float shotMeterValue = std::min(shotCounter/maxShotCounter , 1.0f);
+
+    drawTriangle(renderer, shipNose.x, shipNose.y, (float)width * 0.5, (float)height * 0.625, shipAngle, black);
+    if (shotMeterValue > 0.1f) drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * (float)width * 0.5, shotMeterValue * (float)height * 0.625, shipAngle, meterColor);
+    
+    
+    //outer texture
     SDL_Rect srcR;
     SDL_Rect destR = getRect();
     srcR.w = 300;
@@ -131,6 +153,7 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
     }
 
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+
 }
 
 void Ship::respawn(SDL_Renderer *renderer){

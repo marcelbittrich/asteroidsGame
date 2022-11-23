@@ -153,7 +153,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     initAsteroids(ship, windowWidth, windowHeight);
 
     score = 0;
-    life = 1;
+    life = 3;
     bombCount = 0;
 
     lastUpdateTime = SDL_GetTicks();
@@ -510,7 +510,7 @@ void Game::render()
     UIFPS.render(renderer);
 
     // ShotMeter
-    shotMeter.render(renderer, ship.canShoot);
+    //shotMeter.render(renderer, ship.canShoot);
 
     if (life == 0) {
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

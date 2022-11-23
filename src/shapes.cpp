@@ -35,3 +35,23 @@ void drawCircle(SDL_Renderer *renderer, int x0, int y0, int radius)
         }
     }
 }
+
+void drawTriangle(SDL_Renderer *renderer, float x0, float y0, float width, float height, float angle, SDL_Color color)
+{
+
+    float borderLine = SDL_sqrtf((width/2)*(width/2) + height * height);
+    float anglePoint = SDL_acosf(height/borderLine);
+
+    SDL_FPoint peakPoint = {x0, y0}; 
+    SDL_FPoint bottomLeftPoint = {x0 + borderLine * SDL_sinf(-angle/180.0 * 3.1415  + anglePoint), y0 + borderLine * SDL_cosf(-angle/180.0 * 3.1415  + anglePoint)};
+    SDL_FPoint bottomRightPoint = {x0 + borderLine * SDL_sinf(-angle/180.0 * 3.1415  - anglePoint), y0 + borderLine * SDL_cosf(-angle/180.0 * 3.1415  - anglePoint)};
+    
+    std::vector< SDL_Vertex > verts =
+    {
+        { peakPoint, color, SDL_FPoint{ 0 }, },
+        { bottomLeftPoint, color, SDL_FPoint{ 0 }, },
+        { bottomRightPoint, color, SDL_FPoint{ 0 }, },
+    };
+
+    SDL_RenderGeometry(renderer, nullptr, verts.data(), verts.size(), nullptr, 0);
+}
