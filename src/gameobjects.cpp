@@ -131,7 +131,7 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
     drawTriangle(renderer, shipNose.x, shipNose.y, (float)width * 0.5, (float)height * 0.625, shipAngle, black);
     if (shotMeterValue > 0.1f) drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * (float)width * 0.5, shotMeterValue * (float)height * 0.625, shipAngle, meterColor);
     
-    
+
     //outer texture
     SDL_Rect srcR;
     SDL_Rect destR = getRect();
@@ -236,11 +236,32 @@ void Asteroid::update(int windowWidth, int windowHeight, float* deltaTime)
         midPos[0] += velocity[0] * *deltaTime * 60;
         midPos[1] += velocity[1] * *deltaTime * 60;
     }
+    
     std::vector<float> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
     if (midPos != newMidPosistion)
     {
         isVisible = false;
     }
+
+    if (!isVisible)
+    {
+        isVisible = true;
+        bool canStayVisible = true;
+        for (Asteroid otherAsteroid : Asteroid::asteroids)
+        {
+            if (id == otherAsteroid.id) continue;
+            if (doesCollide(*this, otherAsteroid))
+            {
+                canStayVisible = false;
+                break;
+            }
+        }
+        if (!canStayVisible)
+        {
+            isVisible = false;
+        }
+    }
+
     midPos = newMidPosistion;
 }
 
@@ -359,6 +380,9 @@ void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSize
 {
     GameObject collisionObject = GameObject();
     collisionObject.midPos = {(float)xPos, (float)yPos};
+
+    
+
     collisionObject.colRadius = Asteroid::getColRadius(Asteroid::getSize(sizeType));
 
     bool isSafeToSpawn = true;
@@ -406,7 +430,7 @@ void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
 {
     midPos[0] += velocity[0] * *deltaTime * 60;
     midPos[1] += velocity[1] * *deltaTime * 60;
-    midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
+    //midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 }
 
 void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
@@ -415,9 +439,9 @@ void Shot::render(SDL_Renderer*renderer, SDL_Texture *shotTex)
     SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
 }
 
-bool shotIsToOld (Shot shot){   
+bool shotIsToOld(Shot shot){ 
     Uint32 deltaTime = SDL_GetTicks() - shot.creationTime;
-    Uint32 maxLifeTime = 500;
+    Uint32 maxLifeTime = 2000;
     return (maxLifeTime < deltaTime);
 }
 

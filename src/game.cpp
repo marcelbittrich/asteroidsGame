@@ -268,14 +268,14 @@ void Game::update()
     {      
         std::cout << "Spawn small ";
         SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
-        std::vector<float> randomVelocity1 = getRandomVelocity(0, 0.5*asteroidWave);
+        std::vector<float> randomVelocity1 = getRandomVelocity(0, 0.1*score);
         spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, colObjects);
 
         if (asteroidWave % 3 == 0)
         {
             std::cout << "and large "; 
             SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
-            std::vector<float> randomVelocity2 = getRandomVelocity(0, 0.5*asteroidWave);
+            std::vector<float> randomVelocity2 = getRandomVelocity(0, 0.1*score);
             spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
         }
         std::cout << "asteroid" << std::endl; 
@@ -283,7 +283,6 @@ void Game::update()
         asteroidWave++;
     }
     
-
 
     // Check Asteroid Collision
     for(auto it1 = Asteroid::asteroids.begin(); it1 != Asteroid::asteroids.end(); it1++)
@@ -294,30 +293,6 @@ void Game::update()
             asteroidsCollide(*it1, *it2);
         }
         
-    }
-
-
-
-    for (Asteroid &asteroid : Asteroid::asteroids)
-    {
-        if (!asteroid.isVisible)
-        {
-            asteroid.isVisible = true;
-            bool canStayVisible = true;
-            for (Asteroid otherAsteroid : Asteroid::asteroids)
-            {
-                if (asteroid.id == otherAsteroid.id) continue;
-                if (doesCollide(asteroid, otherAsteroid))
-                {
-                    canStayVisible = false;
-                    break;
-                }
-            }
-            if (!canStayVisible)
-            {
-                asteroid.isVisible = false;
-            }
-        }
     }
     
     //Make Shots
@@ -331,7 +306,7 @@ void Game::update()
     for (Shot &singleShot: Shot::shots)
     {
         singleShot.update(windowWidth, windowHeight, &deltaTime);
-    }
+    }    
 
     //Destroy Shots
     if (!Shot::shots.empty())
@@ -546,7 +521,7 @@ void Game::reset()
     asteroidWave = 1;
 
     score = 0;
-    life = 1;
+    life = 3;
     bombCount = 0;
 
     ship = initShip(windowWidth, windowHeight);
