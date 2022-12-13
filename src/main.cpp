@@ -18,7 +18,7 @@ int main(int argc,char * argv[])
 	const float frameCapTime = 1000.0f/TargetFPS;
 
 	game = new Game();
-	game->state = STATE_IN_GAME;
+	game->state = STATE_IN_MENU;
 
 	game->init("Asteroid Game Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
 

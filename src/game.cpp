@@ -183,7 +183,7 @@ void Game::update()
 {
     if (state == STATE_IN_MENU)
     {
-        gameMenu.update(&state, &controlBools);
+        gameMenu.update(&state, &controlBools, &isRunning);
         if(state != STATE_IN_GAME) return;
     }
     
@@ -466,7 +466,7 @@ void Game::update()
 
 void Game::render()
 {
-    if (state == STATE_IN_MENU)
+    if (state == STATE_IN_MENU || state == STATE_RESET)
     {
         gameMenu.render();
         return;
