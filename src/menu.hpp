@@ -17,6 +17,7 @@ class GameMenu
         TTF_Font *font;
         TTF_Font *fontHuge;
         SDL_Rect gameOverTextRect;
+        SDL_Rect controlInstructionsTextRect;
         SDL_Rect startScreenTextRect;
         SDL_Rect startButtonRect;
         SDL_Rect startButtonTextRect;
@@ -24,6 +25,7 @@ class GameMenu
         SDL_Rect exitButtonTextRect;
         SDL_Rect scoreTextRect;
         SDL_Texture *gameOverTextTexture;
+        SDL_Texture *controlInstructionsTextTexture;
         SDL_Texture *startScreenTextTexture;
         SDL_Texture *exitButtonTexture;
         SDL_Texture *startButtonTexture;

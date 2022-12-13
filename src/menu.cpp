@@ -25,6 +25,12 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     startScreenTextRect.x = width / 2 - startScreenTextRect.w / 2;
     startScreenTextRect.y = 100;
 
+    SDL_Surface *controlInstructionsTextSurface = TTF_RenderText_Solid(font, "Move - Arrows, Shoot - Space, Bomb - Ctrl", color);
+    controlInstructionsTextTexture = SDL_CreateTextureFromSurface(renderer, controlInstructionsTextSurface);
+    SDL_FreeSurface(controlInstructionsTextSurface);
+    SDL_QueryTexture(controlInstructionsTextTexture, NULL, NULL, &controlInstructionsTextRect.w, &controlInstructionsTextRect.h);
+    controlInstructionsTextRect.x = width / 2 - controlInstructionsTextRect.w / 2;
+    controlInstructionsTextRect.y = 630;
 
     startButtonRect = { 50, 400, width - 100, 80};
     SDL_Surface *startButtonSurface = TTF_RenderText_Solid(font, "Start", color);
@@ -85,6 +91,8 @@ void GameMenu::render()
         SDL_RenderCopy(renderer, gameOverTextTexture, NULL, &gameOverTextRect);
     }
 
+    SDL_RenderCopy(renderer, controlInstructionsTextTexture, NULL, &controlInstructionsTextRect);
+
     SDL_RenderFillRect(renderer, &startButtonRect);
     SDL_RenderCopy(renderer, startButtonTexture, NULL, &startButtonTextRect);
 
@@ -110,5 +118,6 @@ void GameMenu::render()
         SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRect);
         SDL_DestroyTexture(scoreTextTexture);
     }
+    
     SDL_RenderPresent(renderer);
 }
