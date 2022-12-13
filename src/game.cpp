@@ -46,6 +46,8 @@ GameMenu gameMenu;
 ShotMeter shotMeter;
 
 bool newClick = true;
+bool newPause = true;
+bool pause = false;
 bool newBombIgnition = true;
 
 Game::Game()
@@ -201,6 +203,27 @@ void Game::update()
     float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
     lastUpdateTime = currentTime;
 
+    if (controlBools.isPaused && newPause && !pause)
+    {
+        newPause = false;
+        pause = true;
+
+    } else if (controlBools.isPaused && newPause && pause)
+    {
+        newPause = false;
+        pause = false;
+
+    } else if (!controlBools.isPaused)
+    {
+        newPause = true;
+    }
+
+    if (pause)
+    {
+        return;
+    }
+    
+
     if (controlBools.isLeftClicking && newClick)
     {
         newClick = false;
@@ -341,7 +364,7 @@ void Game::update()
                 }
                 else if (asteroidIt->sizeType == AsteroidSizeType::Medium)
                 {   
-                    handleDistruction(*asteroidIt);  
+                    handleDestruction(*asteroidIt);  
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     break;
                 }
@@ -355,7 +378,7 @@ void Game::update()
     } 
 
     // Update Bombs
-    for (auto bombIt =  Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
+    for (auto bombIt = Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
     {
         bombIt->update(windowWidth, windowHeight, &deltaTime, &ship);
 

@@ -76,7 +76,7 @@ class Asteroid : public GameObject
 //void initShip(int windowWidth, int windowHeight);
 bool doesCollide(GameObject firstObject, GameObject secondObject);
 void asteroidsCollide(GameObject &firstObject, GameObject &secondObject);
-void handleDistruction(Asteroid destoryedAsteroid);
+void handleDestruction(Asteroid destoryedAsteroid);
 void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects);
 
 class Shot : public GameObject

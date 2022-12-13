@@ -495,7 +495,7 @@ std::vector<float> rotate2DVector(std::vector<float> old2DVector, float angleInD
     return rotated2DVector;
 }
 
-void handleDistruction(Asteroid destroyedAsteroid)
+void handleDestruction(Asteroid destroyedAsteroid)
 {
     int newAsteroidSize = Asteroid::getSize(AsteroidSizeType::Small);
     

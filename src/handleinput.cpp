@@ -30,6 +30,9 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                 case SDLK_LCTRL:
                     controlBools->isUsingBomb = true;
                     break;
+                case SDLK_p:
+                    controlBools->isPaused = true;
+                    break;
                 default:
                     break;
             }
@@ -53,6 +56,9 @@ void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning) 
                     break;
                 case SDLK_LCTRL:
                     controlBools->isUsingBomb = false;
+                    break;
+                case SDLK_p:
+                    controlBools->isPaused = false;
                     break;
                 default:
                     break;
