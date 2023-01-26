@@ -15,6 +15,6 @@ struct controlbools {
 typedef controlbools ControlBools;
 
 
-void handleInput(SDL_Event event, ControlBools *controlBools, bool * isRunning);
+void handleInput(SDL_Event event, ControlBools *controlBools, bool *isRunning);
 
 #endif

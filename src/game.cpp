@@ -1,8 +1,9 @@
 #include "game.hpp"
+// Gameplay values
+int STARTING_LIVES      = 3;
+int STARTING_BOMB_COUNT = 0;
 
-
-Ship ship = Ship();
-
+// texture values
 SDL_Texture* shipTex;
 SDL_Texture* asteroidTexSmall;
 SDL_Texture* asteroidTexMedium;
@@ -11,44 +12,51 @@ SDL_Texture* bombTex;
 TTF_Font* font;
 TTF_Font* fontHuge;
 
+// game window values
+int windowWidth, windowHeight;
+
+// control values 
 extern ControlBools controlBools;
 
-int windowWidth, windowHeight;
+// game object values
+Ship ship = Ship();
 int thrustAnimationCounter;
 int currentThrustAnimationTime = 0;
-
+bool newBombIgnition = true;
 
 background gameBackground;
 
-std::vector<double> velocity = {0.0, 0.0};
+GameSave gameSave;
+
+GameMenu gameMenu;
+
 std::list<GameObject> colObjects;
 
+
+// UI values
+ShotMeter shotMeter;
 UICounter UIScore;
-UICounter UILife;
+UICounter UILives;
 UICounter UIBomb;
 UICounter UIFPS;
-
-GameSave gameSave;
 
 unsigned score;
 unsigned life;
 unsigned bombCount;
 unsigned FPS;
+
 std::vector<int> FPSVector;
-
-float timeSinceLastAsteroidWave = 0;
-int asteroidWave = 1;
-
-Uint32 lastUpdateTime = SDL_GetTicks();
-
-GameMenu gameMenu;
-
-ShotMeter shotMeter;
 
 bool newClick = true;
 bool newPause = true;
 bool pause = false;
-bool newBombIgnition = true;
+
+// values for wave spwan system
+float timeSinceLastAsteroidWave = 0;
+int asteroidWave = 1;
+
+// priming game time
+Uint32 lastUpdateTime = SDL_GetTicks();
 
 Game::Game()
 {}
@@ -154,18 +162,23 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     initAsteroids(ship, windowWidth, windowHeight);
 
-    score = 0;
-    life = 3;
-    bombCount = 0;
+    
+   
 
     lastUpdateTime = SDL_GetTicks();
 
     shotMeter = ShotMeter(&ship, 0, 25, 40, 6);
+
     SDL_Color white = {255, 255, 255, 255};
+
     UIScore = UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
-    UILife = UICounter("Lifes", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UILives = UICounter("Lives", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
     UIBomb = UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
     UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+
+    score = 0;
+    life = STARTING_LIVES;
+    bombCount = STARTING_BOMB_COUNT;
 }
 
 void Game::handleEvents()
@@ -459,7 +472,7 @@ void Game::update()
     UIScore.update(score, renderer);
 
     UIFPS.update(averageFPS, renderer);
-    UILife.update(life, renderer);
+    UILives.update(life - 1, renderer);
 
     UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
 }
@@ -503,7 +516,7 @@ void Game::render()
     //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
     UIScore.render(renderer);
-    UILife.render(renderer);
+    UILives.render(renderer);
     UIBomb.render(renderer);
     UIFPS.render(renderer);
 
