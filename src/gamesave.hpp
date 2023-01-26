@@ -8,9 +8,10 @@
 class GameSave
 {
 public:
+    unsigned highscore = 0;
+
     GameSave();
     void write();
-    int highscore = 0;
 };
 
 #endif

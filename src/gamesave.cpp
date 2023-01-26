@@ -4,6 +4,7 @@ GameSave::GameSave()
 {
     std::ifstream file ("savegame.txt");
     std::string line;
+    
     if (file.is_open())
     {
         while (getline (file, line))
