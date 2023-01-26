@@ -20,8 +20,8 @@ extern ControlBools controlBools;
 
 // game object values
 Ship ship = Ship();
-int thrustAnimationCounter;
-int currentThrustAnimationTime = 0;
+//int thrustAnimationCounter;
+//int currentThrustAnimationTime = 0;
 bool newBombIgnition = true;
 
 background gameBackground;
@@ -304,14 +304,14 @@ void Game::update()
     {      
         std::cout << "Spawn small ";
         SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
-        std::vector<float> randomVelocity1 = getRandomVelocity(0, 0.1*score);
+        SDL_FPoint randomVelocity1 = getRandomVelocity(0, 0.1*score);
         spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, colObjects);
 
         if (asteroidWave % 3 == 0)
         {
             std::cout << "and large "; 
             SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
-            std::vector<float> randomVelocity2 = getRandomVelocity(0, 0.1*score);
+            SDL_FPoint randomVelocity2 = getRandomVelocity(0, 0.1*score);
             spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
         }
         std::cout << "asteroid" << std::endl; 
@@ -370,7 +370,7 @@ void Game::update()
 
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
-                    if(rand() % 5 ==0) Bomb(asteroidIt->midPos[0], asteroidIt->midPos[1], getRandomVelocity(0.0f, 0.5f));
+                    if(rand() % 5 ==0) Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;

@@ -9,8 +9,8 @@ SDL_Rect GameObject::getRect()
     SDL_Rect rect;
     rect.w = width;
     rect.h = height;
-    rect.x = std::round(midPos[0] - width / 2);
-    rect.y = std::round(midPos[1] - height / 2);
+    rect.x = std::round(midPos.x - width / 2);
+    rect.y = std::round(midPos.y - height / 2);
     return rect;
 }
 
@@ -18,9 +18,11 @@ Ship::Ship(float midPosX, float midPosY, int size) : GameObject()
 {
     this->width = size;
     this->height = size;
-    float colRadiusOffset = 0.6;
-    this->colRadius = (width/2 + height/2)/2*colRadiusOffset;
+
+    this->colRadius = size/2 * sizeToCollisonRadiusRatio;
+
     this->midPos = {midPosX, midPosY};
+
     animationCounter = 0;
 }
 
@@ -30,80 +32,76 @@ Ship::Ship() : GameObject()
 }
 
 
-void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, float *deltaTime)
+void Ship::update(
+    ControlBools controlBools, 
+    int windowWidth, 
+    int windowHeight,
+    float *deltaTime)
 {  
+    // update shooting capability and ship visibility
     if (isVisible)
     {
-        shotCounter = std::max((shotCounter - shotDecay * *deltaTime), 0.0f);
-        if (!canShoot && shotCounter <= maxShotCounter/2)   canShoot = true;
+        shotCounter = std::max((shotCounter - shotCounterDecay * *deltaTime), 0.0f); 
         if (shotCounter >= maxShotCounter)                  canShoot = false;
-    } else
+        if (!canShoot && shotCounter <= shipCooldown)   canShoot = true;
+    } 
+    else
     {
         canShoot = false;
         shotCounter = maxShotCounter + 1;
         timeNotVisible += *deltaTime;
-        if (timeNotVisible > 3){
+        if (timeNotVisible > respawnTime){
             timeNotVisible = 0;
             isVisible = true;
             shotCounter = 0;
         } 
     }
 
-    float deltaX = 0;
-    float deltaY = 0;
-    float vAngle = 0;
-    float vSum;
+    // update position
+    float velocitySum = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    float velocityAngle = atan2(velocity.x, velocity.y);
 
-    vSum = sqrt(std::pow(velocity[0],2) + std::pow(velocity[1],2));
-
-    if (vSum > 0)
-    {
-        vAngle = atan2(velocity[0],velocity[1]);
-        vSum = std::max(vSum - 0.01 * *deltaTime * 60, 0.0);
-    }    
-    
-    velocity.at(0) = (sin(vAngle) * vSum);
-    velocity.at(1) = (cos(vAngle) * vSum); 
+    velocitySum = std::max(velocitySum - velocityDecay * *deltaTime, 0.0f);
+    velocity.x = (sin(velocityAngle) * velocitySum);
+    velocity.y = (cos(velocityAngle) * velocitySum); 
 
     if (controlBools.giveThrust)
     {
-        if (vSum <= vMax)
+        if (velocitySum <= velocityMax)
         {
-            deltaX = (sin(shipAngle*PI/180) * thrust);
-            deltaY = -(cos(shipAngle*PI/180) * thrust); 
+            float deltaVelocityX = sin(shipAngle*PI/180)    * thrust * *deltaTime;
+            float deltaVelocityY = -(cos(shipAngle*PI/180)) * thrust * *deltaTime;
+            velocity.x += deltaVelocityX;
+            velocity.y += deltaVelocityY;
         }
     }
 
-    //std::cout << game.frameTime << std::endl;
+    midPos.x += velocity.x * *deltaTime;
+    midPos.y += velocity.y * *deltaTime;
 
-    velocity.at(0) += deltaX * *deltaTime * 60;
-    velocity.at(1) += deltaY * *deltaTime * 60;
+    midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
 
-
+    // update ship heading
     if (controlBools.isTurningRight)
     {
-        shipAngle += roatatingSpeed * *deltaTime * 60;
+        shipAngle += roatatingSpeed * *deltaTime;
     }
 
     if (controlBools.isTurningLeft)
     {
-        shipAngle -= roatatingSpeed * *deltaTime * 60;
+        shipAngle -= roatatingSpeed * *deltaTime;
     }
 
-    midPos[0] += velocity[0] * *deltaTime * 60;
-    midPos[1] += velocity[1] * *deltaTime * 60;
-
-    midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
-
-    //Animation update
+    // animation update
     if (controlBools.giveThrust)
     {
-        if (SDL_GetTicks() - lastUpdated > 300){
+        if (SDL_GetTicks() - timeLastUpdated > timeBetweenSprites){
             animationCounter++;
             animationCounter = animationCounter % 3 + 1;
-            lastUpdated = SDL_GetTicks();
+            timeLastUpdated = SDL_GetTicks();
         }
-    }else
+    }
+    else
     {
         animationCounter = 0;
     }
@@ -111,8 +109,7 @@ void Ship::update(ControlBools controlBools, int windowWidth, int windowHeight, 
 
 void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
 {
-    //inner triangle
-    SDL_Color black = {0, 0, 0, 255};
+    // inner shoot indicator triangle
     SDL_Color meterColor;
     if (canShoot)
     {
@@ -121,18 +118,41 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
         meterColor = {200, 0, 0, 255};
     }
     
-    SDL_Point shipNose;
-    float noseDistanceToMid = height * 0.42;
-    shipNose.x = midPos[0] + SDL_sinf(shipAngle/180 * PI) * noseDistanceToMid;
-    shipNose.y = midPos[1] - SDL_cosf(shipAngle/180 * PI) * noseDistanceToMid;
+    // calculate triangle size
+    SDL_FPoint shipNose;
+    float noseDistanceToShipMid = height * 0.42;
+    shipNose.x = midPos.x + SDL_sinf(shipAngle/180 * PI) * noseDistanceToShipMid;
+    shipNose.y = midPos.y - SDL_cosf(shipAngle/180 * PI) * noseDistanceToShipMid;
 
+    SDL_Color triangleBaseColor = {0, 0, 0, 255};
+    float tringleWidth = width * 0.5f;
+    float trinagleHeight = height * 0.625f;
+
+    drawTriangle(renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, shipAngle, triangleBaseColor);
+
+    // overlay shot meter triangle
     float shotMeterValue = std::min(shotCounter/maxShotCounter , 1.0f);
+    if (shotMeterValue > 0.1f) 
+    {
+        drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, shipAngle, meterColor);
+    }
 
-    drawTriangle(renderer, shipNose.x, shipNose.y, (float)width * 0.5, (float)height * 0.625, shipAngle, black);
-    if (shotMeterValue > 0.1f) drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * (float)width * 0.5, shotMeterValue * (float)height * 0.625, shipAngle, meterColor);
+    // draw ship texture
+    if(!isVisible) 
+    {   
+        float timeStepSize = 0.25f;
+        int stepValue = timeNotVisible / timeStepSize;
+        // greyed out texture
+        if (stepValue % 2 == 1) SDL_SetTextureColorMod(shipTex, 100, 100, 100);
+        else SDL_SetTextureColorMod(shipTex, 255, 255, 255);
+    }
+    else
+    {
+        // default texture
+        SDL_SetTextureColorMod(shipTex, 255, 255, 255);
+    }
     
 
-    //outer texture
     SDL_Rect srcR;
     SDL_Rect destR = getRect();
     srcR.w = 300;
@@ -140,40 +160,30 @@ void Ship::render(SDL_Renderer*renderer, SDL_Texture *shipTex)
     srcR.x = srcR.w * animationCounter;
     srcR.y = 0;
 
-    float timeDivider = 0.25f;
-    int stepValue = timeNotVisible / timeDivider;
-
-    if(isVisible || stepValue % 2 == 1) 
-    {
-        SDL_SetTextureColorMod(shipTex, 255, 255, 255);
-    } 
-    else
-    {
-        SDL_SetTextureColorMod(shipTex, 100, 100, 100);
-    }
-
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
 
 }
 
-void Ship::respawn(SDL_Renderer *renderer){
+void Ship::respawn(SDL_Renderer *renderer)
+{
     int windowWidth, windowHeight;
     SDL_RenderGetLogicalSize(renderer, &windowWidth, &windowHeight);
-    midPos = {(float)windowWidth/2, (float)windowHeight/2};
 
-    velocity = {0, 0};
+    midPos = {windowWidth/2.0f, windowHeight/2.0f};
+    velocity = {0.0f, 0.0f};
 
     isVisible = false;
 }
 
-void createShot(Ship ship) {
-    std::vector<float> shotVelocityVector = {0, 0};
-    float shotVelocity;
-    shotVelocity = 15;
-    shotVelocityVector[0] = sin(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[0];
-    shotVelocityVector[1] = -cos(ship.shipAngle/180*PI)*shotVelocity + ship.velocity[1];
+void createShot(Ship ship) 
+{
+    SDL_FPoint shotVelocityVector = {0, 0};
+    float shotVelocity = ship.getShotVelocity();
 
-    Shot(ship.midPos[0], ship.midPos[1], shotVelocityVector, ship.shipAngle);
+    shotVelocityVector.x = sin(ship.shipAngle/180*PI) * shotVelocity + ship.velocity.x;
+    shotVelocityVector.y = -cos(ship.shipAngle/180*PI) * shotVelocity + ship.velocity.y;
+
+    Shot(ship.midPos.x, ship.midPos.y, shotVelocityVector, ship.shipAngle);
 }
 
 void Ship::shoot()
@@ -217,7 +227,7 @@ float Asteroid::getColRadius(int size)
 }
 
 
-Asteroid::Asteroid(float midPosX, float midPosY, std::vector<float> velocity, AsteroidSizeType sizeType) : GameObject()
+Asteroid::Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType) : GameObject()
 {
     this->midPos = {midPosX, midPosY};
     this->sizeType = sizeType;
@@ -233,12 +243,13 @@ void Asteroid::update(int windowWidth, int windowHeight, float* deltaTime)
 {
     if (isVisible)
     {
-        midPos[0] += velocity[0] * *deltaTime * 60;
-        midPos[1] += velocity[1] * *deltaTime * 60;
+        midPos.x += velocity.x * *deltaTime * 60;
+        midPos.y += velocity.y * *deltaTime * 60;
     }
     
-    std::vector<float> newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
-    if (midPos != newMidPosistion)
+    SDL_FPoint newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
+    
+    if ((midPos.x != newMidPosistion.x) || (midPos.y != newMidPosistion.y))
     {
         isVisible = false;
     }
@@ -288,7 +299,7 @@ bool doesCollide(GameObject firstObject, GameObject secondObject)
 {
     if (!firstObject.isVisible || !secondObject.isVisible) return false;
     float distance;
-    distance = sqrt(pow(firstObject.midPos[0] - secondObject.midPos[0], 2) + pow(firstObject.midPos[1] - secondObject.midPos[1], 2));
+    distance = sqrt(pow(firstObject.midPos.x - secondObject.midPos.x, 2) + pow(firstObject.midPos.y - secondObject.midPos.y, 2));
    
     return distance <= firstObject.colRadius + secondObject.colRadius;
 }
@@ -333,32 +344,32 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
 
         // distance vector
         std::vector<float> normal;
-        normal.push_back(secondObject.midPos[0]-firstObject.midPos[0]);
-        normal.push_back(secondObject.midPos[1]-firstObject.midPos[1]);
+        normal.push_back(secondObject.midPos.x-firstObject.midPos.x);
+        normal.push_back(secondObject.midPos.y-firstObject.midPos.y);
         
         // angle between object 1 and normal
-        float f1 = (firstObject.velocity[0] * normal[0] + firstObject.velocity[1] * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]); 
+        float f1 = (firstObject.velocity.x * normal[0] + firstObject.velocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]); 
         // parallel component for object 1
         std::vector<float> vp1 = {normal[0] * f1, normal[1] * f1};
         // vertical component for object 1
-        std::vector<float> vv1 = {firstObject.velocity[0] - vp1[0], firstObject.velocity[1] - vp1[1]};
+        std::vector<float> vv1 = {firstObject.velocity.x - vp1[0], firstObject.velocity.y - vp1[1]};
 
         // angle between object 2 and normal
-        float f2 = (secondObject.velocity[0] * normal[0] + secondObject.velocity[1] * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
+        float f2 = (secondObject.velocity.x * normal[0] + secondObject.velocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
         // parallel component for object 2 
         std::vector<float> vp2 = {normal[0] * f2, normal[1] * f2};
         // vertical component for object 2
-        std::vector<float> vv2 = {secondObject.velocity[0] - vp2[0], secondObject.velocity[1] - vp2[1]};
+        std::vector<float> vv2 = {secondObject.velocity.x - vp2[0], secondObject.velocity.y - vp2[1]};
 
         int weightObject1 = PI * firstObject.colRadius * firstObject.colRadius;
         int weightObject2 = PI * secondObject.colRadius * secondObject.colRadius;
 
         if (weightObject1 == weightObject2)
         {
-            firstObject.velocity[0] = vv1[0] + vp2[0];
-            firstObject.velocity[1] = vv1[1] + vp2[1];
-            secondObject.velocity[0] = vv2[0] + vp1[0];
-            secondObject.velocity[1] = vv2[1] + vp1[1];
+            firstObject.velocity.x = vv1[0] + vp2[0];
+            firstObject.velocity.y = vv1[1] + vp2[1];
+            secondObject.velocity.x = vv2[0] + vp1[0];
+            secondObject.velocity.y = vv2[1] + vp1[1];
         } else {   
             float weightFactorX = 2 * ((weightObject1 * vp1[0] + weightObject2 * vp2[0]) / (weightObject1 + weightObject2));
             float weightFactorY = 2 * ((weightObject1 * vp1[1] + weightObject2 * vp2[1]) / (weightObject1 + weightObject2));
@@ -368,15 +379,15 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
             vp2[0] = weightFactorX - vp2[0];
             vp2[1] = weightFactorY - vp2[1];
 
-            firstObject.velocity[0] = vv1[0] + vp1[0];
-            firstObject.velocity[1] = vv1[1] + vp1[1];
-            secondObject.velocity[0] = vv2[0] + vp2[0];
-            secondObject.velocity[1] = vv2[1] + vp2[1];
+            firstObject.velocity.x = vv1[0] + vp1[0];
+            firstObject.velocity.y = vv1[1] + vp1[1];
+            secondObject.velocity.x = vv2[0] + vp2[0];
+            secondObject.velocity.y = vv2[1] + vp2[1];
         }
     }
 }
 
-void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects)
+void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects)
 {
     GameObject collisionObject = GameObject();
     collisionObject.midPos = {(float)xPos, (float)yPos};
@@ -397,8 +408,8 @@ void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSize
     if (isSafeToSpawn) 
     {
         Asteroid(
-            collisionObject.midPos[0],
-            collisionObject.midPos[1],
+            collisionObject.midPos.x,
+            collisionObject.midPos.y,
             velocity,
             sizeType
         );
@@ -407,7 +418,7 @@ void spawnAsteroid(int xPos, int yPos, std::vector<float> velocity, AsteroidSize
 
 std::list<Shot> Shot::shots;
 
-Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shotHeadingAngle)
+Shot::Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingAngle)
 {
     this->velocity = velocity;
     this->midPos = {midPosX, midPosY};
@@ -428,8 +439,8 @@ Shot::Shot(float midPosX, float midPosY, std::vector<float> velocity, float shot
 
 void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
 {
-    midPos[0] += velocity[0] * *deltaTime * 60;
-    midPos[1] += velocity[1] * *deltaTime * 60;
+    midPos.x += velocity.x * *deltaTime;
+    midPos.y += velocity.y * *deltaTime;
     //midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 }
 
@@ -445,52 +456,51 @@ bool shotIsToOld(Shot shot){
     return (maxLifeTime < deltaTime);
 }
 
-std::vector<float> calcPosIfLeaving(std::vector<float> midPos, float radius, int windowWidth, int windowHeight)
+SDL_FPoint calcPosIfLeaving(SDL_FPoint midPos, float radius, int windowWidth, int windowHeight)
 {
-    std::vector<float> newMidPos = midPos;
+    SDL_FPoint newMidPos = midPos;
 
-    if (midPos[0] < 0 - radius) // leave to left.
+    if (midPos.x < 0 - radius) // leave to left.
     {
-        newMidPos[0] = windowWidth + radius;
+        newMidPos.x = windowWidth + radius;
     
-    } else if (midPos[0] > windowWidth + radius) // leave to right.
+    } 
+    else if (midPos.x > windowWidth + radius) // leave to right.
     {
-        newMidPos[0] = 0 - radius;
+        newMidPos.x = 0 - radius;
     }
 
-    if (midPos[1] < 0 - radius) // leave to top.
+    if (midPos.y < 0 - radius) // leave to top.
     {
-        newMidPos[1] = windowHeight + radius;
-    } else if (midPos[1] > windowHeight + radius) // leave to bottom.
+        newMidPos.y = windowHeight + radius;
+    } 
+    else if (midPos.y > windowHeight + radius) // leave to bottom.
     {
-        newMidPos[1] = 0 - radius;
+        newMidPos.y = 0 - radius;
     }
     return newMidPos;
 }
 
 
-std::vector<float> normalize2DVector(std::vector<float> vector2D)
+SDL_FPoint normalize2DVector(SDL_FPoint vector2D)
 {
-    SDL_assert(vector2D.size() == 2);
-    float factor = 1 / SDL_sqrtf(pow(vector2D[0],2) + pow(vector2D[1],2)); 
-    return {vector2D[0] * factor, vector2D[1] * factor};
+    float factor = 1 / SDL_sqrtf(pow(vector2D.x,2) + pow(vector2D.y,2)); 
+    return {vector2D.x * factor, vector2D.y * factor};
 }
 
-std::vector<float> set2DVectorLength(std::vector<float> vector2D, float length)
+SDL_FPoint set2DVectorLength(SDL_FPoint vector2D, float length)
 {
-    SDL_assert(vector2D.size() == 2);
-    std::vector<float> normalizedVector = normalize2DVector(vector2D);
-    return {normalizedVector[0]* length, normalizedVector[1] * length};
+    SDL_FPoint normalizedVector = normalize2DVector(vector2D);
+    return {normalizedVector.x* length, normalizedVector.y * length};
 }
 
-std::vector<float> rotate2DVector(std::vector<float> old2DVector, float angleInDegree)
+SDL_FPoint rotate2DVector(SDL_FPoint old2DVector, float angleInDegree)
 {
-    SDL_assert(old2DVector.size() == 2);
-    std::vector<float> rotated2DVector = {0,0};
+    SDL_FPoint rotated2DVector = {0,0};
     
     float angleInRadian = angleInDegree * PI / 180;
-    rotated2DVector[0] = old2DVector[0] * cosf(angleInRadian) - old2DVector[1] * sinf(angleInRadian);
-    rotated2DVector[1] = old2DVector[0] * sinf(angleInRadian) + old2DVector[1] * cosf(angleInRadian);
+    rotated2DVector.x = old2DVector.x * cosf(angleInRadian) - old2DVector.x * sinf(angleInRadian);
+    rotated2DVector.y = old2DVector.y * sinf(angleInRadian) + old2DVector.y * cosf(angleInRadian);
 
     return rotated2DVector;
 }
@@ -499,24 +509,24 @@ void handleDestruction(Asteroid destroyedAsteroid)
 {
     int newAsteroidSize = Asteroid::getSize(AsteroidSizeType::Small);
     
-    auto oldMidPos = destroyedAsteroid.midPos;
-    std::vector<float> oldVelocity = destroyedAsteroid.velocity;
+    SDL_FPoint oldMidPos = destroyedAsteroid.midPos;
+    SDL_FPoint oldVelocity = destroyedAsteroid.velocity;
 
-    std::vector<float> spawnDirection = rotate2DVector(oldVelocity, 90);
+    SDL_FPoint spawnDirection = rotate2DVector(oldVelocity, 90);
     spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
     Asteroid(
-        spawnDirection[0] + destroyedAsteroid.midPos[0],
-        spawnDirection[1] + destroyedAsteroid.midPos[1],
-        {rotate2DVector(oldVelocity, 45)[0] * 2, rotate2DVector(oldVelocity, 45)[1] * 2},
+        spawnDirection.x + destroyedAsteroid.midPos.x,
+        spawnDirection.y + destroyedAsteroid.midPos.y,
+        {rotate2DVector(oldVelocity, 45).x * 2, rotate2DVector(oldVelocity, 45).y * 2},
         AsteroidSizeType::Small
     );
 
     spawnDirection = rotate2DVector(spawnDirection, 180);
     spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
     Asteroid(
-        spawnDirection[0] + destroyedAsteroid.midPos[0],
-        spawnDirection[1] + destroyedAsteroid.midPos[1],
-        {rotate2DVector(oldVelocity, -45)[0] * 2, rotate2DVector(oldVelocity, -45)[1] * 2},
+        spawnDirection.x + destroyedAsteroid.midPos.x,
+        spawnDirection.y + destroyedAsteroid.midPos.y,
+        {rotate2DVector(oldVelocity, -45).x * 2, rotate2DVector(oldVelocity, -45).y * 2},
         AsteroidSizeType::Small
     );
 }
@@ -524,10 +534,10 @@ void handleDestruction(Asteroid destroyedAsteroid)
 std::list<Bomb> Bomb::bombs;
 std::list<Bomb*> Bomb::pCollectedBombs;
 
-Bomb::Bomb(int xPos, int yPos, std::vector<float> velocity)
+Bomb::Bomb(int xPos, int yPos, SDL_FPoint velocity)
 {
-    midPos[0] = xPos;
-    midPos[1] = yPos;
+    midPos.x = xPos;
+    midPos.y = yPos;
     this-> velocity = velocity;
     creationTime = SDL_GetTicks();
     isVisible = true;
@@ -546,8 +556,8 @@ void Bomb::update(int windowWidth, int windowHeight, float *deltaTime, Ship *shi
 {
     if (!isCollected && !isExploding)
     {
-        midPos[0] += velocity[0] * *deltaTime * 60;
-        midPos[1] += velocity[1] * *deltaTime * 60;
+        midPos.x += velocity.x * *deltaTime * 60;
+        midPos.y += velocity.y * *deltaTime * 60;
         midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 
         angle += 10 * *deltaTime; 

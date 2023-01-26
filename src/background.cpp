@@ -68,22 +68,22 @@ void backgroundPoint::returnToOrigin(float *deltaTime)
 void backgroundPoint::update(GameObject colObject)
 {   
     //AABB collision check
-    if (xPos > colObject.midPos[0] - colObject.colRadius 
-    && xPos < colObject.midPos[0] + colObject.colRadius
-    && yPos > colObject.midPos[1] - colObject.colRadius
-    && yPos < colObject.midPos[1] + colObject.colRadius)
+    if (xPos > colObject.midPos.x - colObject.colRadius 
+    && xPos < colObject.midPos.x + colObject.colRadius
+    && yPos > colObject.midPos.y - colObject.colRadius
+    && yPos < colObject.midPos.y + colObject.colRadius)
     {
         //distance based collision check
-        float squareDistanceToObject = (colObject.midPos[0] - xPos) * (colObject.midPos[0] - xPos) 
-                                    + (colObject.midPos[1] - yPos) * (colObject.midPos[1] - yPos);
+        float squareDistanceToObject = (colObject.midPos.x - xPos) * (colObject.midPos.x - xPos) 
+                                    + (colObject.midPos.y - yPos) * (colObject.midPos.y - yPos);
         float squareObjectCollisonRadius = colObject.colRadius * colObject.colRadius;
 
         if (squareDistanceToObject <= squareObjectCollisonRadius)
         {
             float distanceToObject = SDL_sqrtf(squareDistanceToObject);
 
-            float xDist = xPos - colObject.midPos[0];
-            float yDist = yPos - colObject.midPos[1];
+            float xDist = xPos - colObject.midPos.x;
+            float yDist = yPos - colObject.midPos.y;
 
             vectorDistance[0] = xDist;
             vectorDistance[1] = yDist;
@@ -91,8 +91,8 @@ void backgroundPoint::update(GameObject colObject)
             normalizedDistance[0] = vectorDistance[0]/distanceToObject;
             normalizedDistance[1] = vectorDistance[1]/distanceToObject;
 
-            xPos = colObject.midPos[0] + normalizedDistance[0] * colObject.colRadius;
-            yPos = colObject.midPos[1] + normalizedDistance[1] * colObject.colRadius;
+            xPos = colObject.midPos.x + normalizedDistance[0] * colObject.colRadius;
+            yPos = colObject.midPos.y + normalizedDistance[1] * colObject.colRadius;
 
             renderPos.x = round(xPos);
             renderPos.y = round(yPos);
@@ -163,8 +163,8 @@ void background::update(std::list<GameObject> colObjects, float *updateTime)
         if (object.isVisible)
         {              
             //locate point area of object
-            int objectAreaPosX = object.midPos[0] / pointAreaWidth;
-            int objectAreaPosY = object.midPos[1] / pointAreaHeight;
+            int objectAreaPosX = object.midPos.x / pointAreaWidth;
+            int objectAreaPosY = object.midPos.y / pointAreaHeight;
 
             //defince area size of collision detection box
             int collisionBoxWidth =     object.colRadius / pointAreaWidth;

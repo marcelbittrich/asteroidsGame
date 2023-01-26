@@ -14,8 +14,8 @@ ShotMeter::ShotMeter (Ship *ship, int xOffset, int yOffset, int width, int heigh
 
 void ShotMeter::reconstruct(SDL_Rect position, Ship *ship)
 {   
-    position.x = ship->midPos[0] + xOffset - position.w / 2;
-    position.y = ship->midPos[1] + yOffset + position.h / 2;
+    position.x = ship->midPos.x + xOffset - position.w / 2;
+    position.y = ship->midPos.y + yOffset + position.h / 2;
     int borderOffset = 1;
     background1 = position;
     background2 = {background1.x + borderOffset,

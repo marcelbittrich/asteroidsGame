@@ -20,7 +20,7 @@ SDL_Point getRandomPosition(
         bool success = true;
         for (const GameObject &gameObject : gameObjects)
         {
-            float distance = sqrt(std::pow(gameObject.midPos[0] - x, 2) + std::pow(gameObject.midPos[1] - y, 2));
+            float distance = sqrt(std::pow(gameObject.midPos.x - x, 2) + std::pow(gameObject.midPos.y - y, 2));
 
             float objectColRadius;
             (gameObject.id == 1) ? objectColRadius = 200 : objectColRadius = gameObject.colRadius;
@@ -50,11 +50,11 @@ float getRandomValue (float min, float max)
     return randomValue;
 }
 
-std::vector<float> getRandomVelocity (float minVelocity, float maxVelocity)
+SDL_FPoint getRandomVelocity (float minVelocity, float maxVelocity)
 {
-    std::vector<float> velocity = {0,0};
-    velocity[0] = randomSign() * getRandomValue(minVelocity, maxVelocity); 
-    velocity[1] = randomSign() * getRandomValue(minVelocity, maxVelocity);
+    SDL_FPoint velocity = {0,0};
+    velocity.x = randomSign() * getRandomValue(minVelocity, maxVelocity); 
+    velocity.y = randomSign() * getRandomValue(minVelocity, maxVelocity);
     return velocity;
 }
 
