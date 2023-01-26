@@ -147,7 +147,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     gameMenu = GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
     gameMenu.highscore = gameSave.highscore;
 
-    gameBackground = background(windowWidth,windowHeight,100);
+    gameBackground = background(windowWidth,windowHeight);
 
     ship = initShip(windowWidth, windowHeight);
     colObjects.push_back(ship);

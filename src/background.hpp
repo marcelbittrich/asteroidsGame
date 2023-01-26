@@ -25,7 +25,7 @@ public:
     float normalizedDistance [2]    = {0.0f, 0.0f};
     float vectorChange [2]          = {0.0f, 0.0f};
 
-    //return function values
+    //returnToOrigin function values
     float squareDistanceToOrigin, distanceToOrigin;
     float minReturnVelocity                 = 0.5;
     float distanceVelocityFunctionSteepness = 0.005;
@@ -34,7 +34,7 @@ public:
     float pointSizeScale = 1.5;
 
     backgroundPoint();
-    backgroundPoint(int xPos, int yPos);
+    backgroundPoint(float xPos, float yPos);
 
     void update(GameObject colObject);
     void render(SDL_Renderer *renderer);
@@ -43,21 +43,19 @@ public:
 
 class background
 {
-private:
+    static const int divider = 100;
+    int width, height;
 
-    int width, height, divider;
-    std::vector<std::vector<backgroundPoint>>pointCloud;
+    backgroundPoint backgroundPoints [divider][divider];
+    float pointAreaWidth;
+    float pointAreaHeight;
 
 public:
-
     background();
-    background(int windowWidth, int windowHeight, int divider);
+    background(int windowWidth, int windowHeight);
 
     void update(std::list<GameObject>colObjects, float *deltaTime);
     void render(SDL_Renderer *renderer);
-
-    //debug
-    void getPointPosition(int vectorPos);
 };
 
 
