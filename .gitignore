@@ -54,4 +54,5 @@ Thumbs.db
 # Our Files
 
 .vscode/
+*.zip
 

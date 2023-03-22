@@ -67,7 +67,7 @@ void initSingleAsteroid(std::list<GameObject> &gameObjects, int windowWidth, int
     SDL_Point randomPosition = getRandomPosition(
         windowWidth, windowHeight, colRadius, gameObjects
     );
-    Asteroid asteroid = Asteroid(randomPosition.x, randomPosition.y, getRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);  
+    Asteroid(randomPosition.x, randomPosition.y, getRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);  
 }
 
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight)

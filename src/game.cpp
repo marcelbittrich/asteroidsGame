@@ -2,6 +2,10 @@
 // Gameplay values
 int STARTING_LIVES      = 3;
 int STARTING_BOMB_COUNT = 0;
+    // One in ... for dropping a bomb when destroing astroids.
+int BOMB_SPAWN_ON_SCORE = 50;
+float ASTEROID_SPAWN_DELTATIME = 3.0;
+float ASTEROID_SPAWN_SPEED_MULTI = 0.03;
 
 // texture values
 SDL_Texture* shipTex;
@@ -38,7 +42,7 @@ ShotMeter shotMeter;
 UICounter UIScore;
 UICounter UILives;
 UICounter UIBomb;
-UICounter UIFPS;
+//UICounter UIFPS;
 
 unsigned score;
 unsigned life;
@@ -174,7 +178,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     UIScore = UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
     UILives = UICounter("Lives", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
     UIBomb = UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-    UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    //UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 
     score = 0;
     life = STARTING_LIVES;
@@ -236,14 +240,14 @@ void Game::update()
         return;
     }
     
-
+    // Debug Bomb Spawn on Click
     if (controlBools.isLeftClicking && newClick)
     {
         newClick = false;
         int mouseXPos, mouseYPos;
         SDL_GetMouseState(&mouseXPos, &mouseYPos);
         std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
-        Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
+        // Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
     } else if (!controlBools.isLeftClicking)
     {
         newClick = true;
@@ -300,18 +304,18 @@ void Game::update()
 
     // Spawn New Asteroids
     timeSinceLastAsteroidWave += deltaTime;
-    if (timeSinceLastAsteroidWave >= 5)
+    if (timeSinceLastAsteroidWave >= ASTEROID_SPAWN_DELTATIME)
     {      
         std::cout << "Spawn small ";
         SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
-        SDL_FPoint randomVelocity1 = getRandomVelocity(0, 0.1*score);
+        SDL_FPoint randomVelocity1 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
         spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, colObjects);
 
         if (asteroidWave % 3 == 0)
         {
             std::cout << "and large "; 
             SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
-            SDL_FPoint randomVelocity2 = getRandomVelocity(0, 0.1*score);
+            SDL_FPoint randomVelocity2 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
             spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
         }
         std::cout << "asteroid" << std::endl; 
@@ -370,7 +374,8 @@ void Game::update()
 
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
-                    if(rand() % 5 ==0) Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
+                    if(score % BOMB_SPAWN_ON_SCORE ==0) 
+                        Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;
@@ -471,7 +476,7 @@ void Game::update()
     
     UIScore.update(score, renderer);
 
-    UIFPS.update(averageFPS, renderer);
+    //UIFPS.update(averageFPS, renderer);
     UILives.update(life - 1, renderer);
 
     UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
@@ -518,7 +523,7 @@ void Game::render()
     UIScore.render(renderer);
     UILives.render(renderer);
     UIBomb.render(renderer);
-    UIFPS.render(renderer);
+    //UIFPS.render(renderer);
 
     // ShotMeter
     //shotMeter.render(renderer, ship.canShoot);
