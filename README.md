@@ -31,16 +31,6 @@ At this moment we use the following file structure:
     ├── .gitignore
     └── README.md
 
-
-## Objectives
-
-These are our future objective in no particular order:
-
-- [ ] Make asteroids move and spawn at random positions
-- [ ] Add collectable items
-- [ ] Add score and menu 
-- [ ] Finish with a fun game!
-
 ## Accomplished goals
 
 Already implemented are the following:
@@ -52,6 +42,10 @@ Already implemented are the following:
 - [x] Add bigger asteroids
 - [x] Add shots to split or destroy asteroids
 - [x] Separate calculation from framerate
+- [x] Make asteroids move and spawn at random positions
+- [x] Add collectable items
+- [x] Add score and menu 
+- [x] Finish with a fun game!
 
 ## How to try it
 
