@@ -3,15 +3,15 @@
 
 ## Description
 
-This is a small 2D game inspired by the old arcade classic "Astroids". It is currently developed by two persons, a friend of mine and me. Our goal is to make a fun game and learn game development and C++ along the way. These are our first steps in this direction, so if you have any tips, advice or questions feel free to contact me!
+This is a small 2D game inspired by the old arcade classic "Astroids". It was a two persons project. Our goal was to make a fun game and learn the fundamentals of game development and C++ along the way. These were our first steps in this direction, so if you have any tips, advice or questions feel free to contact me!
 
 ### Structure
 
-We use SDL2 to initialize the game, setup a window and then render it black. We check for connected input devices (i.e. a Xbox Controller) and then enter the gameloop. It adds all our gameobjects, the Ship and the asteroids, to the screen, handles all inputs and updates the position of the gameobjects.
+We use SDL2 to initialize the game, setup a window and then render it black. We check for connected input devices (i.e. Mouse, Keyboard, Xbox Controller) and then enter the gameloop. The loop adds all our gameobjects, asteroids and the ship to the screen, handles all inputs and updates the position of the gameobjects.
 
 ### Code layout 
 
-We try to separate the code in a sensible manner. Our goal is to keep it as easy to read as possible.
+We try to separate the code in a sensible manner. Our goal was to keep it as easy to read as possible.
 
 At this moment we use the following file structure:
 
@@ -31,16 +31,6 @@ At this moment we use the following file structure:
     ├── .gitignore
     └── README.md
 
-
-## Objectives
-
-These are our future objective in no particular order:
-
-- [ ] Make asteroids move and spawn at random positions
-- [ ] Add collectable items
-- [ ] Add score and menu 
-- [ ] Finish with a fun game!
-
 ## Accomplished goals
 
 Already implemented are the following:
@@ -52,6 +42,10 @@ Already implemented are the following:
 - [x] Add bigger asteroids
 - [x] Add shots to split or destroy asteroids
 - [x] Separate calculation from framerate
+- [x] Make asteroids move and spawn at random positions
+- [x] Add collectable items
+- [x] Add score and menu 
+- [x] Finish with a fun game!
 
 ## How to try it
 
