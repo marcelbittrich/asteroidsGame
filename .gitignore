@@ -52,7 +52,7 @@ Thumbs.db
 *.wmv
 
 # Our Files
-
+.vs
 .vscode/
 *.zip
 

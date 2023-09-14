@@ -1,31 +1,31 @@
 #include "game.hpp"
 // Gameplay values
-int STARTING_LIVES      = 3;
+int STARTING_LIVES = 3;
 int STARTING_BOMB_COUNT = 0;
-    // One in ... for dropping a bomb when destroing astroids.
+// One in ... for dropping a bomb when destroing astroids.
 int BOMB_SPAWN_ON_SCORE = 50;
 float ASTEROID_SPAWN_DELTATIME = 3.0;
 float ASTEROID_SPAWN_SPEED_MULTI = 0.03;
 
 // texture values
-SDL_Texture* shipTex;
-SDL_Texture* asteroidTexSmall;
-SDL_Texture* asteroidTexMedium;
-SDL_Texture* shotTex;
-SDL_Texture* bombTex;
-TTF_Font* font;
-TTF_Font* fontHuge;
+SDL_Texture *shipTex;
+SDL_Texture *asteroidTexSmall;
+SDL_Texture *asteroidTexMedium;
+SDL_Texture *shotTex;
+SDL_Texture *bombTex;
+TTF_Font *font;
+TTF_Font *fontHuge;
 
 // game window values
 int windowWidth, windowHeight;
 
-// control values 
+// control values
 extern ControlBools controlBools;
 
 // game object values
 Ship ship = Ship();
-//int thrustAnimationCounter;
-//int currentThrustAnimationTime = 0;
+// int thrustAnimationCounter;
+// int currentThrustAnimationTime = 0;
 bool newBombIgnition = true;
 
 background gameBackground;
@@ -36,13 +36,12 @@ GameMenu gameMenu;
 
 std::list<GameObject> colObjects;
 
-
 // UI values
 ShotMeter shotMeter;
 UICounter UIScore;
 UICounter UILives;
 UICounter UIBomb;
-//UICounter UIFPS;
+UICounter UIFPS;
 
 unsigned score;
 unsigned life;
@@ -63,25 +62,29 @@ int asteroidWave = 1;
 Uint32 lastUpdateTime = SDL_GetTicks();
 
 Game::Game()
-{}
+{
+}
 Game::~Game()
-{}
+{
+}
 
-void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
     int flags = 0;
-    if(fullscreen){
+    if (fullscreen)
+    {
         flags = SDL_WINDOW_FULLSCREEN;
     }
 
-    if(SDL_Init(SDL_INIT_EVERYTHING) == 0)
+    if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
     {
         IMG_Init(IMG_INIT_PNG);
         std::cout << "Subsystem Initialised!..." << std::endl;
-        if(TTF_Init()) std::cout << "Font System Initialised!...";
+        if (TTF_Init())
+            std::cout << "Font System Initialised!...";
 
         window = SDL_CreateWindow(title, xpos, ypos, width, height, SDL_WINDOW_RESIZABLE);
-        if(window)
+        if (window)
         {
             std::cout << "Window created" << std::endl;
             windowWidth = 1280;
@@ -89,47 +92,57 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         }
 
         renderer = SDL_CreateRenderer(window, -1, 0);
-        if(renderer)
+        if (renderer)
         {
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-            SDL_RenderSetLogicalSize(renderer,windowWidth,windowHeight);
+            SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
             std::cout << "Renderer created!" << std::endl;
         }
         isRunning = true;
-    } else {
+    }
+    else
+    {
         isRunning = false;
     }
 
-    printf("%i joysticks were found.\n", SDL_NumJoysticks() );
-    for (int i = 1; i <= SDL_NumJoysticks(); ++i) {
-        if (SDL_IsGameController(i)) {
+    printf("%i joysticks were found.\n", SDL_NumJoysticks());
+    for (int i = 1; i <= SDL_NumJoysticks(); ++i)
+    {
+        if (SDL_IsGameController(i))
+        {
             printf("Joystick %i is supported by the game controller interface!\n", i);
         }
     }
     printf("The names of the joysticks are:\n");
-    for (int i=0; i < SDL_NumJoysticks(); i++ ){
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
+    {
         SDL_Joystick *joystick = SDL_JoystickOpen(i);
         printf("%s\n", SDL_JoystickName(joystick));
     }
 
-
     SDL_GameController *gamepad = nullptr;
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (SDL_IsGameController(i)) {
+    for (int i = 0; i < SDL_NumJoysticks(); ++i)
+    {
+        if (SDL_IsGameController(i))
+        {
             gamepad = SDL_GameControllerOpen(i);
-            if (gamepad) {
+            if (gamepad)
+            {
                 std::cout << "Gamecontroller opened!" << std::endl;
                 break;
-            } else {
+            }
+            else
+            {
                 fprintf(stderr, "Could not open gamecontroller %i: %s\n", i, SDL_GetError());
             }
         }
     }
 
-    SDL_Surface* image = IMG_Load("../img/ship_thrustanimation.png");
-    if (image == NULL) {
+    SDL_Surface *image = IMG_Load("../img/ship_thrustanimation.png");
+    if (image == NULL)
+    {
         std::cout << IMG_GetError();
     }
     shipTex = SDL_CreateTextureFromSurface(renderer, image);
@@ -155,19 +168,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     fontHuge = TTF_OpenFont("../font/joystix_monospace.ttf", 120);
 
     gameSave = GameSave();
- 
+
     gameMenu = GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
     gameMenu.highscore = gameSave.highscore;
 
-    gameBackground = background(windowWidth,windowHeight);
+    gameBackground = background(windowWidth, windowHeight);
 
     ship = initShip(windowWidth, windowHeight);
     colObjects.push_back(ship);
 
     initAsteroids(ship, windowWidth, windowHeight);
-
-    
-   
 
     lastUpdateTime = SDL_GetTicks();
 
@@ -178,7 +188,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     UIScore = UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
     UILives = UICounter("Lives", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
     UIBomb = UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-    //UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 
     score = 0;
     life = STARTING_LIVES;
@@ -193,7 +203,6 @@ void Game::handleEvents()
     {
         handleInput(event, &controlBools, &isRunning);
     }
-
 }
 
 void Game::update()
@@ -201,36 +210,38 @@ void Game::update()
     if (state == STATE_IN_MENU)
     {
         gameMenu.update(&state, &controlBools, &isRunning);
-        if(state != STATE_IN_GAME) return;
+        if (state != STATE_IN_GAME)
+            return;
     }
-    
-    if(life == 0)
+
+    if (life == 0)
     {
         state = STATE_IN_MENU;
         gameMenu.score = score;
-        if (score > gameSave.highscore) {
+        if (score > gameSave.highscore)
+        {
             gameMenu.highscore = score;
             gameSave.highscore = score;
             gameSave.write();
         }
         return;
     }
-    
+
     Uint32 currentTime = SDL_GetTicks();
-    float deltaTime =  (currentTime - lastUpdateTime) / 1000.0f;
+    float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
     lastUpdateTime = currentTime;
 
     if (controlBools.isPaused && newPause && !pause)
     {
         newPause = false;
         pause = true;
-
-    } else if (controlBools.isPaused && newPause && pause)
+    }
+    else if (controlBools.isPaused && newPause && pause)
     {
         newPause = false;
         pause = false;
-
-    } else if (!controlBools.isPaused)
+    }
+    else if (!controlBools.isPaused)
     {
         newPause = true;
     }
@@ -239,7 +250,7 @@ void Game::update()
     {
         return;
     }
-    
+
     // Debug Bomb Spawn on Click
     if (controlBools.isLeftClicking && newClick)
     {
@@ -248,7 +259,8 @@ void Game::update()
         SDL_GetMouseState(&mouseXPos, &mouseYPos);
         std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
         // Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
-    } else if (!controlBools.isLeftClicking)
+    }
+    else if (!controlBools.isLeftClicking)
     {
         newClick = true;
     }
@@ -262,7 +274,8 @@ void Game::update()
             (*it)->explode();
             Bomb::pCollectedBombs.erase(it);
         }
-    } else if (!controlBools.isUsingBomb)
+    }
+    else if (!controlBools.isUsingBomb)
     {
         newBombIgnition = true;
     }
@@ -273,39 +286,38 @@ void Game::update()
     ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
-    for(Asteroid &asteroid : Asteroid::asteroids)
+    for (Asteroid &asteroid : Asteroid::asteroids)
     {
         asteroid.update(windowWidth, windowHeight, &deltaTime);
     }
 
     // Check Ship Collision Asteroids
-    for(const Asteroid &asteroid : Asteroid::asteroids)
+    for (const Asteroid &asteroid : Asteroid::asteroids)
     {
         if (doesCollide(ship, asteroid))
         {
-            if(--life == 0) 
+            if (--life == 0)
             {
                 break;
             }
             ship.respawn(renderer);
-            asteroidWave = 1;  
+            asteroidWave = 1;
         }
-        
     }
 
     // Check Ship Collision Asteroids
-    for(Bomb &bomb : Bomb::bombs)
+    for (Bomb &bomb : Bomb::bombs)
     {
         if (!bomb.isExploding && doesCollide(ship, bomb))
         {
-            bomb.collect(); 
-        }    
+            bomb.collect();
+        }
     }
 
     // Spawn New Asteroids
     timeSinceLastAsteroidWave += deltaTime;
     if (timeSinceLastAsteroidWave >= ASTEROID_SPAWN_DELTATIME)
-    {      
+    {
         std::cout << "Spawn small ";
         SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
         SDL_FPoint randomVelocity1 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
@@ -313,42 +325,41 @@ void Game::update()
 
         if (asteroidWave % 3 == 0)
         {
-            std::cout << "and large "; 
+            std::cout << "and large ";
             SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
             SDL_FPoint randomVelocity2 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
             spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
         }
-        std::cout << "asteroid" << std::endl; 
+        std::cout << "asteroid" << std::endl;
         timeSinceLastAsteroidWave = 0;
         asteroidWave++;
     }
-    
 
     // Check Asteroid Collision
-    for(auto it1 = Asteroid::asteroids.begin(); it1 != Asteroid::asteroids.end(); it1++)
+    for (auto it1 = Asteroid::asteroids.begin(); it1 != Asteroid::asteroids.end(); it1++)
     {
         for (auto it2 = std::next(it1, 1); it2 != Asteroid::asteroids.end(); it2++)
         {
-            //std::cout << "Kombination: " << i << ", " << j << std::endl;
+            // std::cout << "Kombination: " << i << ", " << j << std::endl;
             asteroidsCollide(*it1, *it2);
         }
-        
     }
-    
-    //Make Shots
-    if (controlBools.isShooting){
+
+    // Make Shots
+    if (controlBools.isShooting)
+    {
         ship.shoot();
     }
 
     shotMeter.update(ship.getShotCounter(), ship.getMaxShotCounter(), &ship);
 
-    //Update Shots
-    for (Shot &singleShot: Shot::shots)
+    // Update Shots
+    for (Shot &singleShot : Shot::shots)
     {
         singleShot.update(windowWidth, windowHeight, &deltaTime);
-    }    
+    }
 
-    //Destroy Shots
+    // Destroy Shots
     if (!Shot::shots.empty())
     {
         auto firstShot = Shot::shots.begin();
@@ -360,7 +371,7 @@ void Game::update()
 
     auto it = Shot::shots.begin();
     while (it != Shot::shots.end())
-    {   
+    {
         bool hit = false;
 
         auto asteroidIt = Asteroid::asteroids.begin();
@@ -374,26 +385,28 @@ void Game::update()
 
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
-                    if(score % BOMB_SPAWN_ON_SCORE ==0) 
+                    if (score % BOMB_SPAWN_ON_SCORE == 0)
                         Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;
                 }
                 else if (asteroidIt->sizeType == AsteroidSizeType::Medium)
-                {   
-                    handleDestruction(*asteroidIt);  
+                {
+                    handleDestruction(*asteroidIt);
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     break;
                 }
 
                 break;
             }
-            if (!hit) asteroidIt++;
+            if (!hit)
+                asteroidIt++;
         }
 
-        if(!hit) it++;
-    } 
+        if (!hit)
+            it++;
+    }
 
     // Update Bombs
     for (auto bombIt = Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
@@ -401,30 +414,30 @@ void Game::update()
         bombIt->update(windowWidth, windowHeight, &deltaTime, &ship);
 
         if (bombIt->isExploding)
-        {   
+        {
             bool hit = false;
             auto asteroidIt = Asteroid::asteroids.begin();
             while (asteroidIt != Asteroid::asteroids.end())
             {
-                std::cout << "Bomb colRadius: " << bombIt->colRadius << std::endl;  
+                std::cout << "Bomb colRadius: " << bombIt->colRadius << std::endl;
                 if (doesCollide(*bombIt, *asteroidIt))
                 {
                     hit = true;
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
-                }   
+                }
                 else
                 {
                     hit = false;
                 }
-                if (!hit) asteroidIt++;
+                if (!hit)
+                    asteroidIt++;
             }
         }
-        
     }
 
     // Destoy Bombs
     if (!Bomb::bombs.empty())
-    {   
+    {
         auto bombIt = Bomb::bombs.begin();
         while (bombIt != Bomb::bombs.end())
         {
@@ -434,14 +447,15 @@ void Game::update()
                 bombIt = Bomb::bombs.erase(bombIt);
                 didErase = true;
             }
-            if (!didErase) bombIt++;
+            if (!didErase)
+                bombIt++;
         }
     }
 
-    //Fill colObjects vector
+    // Fill colObjects vector
     colObjects.clear();
     colObjects.push_back(ship);
-    colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end()); 
+    colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end());
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
     colObjects.insert(colObjects.end(), Bomb::bombs.begin(), Bomb::bombs.end());
 
@@ -449,17 +463,18 @@ void Game::update()
 
     if (frameTime != 0)
     {
-        FPS = 1000/frameTime;
+        FPS = 1000 / frameTime;
         if (FPSVector.size() >= 10)
         {
             FPSVector.insert(FPSVector.begin(), FPS);
             FPSVector.pop_back();
-        } 
+        }
         else
         {
             FPSVector.insert(FPSVector.begin(), FPS);
-        }   
-    } else
+        }
+    }
+    else
     {
         FPS = 0;
     }
@@ -468,15 +483,16 @@ void Game::update()
     if (!FPSVector.empty())
     {
         auto count = (float)(FPSVector.size());
-        averageFPS = std::reduce(FPSVector.begin(), FPSVector.end())/count;
-    } else
+        averageFPS = std::reduce(FPSVector.begin(), FPSVector.end()) / count;
+    }
+    else
     {
         averageFPS = 0;
     }
-    
+
     UIScore.update(score, renderer);
 
-    //UIFPS.update(averageFPS, renderer);
+    UIFPS.update(averageFPS, renderer);
     UILives.update(life - 1, renderer);
 
     UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
@@ -489,46 +505,48 @@ void Game::render()
         gameMenu.render();
         return;
     }
-    
+
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
     SDL_Rect playArea = {0, 0, windowWidth, windowHeight};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &playArea);
 
-    gameBackground.render(renderer);   
+    gameBackground.render(renderer);
 
-    for (Bomb &bomb: Bomb::bombs)
+    for (Bomb &bomb : Bomb::bombs)
     {
         bomb.render(renderer, bombTex);
     }
 
-    for(Asteroid &asteroid: Asteroid::asteroids) {
+    for (Asteroid &asteroid : Asteroid::asteroids)
+    {
         asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
         // SDL_SetRenderDrawColor(renderer,0,0,255,255);
         // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
 
-    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it ++)
+    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it++)
     {
-        it->render(renderer,shotTex);
+        it->render(renderer, shotTex);
         // SDL_SetRenderDrawColor(renderer,0,255,0,255);
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
 
     ship.render(renderer, shipTex);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    //drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
+    // drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
     UIScore.render(renderer);
     UILives.render(renderer);
     UIBomb.render(renderer);
-    //UIFPS.render(renderer);
+    UIFPS.render(renderer);
 
     // ShotMeter
-    //shotMeter.render(renderer, ship.canShoot);
+    // shotMeter.render(renderer, ship.canShoot);
 
-    if (life == 0) {
+    if (life == 0)
+    {
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
         SDL_RenderFillRect(renderer, &playArea);
