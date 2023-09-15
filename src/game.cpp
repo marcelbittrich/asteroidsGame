@@ -1,26 +1,12 @@
 #include "game.hpp"
-// Gameplay values
+
+// Gameplay parameters
 int STARTING_LIVES = 3;
 int STARTING_BOMB_COUNT = 0;
 // One in ... for dropping a bomb when destroing astroids.
 int BOMB_SPAWN_ON_SCORE = 50;
 float ASTEROID_SPAWN_DELTATIME = 3.0;
 float ASTEROID_SPAWN_SPEED_MULTI = 0.03;
-
-// texture values
-SDL_Texture *shipTex;
-SDL_Texture *asteroidTexSmall;
-SDL_Texture *asteroidTexMedium;
-SDL_Texture *shotTex;
-SDL_Texture *bombTex;
-TTF_Font *font;
-TTF_Font *fontHuge;
-
-// game window values
-int windowWidth, windowHeight;
-
-// control values
-extern ControlBools controlBools;
 
 // game object values
 Ship ship = Ship();
@@ -31,7 +17,6 @@ bool newBombIgnition = true;
 background gameBackground;
 
 GameSave gameSave;
-
 GameMenu gameMenu;
 
 std::list<GameObject> colObjects;
@@ -140,6 +125,16 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         }
     }
 
+    MyInputHandler = new InputHandler();
+    if (MyInputHandler)
+    {
+        MyInputHandler->init();
+    }
+    else
+    {
+        fprintf(stderr, "Could not init Inputhandler");
+    }
+
     SDL_Surface *image = IMG_Load("../img/ship_thrustanimation.png");
     if (image == NULL)
     {
@@ -197,26 +192,24 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
 
 void Game::handleEvents()
 {
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event))
+    if (MyInputHandler)
     {
-        handleInput(event, &controlBools, &isRunning);
+        MyInputHandler->handleInput(isRunning);
     }
 }
 
 void Game::update()
 {
-    if (state == STATE_IN_MENU)
+    if (gameState == STATE_IN_MENU)
     {
-        gameMenu.update(&state, &controlBools, &isRunning);
-        if (state != STATE_IN_GAME)
+        gameMenu.update(isRunning, gameState, MyInputHandler);
+        if (gameState != STATE_IN_GAME)
             return;
     }
 
     if (life == 0)
     {
-        state = STATE_IN_MENU;
+        gameState = STATE_IN_MENU;
         gameMenu.score = score;
         if (score > gameSave.highscore)
         {
@@ -231,17 +224,18 @@ void Game::update()
     float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
     lastUpdateTime = currentTime;
 
-    if (controlBools.isPaused && newPause && !pause)
+    bool isPaused = (MyInputHandler->getControlBools()).isPaused;
+    if (isPaused && newPause && !pause)
     {
         newPause = false;
         pause = true;
     }
-    else if (controlBools.isPaused && newPause && pause)
+    else if (isPaused && newPause && pause)
     {
         newPause = false;
         pause = false;
     }
-    else if (!controlBools.isPaused)
+    else if (!isPaused)
     {
         newPause = true;
     }
@@ -251,8 +245,9 @@ void Game::update()
         return;
     }
 
+    bool isLeftClicking = (MyInputHandler->getControlBools()).isLeftClicking;
     // Debug Bomb Spawn on Click
-    if (controlBools.isLeftClicking && newClick)
+    if (isLeftClicking && newClick)
     {
         newClick = false;
         int mouseXPos, mouseYPos;
@@ -260,12 +255,13 @@ void Game::update()
         std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
         // Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
     }
-    else if (!controlBools.isLeftClicking)
+    else if (!isLeftClicking)
     {
         newClick = true;
     }
 
-    if (controlBools.isUsingBomb && newBombIgnition)
+    bool isUsingBomb = (MyInputHandler->getControlBools()).isUsingBomb;
+    if (isUsingBomb && newBombIgnition)
     {
         newBombIgnition = false;
         if (!Bomb::pCollectedBombs.empty())
@@ -275,7 +271,7 @@ void Game::update()
             Bomb::pCollectedBombs.erase(it);
         }
     }
-    else if (!controlBools.isUsingBomb)
+    else if (!isUsingBomb)
     {
         newBombIgnition = true;
     }
@@ -283,7 +279,7 @@ void Game::update()
     bombCount = Bomb::pCollectedBombs.size();
 
     // Update Ship
-    ship.update(controlBools, windowWidth, windowHeight, &deltaTime);
+    ship.update(MyInputHandler, windowWidth, windowHeight, &deltaTime);
 
     // Update Asteroid Position
     for (Asteroid &asteroid : Asteroid::asteroids)
@@ -345,8 +341,9 @@ void Game::update()
         }
     }
 
+    bool isShooting = (MyInputHandler->getControlBools()).isShooting;
     // Make Shots
-    if (controlBools.isShooting)
+    if (isShooting)
     {
         ship.shoot();
     }
@@ -500,7 +497,7 @@ void Game::update()
 
 void Game::render()
 {
-    if (state == STATE_IN_MENU || state == STATE_RESET)
+    if (gameState == STATE_IN_MENU || gameState == STATE_RESET)
     {
         gameMenu.render();
         return;
@@ -590,5 +587,21 @@ void Game::reset()
 
     lastUpdateTime = SDL_GetTicks();
 
-    state = STATE_IN_GAME;
+    gameState = STATE_IN_GAME;
+}
+
+void Game::printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime)
+{
+    if (showUpdateTime)
+        std::cout << "Update Time: " << updateTime << " ";
+    if (showRenderTime)
+        std::cout << "Render Time: " << renderTime << " ";
+    if (showFrameTime)
+        std::cout << "Frame Time: " << loopTime << " ";
+    if (showDelayedFrameTime)
+        std::cout << "Delayed Frame Time: " << frameTime << " ";
+    if (showFPS)
+        std::cout << "FPS: " << 1000 / frameTime << " ";
+    if (showUpdateTime || showRenderTime || showFrameTime || showDelayedFrameTime || showFPS)
+        std::cout << std::endl;
 }

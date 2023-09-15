@@ -1,4 +1,5 @@
-# include "menu.hpp"
+#include "menu.hpp"
+#include "inputhandler.hpp"
 
 GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height)
 {
@@ -8,7 +9,7 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     this->fontHuge = fontHuge;
     this->renderer = renderer;
 
-    SDL_Color color = { 255, 255, 255, 255 };
+    SDL_Color color = {255, 255, 255, 255};
 
     SDL_Surface *gameOverTextSurface = TTF_RenderText_Solid(fontHuge, "Game Over", color);
     gameOverTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverTextSurface);
@@ -16,7 +17,6 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     SDL_QueryTexture(gameOverTextTexture, NULL, NULL, &gameOverTextRect.w, &gameOverTextRect.h);
     gameOverTextRect.x = width / 2 - gameOverTextRect.w / 2;
     gameOverTextRect.y = 100;
-
 
     SDL_Surface *startScreenTextSurface = TTF_RenderText_Solid(fontHuge, "Asteroid", color);
     startScreenTextTexture = SDL_CreateTextureFromSurface(renderer, startScreenTextSurface);
@@ -32,7 +32,7 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     controlInstructionsTextRect.x = width / 2 - controlInstructionsTextRect.w / 2;
     controlInstructionsTextRect.y = 630;
 
-    startButtonRect = { 50, 400, width - 100, 80};
+    startButtonRect = {50, 400, width - 100, 80};
     SDL_Surface *startButtonSurface = TTF_RenderText_Solid(font, "Start", color);
     startButtonTexture = SDL_CreateTextureFromSurface(renderer, startButtonSurface);
     SDL_FreeSurface(startButtonSurface);
@@ -40,7 +40,7 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     startButtonTextRect.x = startButtonRect.x + startButtonRect.w / 2 - startButtonTextRect.w / 2;
     startButtonTextRect.y = startButtonRect.y + startButtonRect.h / 2 - startButtonTextRect.h / 2;
 
-    exitButtonRect = { 50, 500, width - 100, 80};
+    exitButtonRect = {50, 500, width - 100, 80};
     SDL_Surface *exitButtonSurface = TTF_RenderText_Solid(font, "Exit", color);
     exitButtonTexture = SDL_CreateTextureFromSurface(renderer, exitButtonSurface);
     SDL_FreeSurface(exitButtonSurface);
@@ -51,29 +51,24 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     scoreTextRect = {};
 }
 
-void GameMenu::update(GameState *state, ControlBools *controlbools, bool * isRunning)
+void GameMenu::update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler)
 {
-    if (controlbools->isLeftClicking)
+    bool isLeftClicking = (MyInputHandler->getControlBools()).isLeftClicking;
+    if (isLeftClicking)
     {
         int clickPosX, clickPosY;
         SDL_GetMouseState(&clickPosX, &clickPosY);
 
-        if (startButtonRect.x < clickPosX
-        && startButtonRect.x + startButtonRect.w > clickPosX
-        && startButtonRect.y < clickPosY
-        && startButtonRect.y + startButtonRect.h > clickPosY)
+        if (startButtonRect.x < clickPosX && startButtonRect.x + startButtonRect.w > clickPosX && startButtonRect.y < clickPosY && startButtonRect.y + startButtonRect.h > clickPosY)
         {
-            *state = STATE_RESET;
+            GameState = STATE_RESET;
             showStartScreen = false;
-        }  
+        }
 
-        if (exitButtonRect.x < clickPosX
-        && exitButtonRect.x + exitButtonRect.w > clickPosX
-        && exitButtonRect.y < clickPosY
-        && exitButtonRect.y + exitButtonRect.h > clickPosY)
+        if (exitButtonRect.x < clickPosX && exitButtonRect.x + exitButtonRect.w > clickPosX && exitButtonRect.y < clickPosY && exitButtonRect.y + exitButtonRect.h > clickPosY)
         {
-            *isRunning = false;
-        }  
+            isRunning = false;
+        }
     }
 }
 
@@ -87,7 +82,9 @@ void GameMenu::render()
     if (showStartScreen)
     {
         SDL_RenderCopy(renderer, startScreenTextTexture, NULL, &startScreenTextRect);
-    } else {
+    }
+    else
+    {
         SDL_RenderCopy(renderer, gameOverTextTexture, NULL, &gameOverTextRect);
     }
 
@@ -99,13 +96,16 @@ void GameMenu::render()
     SDL_RenderFillRect(renderer, &exitButtonRect);
     SDL_RenderCopy(renderer, exitButtonTexture, NULL, &exitButtonTextRect);
 
-    SDL_Color color = { 255, 255, 255, 255 };
+    SDL_Color color = {255, 255, 255, 255};
     if (!showStartScreen)
     {
         std::string scoreMessage = "";
-        if (score == highscore) {
+        if (score == highscore)
+        {
             scoreMessage = std::to_string(score) + " NEW HIGHSCORE!!!!!!!111!";
-        } else {
+        }
+        else
+        {
             scoreMessage = std::to_string(score) + " (Highscore: " + std::to_string(highscore) + ") Booooo!";
         }
         SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(font, scoreMessage.c_str(), color);
@@ -118,6 +118,6 @@ void GameMenu::render()
         SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRect);
         SDL_DestroyTexture(scoreTextTexture);
     }
-    
+
     SDL_RenderPresent(renderer);
 }

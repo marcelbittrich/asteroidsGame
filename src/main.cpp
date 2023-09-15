@@ -1,14 +1,7 @@
 #include "game.hpp"
 #include "gamesave.hpp"
 
-Game *game = nullptr;
-
-// Performance assessment
-bool showUpdateTime = false;
-bool showRenderTime = false;
-bool showFrameTime = false;
-bool showDelayedFrameTime = false;
-bool showFPS = false;
+Game *game;
 
 int main(int argc, char *argv[])
 {
@@ -17,13 +10,13 @@ int main(int argc, char *argv[])
 	const float frameCapTime = 1000.0f / TargetFPS;
 
 	game = new Game();
-	game->state = STATE_IN_MENU;
+	game->gameState = STATE_IN_MENU;
 
 	game->init("Asteroid Game Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
 
-	while (game->running())
+	while (game->getIsRunning())
 	{
-		if (game->state == STATE_RESET)
+		if (game->gameState == STATE_RESET)
 		{
 			game->reset();
 		}
@@ -46,18 +39,7 @@ int main(int argc, char *argv[])
 
 			game->frameTime = SDL_GetTicks() - game->frameStart;
 
-			if (showUpdateTime)
-				std::cout << "Update Time: " << updateTime << " ";
-			if (showRenderTime)
-				std::cout << "Render Time: " << renderTime << " ";
-			if (showFrameTime)
-				std::cout << "Frame Time: " << loopTime << " ";
-			if (showDelayedFrameTime)
-				std::cout << "Delayed Frame Time: " << game->frameTime << " ";
-			if (showFPS)
-				std::cout << "FPS: " << 1000 / game->frameTime << " ";
-			if (showUpdateTime || showRenderTime || showFrameTime || showDelayedFrameTime || showFPS)
-				std::cout << std::endl;
+			game->printPerformanceInfo(updateTime, renderTime, loopTime);
 		}
 	};
 

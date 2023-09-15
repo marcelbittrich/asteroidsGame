@@ -5,7 +5,6 @@
 
 #include "SDL2/SDL.h"
 #include "game.hpp"
-#include "handleinput.hpp"
 
 class GameMenu
 {
@@ -33,7 +32,7 @@ private:
 public:
     GameMenu(){};
     GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
-    void update(GameState *state, ControlBools *controlBools, bool *isRunning);
+    void update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler);
     void render();
     int score;
     int highscore;

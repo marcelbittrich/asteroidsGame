@@ -2,7 +2,7 @@
 
 int UIElement::newId = 0;
 
-ShotMeter::ShotMeter (Ship *ship, int xOffset, int yOffset, int width, int height)
+ShotMeter::ShotMeter(Ship *ship, int xOffset, int yOffset, int width, int height)
 {
     this->xOffset = xOffset;
     this->yOffset = yOffset;
@@ -13,15 +13,15 @@ ShotMeter::ShotMeter (Ship *ship, int xOffset, int yOffset, int width, int heigh
 }
 
 void ShotMeter::reconstruct(SDL_Rect position, Ship *ship)
-{   
+{
     position.x = ship->midPos.x + xOffset - position.w / 2;
     position.y = ship->midPos.y + yOffset + position.h / 2;
     int borderOffset = 1;
     background1 = position;
     background2 = {background1.x + borderOffset,
-                background1.y + borderOffset,
-                background1.w - 2 * borderOffset,
-                background1.h - 2 * borderOffset};
+                   background1.y + borderOffset,
+                   background1.w - 2 * borderOffset,
+                   background1.h - 2 * borderOffset};
     meterBar = background2;
 }
 
@@ -34,33 +34,31 @@ void ShotMeter::update(int shotCounter, int maxShotCounter, Ship *ship)
 
 void ShotMeter::render(SDL_Renderer *renderer, bool canShoot)
 {
-    SDL_SetRenderDrawColor(renderer,255,255,255,255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &background1);
-    SDL_SetRenderDrawColor(renderer,0,0,0,100);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
     SDL_RenderFillRect(renderer, &background2);
-    canShoot ? SDL_SetRenderDrawColor(renderer,0,200,0,255) : SDL_SetRenderDrawColor(renderer,200,0,0,255);
+    canShoot ? SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255) : SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
     SDL_RenderFillRect(renderer, &meterBar);
 }
-
 
 std::list<UICounter> UICounter::UICounters;
 
 UICounter::UICounter(
-    std::string Name, 
-    TTF_Font *font, 
-    SDL_Color color, 
-    int windowWidth, 
-    int windowHeigt, 
-    int horizontalPadding, 
+    std::string Name,
+    TTF_Font *font,
+    SDL_Color color,
+    int windowWidth,
+    int windowHeigt,
+    int horizontalPadding,
     int verticalPadding,
     UICounterPosition counterPosition,
-    bool displayName):
-    Name(Name), font(font), color(color), 
-    windowWidth(windowWidth), windowHeigt(windowHeigt), 
-    horizontalPadding(horizontalPadding), verticalPadding(verticalPadding),
-    counterPosition(counterPosition), displayName(displayName)
+    bool displayName) : Name(Name), font(font), color(color),
+                        windowWidth(windowWidth), windowHeigt(windowHeigt),
+                        horizontalPadding(horizontalPadding), verticalPadding(verticalPadding),
+                        counterPosition(counterPosition), displayName(displayName)
 {
-    messageRect = {0 ,verticalPadding ,0 ,0};
+    messageRect = {0, verticalPadding, 0, 0};
     numberToDisplay = 0;
 
     if (!UICounters.empty())
@@ -68,10 +66,11 @@ UICounter::UICounter(
         auto it = UICounters.begin();
         while (it != UICounters.end())
         {
-            if(counterPosition == it->counterPosition) messageRect.y += it->verticalPadding * 2 + it->messageRect.h;
+            if (counterPosition == it->counterPosition)
+                messageRect.y += it->verticalPadding * 2 + it->messageRect.h;
             it++;
         }
-    } 
+    }
 
     UICounters.push_back(*this);
 }
@@ -79,23 +78,27 @@ UICounter::UICounter(
 void UICounter::update(int numberToDisplay, SDL_Renderer *renderer)
 {
     std::string renderString = std::to_string(numberToDisplay);
-    if (displayName) renderString = Name + ": " + renderString;
-    
+    if (displayName)
+        renderString = Name + ": " + renderString;
+
     const char *pCString = renderString.c_str();
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, pCString, color); 
+    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(font, pCString, color);
     messageTexture = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
     SDL_FreeSurface(surfaceMessage);
     SDL_QueryTexture(messageTexture, NULL, NULL, &messageRect.w, &messageRect.h);
 
     if (counterPosition == UICounterPosition::Left)
-    messageRect.x = horizontalPadding;
+        messageRect.x = horizontalPadding;
 
-    if(counterPosition == UICounterPosition::Right)
-    messageRect.x = windowWidth - messageRect.w - horizontalPadding;
+    if (counterPosition == UICounterPosition::Right)
+        messageRect.x = windowWidth - messageRect.w - horizontalPadding;
 }
 
 void UICounter::render(SDL_Renderer *renderer)
 {
+    if (!renderer)
+        return;
+
     SDL_RenderCopy(renderer, messageTexture, NULL, &messageRect);
     SDL_DestroyTexture(messageTexture);
 }
