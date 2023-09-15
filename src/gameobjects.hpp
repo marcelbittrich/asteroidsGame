@@ -60,15 +60,18 @@ private:
     unsigned timeBetweenSprites = 300;
     Uint32 timeLastUpdated;
 
+    float rotation = 0; // Current rotation in degree
+
+    void createShot();
+
 public:
-    float shipAngle = 0;
-
     Ship();
-    Ship(float midPosX, float midPosY, int size);
+    Ship(int midPosX, int midPosY, int size);
 
-    void update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float *deltaTime);
+    void update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *shipTex);
     void shoot();
+    void reset(SDL_Renderer *renderer);
     void respawn(SDL_Renderer *renderer);
 
     float getMaxVelocity() { return velocityMax; };
@@ -90,7 +93,7 @@ class Asteroid : public GameObject
 public:
     AsteroidSizeType sizeType;
     Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType);
-    void update(int windowWidth, int windowHeight, float *deltaTime);
+    void update(int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
     static std::list<Asteroid> asteroids;
     static float getColRadius(int size);
@@ -113,7 +116,7 @@ public:
     static std::list<Shot> shots;
     Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingAngle);
     Uint32 creationTime;
-    void update(int windowWidth, int windowHeight, float *deltaTime);
+    void update(int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *shotTex);
 };
 
@@ -130,7 +133,7 @@ public:
     Bomb(int xPos, int yPos, SDL_FPoint velocity);
     Uint32 creationTime;
     Uint32 ignitionTime;
-    void update(int windowWidth, int windowHeight, float *deltaTime, Ship *ship);
+    void update(int windowWidth, int windowHeight, float deltaTime, Ship *ship);
     void render(SDL_Renderer *renderer, SDL_Texture *bombTex);
     void collect();
     void explode();

@@ -28,7 +28,7 @@ backgroundPoint::backgroundPoint(float xPos, float yPos)
     onOrigin = true;
 }
 
-void backgroundPoint::returnToOrigin(float *deltaTime)
+void backgroundPoint::returnToOrigin(float deltaTime)
 {
     SDL_FPoint originPosF = {originPos.x, originPos.y};
     squareDistanceToOrigin = squareDistance(currentPos, originPosF);
@@ -44,7 +44,7 @@ void backgroundPoint::returnToOrigin(float *deltaTime)
 
     // points come back faster with more distance
     float distanceDependentVelocity = distanceVelocityFunctionSteepness * distanceToOrigin * distanceToOrigin;
-    float returnToOriginVelocity = std::max(minReturnVelocity, distanceDependentVelocity) * *deltaTime * 60.f;
+    float returnToOriginVelocity = std::max(minReturnVelocity, distanceDependentVelocity) * deltaTime * 60.f;
 
     vectorChange[0] = (normalizedDistance[0] * returnToOriginVelocity);
     vectorChange[1] = (normalizedDistance[1] * returnToOriginVelocity);
@@ -147,13 +147,14 @@ background::background()
 
 background::background(int windowWidth, int windowHeight)
 {
-    this->height = windowHeight;
-    this->width = windowWidth;
+    height = windowHeight;
+    width = windowWidth;
 
+    // Devide the screen in areas each occupied by one point
     pointAreaWidth = width / static_cast<float>(divider);
     pointAreaHeight = height / static_cast<float>(divider);
 
-    // create background points
+    // create background points in the middle of each area
     for (int i = 0; i != divider; i++)
     {
         float newPointXPos = pointAreaWidth * i + pointAreaWidth / 2.0f;
@@ -162,13 +163,13 @@ background::background(int windowWidth, int windowHeight)
         {
             float newPointYPos = pointAreaHeight * j + pointAreaHeight / 2.0f;
 
-            backgroundPoint newPoint = backgroundPoint(newPointXPos, newPointYPos);
+            backgroundPoint *newPoint = new backgroundPoint(newPointXPos, newPointYPos);
             backgroundPoints[i][j] = newPoint;
         }
     }
 }
 
-void background::update(std::list<GameObject> colObjects, float *updateTime)
+void background::update(std::list<GameObject> colObjects, float deltaTime)
 {
     // debug, count update operations
     int updatePointOperations = 0;
@@ -193,7 +194,7 @@ void background::update(std::list<GameObject> colObjects, float *updateTime)
                     // dont look for collsion outside of the visible area
                     if ((i >= 0 && i <= divider - 1) && (j >= 0 && j <= divider - 1))
                     {
-                        backgroundPoints[i][j].update(object);
+                        backgroundPoints[i][j]->update(object);
                         updatePointOperations++;
                     }
                 }
@@ -204,9 +205,9 @@ void background::update(std::list<GameObject> colObjects, float *updateTime)
     for (int i = 0; i != divider; i++)
     {
         for (int j = 0; j != divider; j++)
-            if (!backgroundPoints[i][j].onOrigin)
+            if (!backgroundPoints[i][j]->onOrigin)
             {
-                backgroundPoints[i][j].returnToOrigin(updateTime);
+                backgroundPoints[i][j]->returnToOrigin(deltaTime);
                 updatePointOperations++;
             }
     }
@@ -221,9 +222,9 @@ void background::render(SDL_Renderer *renderer)
     for (int i = 0; i != divider; i++)
     {
         for (int j = 0; j != divider; j++)
-            if (!backgroundPoints[i][j].onOrigin)
+            if (!backgroundPoints[i][j]->onOrigin)
             {
-                backgroundPoints[i][j].render(renderer);
+                backgroundPoints[i][j]->render(renderer);
             }
     }
 }

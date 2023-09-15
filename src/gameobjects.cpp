@@ -14,14 +14,14 @@ SDL_Rect GameObject::getRect()
     return rect;
 }
 
-Ship::Ship(float midPosX, float midPosY, int size) : GameObject()
+Ship::Ship(int midPosX, int midPosY, int size) : GameObject()
 {
     this->width = size;
     this->height = size;
 
     this->colRadius = size / 2 * sizeToCollisonRadiusRatio;
 
-    this->midPos = {midPosX, midPosY};
+    this->midPos = {(float)midPosX, (float)midPosY};
 
     animationCounter = 0;
 }
@@ -34,12 +34,12 @@ void Ship::update(
     InputHandler *MyInputHandler,
     int windowWidth,
     int windowHeight,
-    float *deltaTime)
+    float deltaTime)
 {
     // update shooting capability and ship visibility
     if (isVisible)
     {
-        shotCounter = std::max((shotCounter - shotCounterDecay * *deltaTime), 0.0f);
+        shotCounter = std::max((shotCounter - shotCounterDecay * deltaTime), 0.0f);
         if (shotCounter >= maxShotCounter)
             canShoot = false;
         if (!canShoot && shotCounter <= shipCooldown)
@@ -49,7 +49,7 @@ void Ship::update(
     {
         canShoot = false;
         shotCounter = maxShotCounter + 1;
-        timeNotVisible += *deltaTime;
+        timeNotVisible += deltaTime;
         if (timeNotVisible > respawnTime)
         {
             timeNotVisible = 0;
@@ -62,7 +62,7 @@ void Ship::update(
     float velocitySum = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
     float velocityAngle = atan2(velocity.x, velocity.y);
 
-    velocitySum = std::max(velocitySum - velocityDecay * *deltaTime, 0.0f);
+    velocitySum = std::max(velocitySum - velocityDecay * deltaTime, 0.0f);
     velocity.x = (sin(velocityAngle) * velocitySum);
     velocity.y = (cos(velocityAngle) * velocitySum);
 
@@ -71,27 +71,27 @@ void Ship::update(
     {
         if (velocitySum <= velocityMax)
         {
-            float deltaVelocityX = sin(shipAngle * PI / 180) * thrust * *deltaTime;
-            float deltaVelocityY = -(cos(shipAngle * PI / 180)) * thrust * *deltaTime;
+            float deltaVelocityX = sin(rotation * PI / 180) * thrust * deltaTime;
+            float deltaVelocityY = -(cos(rotation * PI / 180)) * thrust * deltaTime;
             velocity.x += deltaVelocityX;
             velocity.y += deltaVelocityY;
         }
     }
 
-    midPos.x += velocity.x * *deltaTime;
-    midPos.y += velocity.y * *deltaTime;
+    midPos.x += velocity.x * deltaTime;
+    midPos.y += velocity.y * deltaTime;
 
     midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
 
     // update ship heading
     if (CurrentControlBools.isTurningRight)
     {
-        shipAngle += roatatingSpeed * *deltaTime;
+        rotation += roatatingSpeed * deltaTime;
     }
 
     if (CurrentControlBools.isTurningLeft)
     {
-        shipAngle -= roatatingSpeed * *deltaTime;
+        rotation -= roatatingSpeed * deltaTime;
     }
 
     // animation update
@@ -126,20 +126,20 @@ void Ship::render(SDL_Renderer *renderer, SDL_Texture *shipTex)
     // calculate triangle size
     SDL_FPoint shipNose;
     float noseDistanceToShipMid = height * 0.42;
-    shipNose.x = midPos.x + SDL_sinf(shipAngle / 180 * PI) * noseDistanceToShipMid;
-    shipNose.y = midPos.y - SDL_cosf(shipAngle / 180 * PI) * noseDistanceToShipMid;
+    shipNose.x = midPos.x + SDL_sinf(rotation / 180 * PI) * noseDistanceToShipMid;
+    shipNose.y = midPos.y - SDL_cosf(rotation / 180 * PI) * noseDistanceToShipMid;
 
     SDL_Color triangleBaseColor = {0, 0, 0, 255};
     float tringleWidth = width * 0.5f;
     float trinagleHeight = height * 0.625f;
 
-    drawTriangle(renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, shipAngle, triangleBaseColor);
+    drawTriangle(renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, rotation, triangleBaseColor);
 
     // overlay shot meter triangle
     float shotMeterValue = std::min(shotCounter / maxShotCounter, 1.0f);
     if (shotMeterValue > 0.1f)
     {
-        drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, shipAngle, meterColor);
+        drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, rotation, meterColor);
     }
 
     // draw ship texture
@@ -166,29 +166,33 @@ void Ship::render(SDL_Renderer *renderer, SDL_Texture *shipTex)
     srcR.x = srcR.w * animationCounter;
     srcR.y = 0;
 
-    SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, shipAngle, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, rotation, NULL, SDL_FLIP_NONE);
 }
 
-void Ship::respawn(SDL_Renderer *renderer)
+void Ship::reset(SDL_Renderer *renderer)
 {
     int windowWidth, windowHeight;
     SDL_RenderGetLogicalSize(renderer, &windowWidth, &windowHeight);
 
     midPos = {windowWidth / 2.0f, windowHeight / 2.0f};
     velocity = {0.0f, 0.0f};
+    rotation = 0.f;
+}
 
+void Ship::respawn(SDL_Renderer *renderer)
+{
+    reset(renderer);
     isVisible = false;
 }
 
-void createShot(Ship ship)
+void Ship::createShot()
 {
     SDL_FPoint shotVelocityVector = {0, 0};
-    float shotVelocity = ship.getShotVelocity();
 
-    shotVelocityVector.x = sin(ship.shipAngle / 180 * PI) * shotVelocity + ship.velocity.x;
-    shotVelocityVector.y = -cos(ship.shipAngle / 180 * PI) * shotVelocity + ship.velocity.y;
+    shotVelocityVector.x = sin(rotation / 180 * PI) * shotVelocity + velocity.x;
+    shotVelocityVector.y = -cos(rotation / 180 * PI) * shotVelocity + velocity.y;
 
-    Shot(ship.midPos.x, ship.midPos.y, shotVelocityVector, ship.shipAngle);
+    Shot(midPos.x, midPos.y, shotVelocityVector, rotation);
 }
 
 void Ship::shoot()
@@ -199,7 +203,7 @@ void Ship::shoot()
         {
             if (shotCounter < maxShotCounter)
             {
-                createShot(*this);
+                createShot();
                 shotCounter = shotCounter + 100;
             }
         }
@@ -210,7 +214,7 @@ void Ship::shoot()
             Uint32 timeSinceLastShot = SDL_GetTicks() - Shot::shots.back().creationTime;
             if (timeSinceLastShot > 250 && shotCounter < maxShotCounter)
             {
-                createShot(*this);
+                createShot();
                 shotCounter = shotCounter + 100;
             }
         }
@@ -247,12 +251,12 @@ Asteroid::Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSi
     asteroids.push_back(*this);
 }
 
-void Asteroid::update(int windowWidth, int windowHeight, float *deltaTime)
+void Asteroid::update(int windowWidth, int windowHeight, float deltaTime)
 {
     if (isVisible)
     {
-        midPos.x += velocity.x * *deltaTime * 60;
-        midPos.y += velocity.y * *deltaTime * 60;
+        midPos.x += velocity.x * deltaTime * 60;
+        midPos.y += velocity.y * deltaTime * 60;
     }
 
     SDL_FPoint newMidPosistion = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
@@ -452,10 +456,10 @@ Shot::Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingA
     shots.push_back(*this);
 }
 
-void Shot::update(int windowWidth, int windowHeight, float *deltaTime)
+void Shot::update(int windowWidth, int windowHeight, float deltaTime)
 {
-    midPos.x += velocity.x * *deltaTime;
-    midPos.y += velocity.y * *deltaTime;
+    midPos.x += velocity.x * deltaTime;
+    midPos.y += velocity.y * deltaTime;
     // midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 }
 
@@ -564,15 +568,15 @@ Bomb::Bomb(int xPos, int yPos, SDL_FPoint velocity)
     bombs.push_back(*this);
 }
 
-void Bomb::update(int windowWidth, int windowHeight, float *deltaTime, Ship *ship)
+void Bomb::update(int windowWidth, int windowHeight, float deltaTime, Ship *ship)
 {
     if (!isCollected && !isExploding)
     {
-        midPos.x += velocity.x * *deltaTime * 60;
-        midPos.y += velocity.y * *deltaTime * 60;
+        midPos.x += velocity.x * deltaTime * 60;
+        midPos.y += velocity.y * deltaTime * 60;
         midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 
-        angle += 10 * *deltaTime;
+        angle += 10 * deltaTime;
     }
     if (isCollected && !isExploding)
     {
@@ -582,7 +586,7 @@ void Bomb::update(int windowWidth, int windowHeight, float *deltaTime, Ship *shi
     {
         float explosionVelocity = 20.0f;
         float timeSinceIgnition = (SDL_GetTicks() - ignitionTime) / 1000.0f;
-        colRadius += timeSinceIgnition * explosionVelocity * *deltaTime * 60;
+        colRadius += timeSinceIgnition * explosionVelocity * deltaTime * 60;
         if (timeSinceIgnition > 1.0f)
         {
             isDead = true;

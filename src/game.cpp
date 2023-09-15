@@ -14,8 +14,6 @@ Ship ship = Ship();
 // int currentThrustAnimationTime = 0;
 bool newBombIgnition = true;
 
-background gameBackground;
-
 GameSave gameSave;
 GameMenu gameMenu;
 
@@ -167,16 +165,16 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
     gameMenu = GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
     gameMenu.highscore = gameSave.highscore;
 
-    gameBackground = background(windowWidth, windowHeight);
+    gameBackground = new background(windowWidth, windowHeight);
 
-    ship = initShip(windowWidth, windowHeight);
-    colObjects.push_back(ship);
+    ship = new Ship(windowWidth / 2, windowHeight / 2, 50);
+    colObjects.push_back(*ship);
 
-    initAsteroids(ship, windowWidth, windowHeight);
+    initAsteroids(*ship, windowWidth, windowHeight);
 
     lastUpdateTime = SDL_GetTicks();
 
-    shotMeter = ShotMeter(&ship, 0, 25, 40, 6);
+    shotMeter = ShotMeter(ship, 0, 25, 40, 6);
 
     SDL_Color white = {255, 255, 255, 255};
 
@@ -279,24 +277,24 @@ void Game::update()
     bombCount = Bomb::pCollectedBombs.size();
 
     // Update Ship
-    ship.update(MyInputHandler, windowWidth, windowHeight, &deltaTime);
+    ship->update(MyInputHandler, windowWidth, windowHeight, deltaTime);
 
     // Update Asteroid Position
     for (Asteroid &asteroid : Asteroid::asteroids)
     {
-        asteroid.update(windowWidth, windowHeight, &deltaTime);
+        asteroid.update(windowWidth, windowHeight, deltaTime);
     }
 
     // Check Ship Collision Asteroids
     for (const Asteroid &asteroid : Asteroid::asteroids)
     {
-        if (doesCollide(ship, asteroid))
+        if (doesCollide(*ship, asteroid))
         {
             if (--life == 0)
             {
                 break;
             }
-            ship.respawn(renderer);
+            ship->respawn(renderer);
             asteroidWave = 1;
         }
     }
@@ -304,7 +302,7 @@ void Game::update()
     // Check Ship Collision Asteroids
     for (Bomb &bomb : Bomb::bombs)
     {
-        if (!bomb.isExploding && doesCollide(ship, bomb))
+        if (!bomb.isExploding && doesCollide(*ship, bomb))
         {
             bomb.collect();
         }
@@ -345,15 +343,15 @@ void Game::update()
     // Make Shots
     if (isShooting)
     {
-        ship.shoot();
+        ship->shoot();
     }
 
-    shotMeter.update(ship.getShotCounter(), ship.getMaxShotCounter(), &ship);
+    shotMeter.update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
 
     // Update Shots
     for (Shot &singleShot : Shot::shots)
     {
-        singleShot.update(windowWidth, windowHeight, &deltaTime);
+        singleShot.update(windowWidth, windowHeight, deltaTime);
     }
 
     // Destroy Shots
@@ -408,7 +406,7 @@ void Game::update()
     // Update Bombs
     for (auto bombIt = Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
     {
-        bombIt->update(windowWidth, windowHeight, &deltaTime, &ship);
+        bombIt->update(windowWidth, windowHeight, deltaTime, ship);
 
         if (bombIt->isExploding)
         {
@@ -451,12 +449,12 @@ void Game::update()
 
     // Fill colObjects vector
     colObjects.clear();
-    colObjects.push_back(ship);
+    colObjects.push_back(*ship);
     colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end());
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
     colObjects.insert(colObjects.end(), Bomb::bombs.begin(), Bomb::bombs.end());
 
-    gameBackground.update(colObjects, &deltaTime);
+    gameBackground->update(colObjects, deltaTime);
 
     if (frameTime != 0)
     {
@@ -509,7 +507,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &playArea);
 
-    gameBackground.render(renderer);
+    gameBackground->render(renderer);
 
     for (Bomb &bomb : Bomb::bombs)
     {
@@ -530,7 +528,7 @@ void Game::render()
         // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
 
-    ship.render(renderer, shipTex);
+    ship->render(renderer, shipTex);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
@@ -580,10 +578,11 @@ void Game::reset()
     life = 3;
     bombCount = 0;
 
-    ship = initShip(windowWidth, windowHeight);
-    colObjects.push_back(ship);
+    delete ship;
+    ship = new Ship(windowWidth / 2, windowHeight / 2, 50);
+    colObjects.push_back(*ship);
 
-    initAsteroids(ship, windowWidth, windowHeight);
+    initAsteroids(*ship, windowWidth, windowHeight);
 
     lastUpdateTime = SDL_GetTicks();
 

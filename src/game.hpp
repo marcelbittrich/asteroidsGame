@@ -55,7 +55,9 @@ public:
 
     // Control values
     InputHandler *MyInputHandler;
-    // ControlBools controlBools;
+
+    // Visuals
+    background *gameBackground;
 
     void handleEvents();
     void update();
@@ -81,6 +83,7 @@ public:
 
 private:
     SDL_Window *window;
+    Ship *ship;
 
 public:
     bool getIsRunning() { return isRunning; }

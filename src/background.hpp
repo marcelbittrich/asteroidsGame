@@ -10,6 +10,9 @@ private:
     Uint8 color[4];
 
 public:
+    backgroundPoint();
+    backgroundPoint(float xPos, float yPos);
+
     // float xPos, yPos;
     bool onOrigin;
     SDL_FPoint currentPos;
@@ -24,24 +27,23 @@ public:
     float distanceVelocityFunctionSteepness = 0.005;
     float putOnOriginDistance = 4.0;
 
+    void returnToOrigin(float deltaTime);
+    void update(class GameObject colObject);
+
     // render values
     float pointSizeScale = 1.5;
-
-    backgroundPoint();
-    backgroundPoint(float xPos, float yPos);
-
-    void update(class GameObject colObject);
     void render(SDL_Renderer *renderer);
-    void returnToOrigin(float *deltaTime);
+
     float squareDistance(SDL_FPoint PositionA, SDL_FPoint PositionB);
 };
 
 class background
 {
     static const int divider = 100;
-    int width, height;
+    int width;
+    int height;
 
-    backgroundPoint backgroundPoints[divider][divider];
+    backgroundPoint *backgroundPoints[divider][divider];
     float pointAreaWidth;
     float pointAreaHeight;
 
@@ -49,7 +51,7 @@ public:
     background();
     background(int windowWidth, int windowHeight);
 
-    void update(std::list<class GameObject> colObjects, float *deltaTime);
+    void update(std::list<class GameObject> colObjects, float deltaTime);
     void render(SDL_Renderer *renderer);
 };
 
