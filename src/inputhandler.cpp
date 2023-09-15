@@ -46,7 +46,7 @@ void InputHandler::handleInput(bool &isRunning)
                 controlBools.isUsingBomb = true;
                 break;
             case SDLK_p:
-                controlBools.isPaused = true;
+                controlBools.pausePressed = true;
                 break;
             default:
                 break;
@@ -73,7 +73,7 @@ void InputHandler::handleInput(bool &isRunning)
                 controlBools.isUsingBomb = false;
                 break;
             case SDLK_p:
-                controlBools.isPaused = false;
+                controlBools.pausePressed = false;
                 break;
             default:
                 break;

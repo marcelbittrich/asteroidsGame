@@ -84,7 +84,7 @@ private:
     /// Interaction values
     bool newClick = true;
     bool newPause = true;
-    bool pause = false;
+    bool gameIsPaused = false;
     bool newBombIgnition = true;
 
     // UI values
@@ -107,6 +107,14 @@ private:
     bool showFPS = false;
 
     std::vector<int> FPSVector;
+
+    //
+    // Update
+    //
+
+    float calculateDeltaTime();
+    bool updateGameState();
+    bool handlePause();
 
 public:
     bool getIsRunning() { return isRunning; }

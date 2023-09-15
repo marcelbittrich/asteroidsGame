@@ -55,6 +55,8 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
     lastUpdateTime = SDL_GetTicks();
 }
 
+#pragma region init functions
+
 void Game::initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
     int flags = 0;
@@ -192,6 +194,8 @@ void Game::initUI()
     UIFPS = new UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 }
 
+#pragma endregion
+
 void Game::handleEvents()
 {
     if (MyInputHandler)
@@ -202,52 +206,16 @@ void Game::handleEvents()
 
 void Game::update()
 {
-    if (gameState == STATE_IN_MENU)
-    {
-        myGameMenu->update(isRunning, gameState, MyInputHandler);
-        if (gameState != STATE_IN_GAME)
-            return;
-    }
+    float deltaTime = calculateDeltaTime();
 
-    if (life == 0)
-    {
-        gameState = STATE_IN_MENU;
-
-        myGameMenu->setScore(score);
-        int oldHighscore = myGameSave->getHighscore();
-        if (score > oldHighscore)
-        {
-            myGameMenu->setHighscore(score);
-            myGameSave->setHighscore(score);
-            myGameSave->writeFile();
-        }
+    bool keepUpdating;
+    keepUpdating = updateGameState();
+    if (!keepUpdating)
         return;
-    }
 
-    Uint32 currentTime = SDL_GetTicks();
-    float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
-    lastUpdateTime = currentTime;
-
-    bool isPaused = (MyInputHandler->getControlBools()).isPaused;
-    if (isPaused && newPause && !pause)
-    {
-        newPause = false;
-        pause = true;
-    }
-    else if (isPaused && newPause && pause)
-    {
-        newPause = false;
-        pause = false;
-    }
-    else if (!isPaused)
-    {
-        newPause = true;
-    }
-
-    if (pause)
-    {
+    keepUpdating = handlePause();
+    if (!keepUpdating)
         return;
-    }
 
     bool isLeftClicking = (MyInputHandler->getControlBools()).isLeftClicking;
     // Debug Bomb Spawn on Click
@@ -495,6 +463,65 @@ void Game::update()
     UIFPS->update(averageFPS, renderer);
     UILives->update(life - 1, renderer);
     UIBomb->update(Bomb::pCollectedBombs.size(), renderer);
+}
+
+float Game::calculateDeltaTime()
+{
+    Uint32 currentTime = SDL_GetTicks();
+    float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
+    lastUpdateTime = currentTime;
+    return deltaTime;
+}
+
+bool Game::updateGameState()
+{
+    if (gameState == STATE_IN_MENU)
+    {
+        myGameMenu->update(isRunning, gameState, MyInputHandler);
+        if (gameState != STATE_IN_GAME)
+            return false;
+    }
+
+    if (life == 0 && gameState != STATE_IN_MENU)
+    {
+        gameState = STATE_IN_MENU;
+
+        myGameMenu->setScore(score);
+        int oldHighscore = myGameSave->getHighscore();
+        if (score > oldHighscore)
+        {
+            myGameMenu->setHighscore(score);
+            myGameSave->setHighscore(score);
+            myGameSave->writeFile();
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool Game::handlePause()
+{
+    bool pausePressed = (MyInputHandler->getControlBools()).pausePressed;
+    if (pausePressed && newPause && !gameIsPaused)
+    {
+        newPause = false;
+        gameIsPaused = true;
+    }
+    else if (pausePressed && newPause && gameIsPaused)
+    {
+        newPause = false;
+        gameIsPaused = false;
+    }
+    else if (!pausePressed)
+    {
+        newPause = true;
+    }
+
+    if (gameIsPaused)
+        return false;
+
+    return true;
 }
 
 void Game::render()

@@ -9,7 +9,7 @@ struct ControlBools
     bool isShooting;
     bool isLeftClicking;
     bool isUsingBomb;
-    bool isPaused;
+    bool pausePressed;
 };
 typedef ControlBools ControlBools;
 
