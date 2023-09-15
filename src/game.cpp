@@ -1,4 +1,20 @@
+#include <stdexcept>
+#include <numeric>
+#include <iostream>
+#include <math.h>
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_gamecontroller.h"
+
+#include "shapes.hpp"
+#include "background.hpp"
+#include "initialization.hpp"
+#include "UIelements.hpp"
+#include "gamesave.hpp"
+#include "inputhandler.hpp"
 #include "game.hpp"
+#include "menu.hpp"
 
 // Gameplay parameters
 int STARTING_LIVES = 3;
@@ -8,42 +24,6 @@ int BOMB_SPAWN_ON_SCORE = 50;
 float ASTEROID_SPAWN_DELTATIME = 3.0;
 float ASTEROID_SPAWN_SPEED_MULTI = 0.03;
 
-// game object values
-Ship ship = Ship();
-// int thrustAnimationCounter;
-// int currentThrustAnimationTime = 0;
-bool newBombIgnition = true;
-
-GameSave gameSave;
-GameMenu gameMenu;
-
-std::list<GameObject> colObjects;
-
-// UI values
-ShotMeter shotMeter;
-UICounter UIScore;
-UICounter UILives;
-UICounter UIBomb;
-UICounter UIFPS;
-
-unsigned score;
-unsigned life;
-unsigned bombCount;
-unsigned FPS;
-
-std::vector<int> FPSVector;
-
-bool newClick = true;
-bool newPause = true;
-bool pause = false;
-
-// values for wave spwan system
-float timeSinceLastAsteroidWave = 0;
-int asteroidWave = 1;
-
-// priming game time
-Uint32 lastUpdateTime = SDL_GetTicks();
-
 Game::Game()
 {
 }
@@ -52,6 +32,30 @@ Game::~Game()
 }
 
 void Game::init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
+{
+    initWindow(title, xpos, ypos, width, height, fullscreen);
+    initInputDevices();
+
+    MyInputHandler = new InputHandler();
+    if (MyInputHandler)
+    {
+        MyInputHandler->init();
+    }
+    else
+    {
+        fprintf(stderr, "Could not init Inputhandler");
+    }
+
+    initTextures();
+    initMenu();
+    initGameplay();
+    initUI();
+
+    // priming game time
+    lastUpdateTime = SDL_GetTicks();
+}
+
+void Game::initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
     int flags = 0;
     if (fullscreen)
@@ -89,7 +93,10 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
     {
         isRunning = false;
     }
+}
 
+void Game::initInputDevices()
+{
     printf("%i joysticks were found.\n", SDL_NumJoysticks());
     for (int i = 1; i <= SDL_NumJoysticks(); ++i)
     {
@@ -122,17 +129,10 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
             }
         }
     }
+}
 
-    MyInputHandler = new InputHandler();
-    if (MyInputHandler)
-    {
-        MyInputHandler->init();
-    }
-    else
-    {
-        fprintf(stderr, "Could not init Inputhandler");
-    }
-
+void Game::initTextures()
+{
     SDL_Surface *image = IMG_Load("../img/ship_thrustanimation.png");
     if (image == NULL)
     {
@@ -159,33 +159,37 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
 
     font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
     fontHuge = TTF_OpenFont("../font/joystix_monospace.ttf", 120);
+}
 
-    gameSave = GameSave();
+void Game::initMenu()
+{
+    myGameSave = new GameSave();
+    myGameMenu = new GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
+    myGameMenu->setHighscore(myGameSave->getHighscore());
+}
 
-    gameMenu = GameMenu(font, fontHuge, renderer, windowWidth, windowHeight);
-    gameMenu.highscore = gameSave.highscore;
-
+void Game::initGameplay()
+{
     gameBackground = new background(windowWidth, windowHeight);
 
     ship = new Ship(windowWidth / 2, windowHeight / 2, 50);
     colObjects.push_back(*ship);
-
     initAsteroids(*ship, windowWidth, windowHeight);
-
-    lastUpdateTime = SDL_GetTicks();
-
-    shotMeter = ShotMeter(ship, 0, 25, 40, 6);
-
-    SDL_Color white = {255, 255, 255, 255};
-
-    UIScore = UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
-    UILives = UICounter("Lives", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-    UIBomb = UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-    UIFPS = UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 
     score = 0;
     life = STARTING_LIVES;
     bombCount = STARTING_BOMB_COUNT;
+}
+
+void Game::initUI()
+{
+    shotMeter = new ShotMeter(ship, 0, 25, 40, 6);
+
+    SDL_Color white = {255, 255, 255, 255};
+    UIScore = new UICounter("Score", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
+    UILives = new UICounter("Lives", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UIBomb = new UICounter("Bombs", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+    UIFPS = new UICounter("FPS", font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 }
 
 void Game::handleEvents()
@@ -200,7 +204,7 @@ void Game::update()
 {
     if (gameState == STATE_IN_MENU)
     {
-        gameMenu.update(isRunning, gameState, MyInputHandler);
+        myGameMenu->update(isRunning, gameState, MyInputHandler);
         if (gameState != STATE_IN_GAME)
             return;
     }
@@ -208,12 +212,14 @@ void Game::update()
     if (life == 0)
     {
         gameState = STATE_IN_MENU;
-        gameMenu.score = score;
-        if (score > gameSave.highscore)
+
+        myGameMenu->setScore(score);
+        int oldHighscore = myGameSave->getHighscore();
+        if (score > oldHighscore)
         {
-            gameMenu.highscore = score;
-            gameSave.highscore = score;
-            gameSave.write();
+            myGameMenu->setHighscore(score);
+            myGameSave->setHighscore(score);
+            myGameSave->writeFile();
         }
         return;
     }
@@ -346,7 +352,7 @@ void Game::update()
         ship->shoot();
     }
 
-    shotMeter.update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
+    shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
 
     // Update Shots
     for (Shot &singleShot : Shot::shots)
@@ -456,9 +462,9 @@ void Game::update()
 
     gameBackground->update(colObjects, deltaTime);
 
-    if (frameTime != 0)
+    if (deltaTime != 0)
     {
-        FPS = 1000 / frameTime;
+        FPS = 1 / deltaTime;
         if (FPSVector.size() >= 10)
         {
             FPSVector.insert(FPSVector.begin(), FPS);
@@ -485,19 +491,17 @@ void Game::update()
         averageFPS = 0;
     }
 
-    UIScore.update(score, renderer);
-
-    UIFPS.update(averageFPS, renderer);
-    UILives.update(life - 1, renderer);
-
-    UIBomb.update(Bomb::pCollectedBombs.size(), renderer);
+    UIScore->update(score, renderer);
+    UIFPS->update(averageFPS, renderer);
+    UILives->update(life - 1, renderer);
+    UIBomb->update(Bomb::pCollectedBombs.size(), renderer);
 }
 
 void Game::render()
 {
     if (gameState == STATE_IN_MENU || gameState == STATE_RESET)
     {
-        gameMenu.render();
+        myGameMenu->render();
         return;
     }
 
@@ -532,10 +536,10 @@ void Game::render()
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
-    UIScore.render(renderer);
-    UILives.render(renderer);
-    UIBomb.render(renderer);
-    UIFPS.render(renderer);
+    UIScore->render(renderer);
+    UILives->render(renderer);
+    UIBomb->render(renderer);
+    UIFPS->render(renderer);
 
     // ShotMeter
     // shotMeter.render(renderer, ship.canShoot);
@@ -589,18 +593,18 @@ void Game::reset()
     gameState = STATE_IN_GAME;
 }
 
-void Game::printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime)
+void Game::printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)
 {
     if (showUpdateTime)
         std::cout << "Update Time: " << updateTime << " ";
     if (showRenderTime)
         std::cout << "Render Time: " << renderTime << " ";
-    if (showFrameTime)
+    if (showLoopTime)
         std::cout << "Frame Time: " << loopTime << " ";
-    if (showDelayedFrameTime)
+    if (showFrameTime) // Loop time plus potential wait time
         std::cout << "Delayed Frame Time: " << frameTime << " ";
     if (showFPS)
         std::cout << "FPS: " << 1000 / frameTime << " ";
-    if (showUpdateTime || showRenderTime || showFrameTime || showDelayedFrameTime || showFPS)
+    if (showUpdateTime || showRenderTime || showLoopTime || showFrameTime || showFPS)
         std::cout << std::endl;
 }

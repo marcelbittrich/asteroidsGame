@@ -7,11 +7,17 @@
 
 class GameSave
 {
-public:
-    unsigned highscore = 0;
 
+public:
     GameSave();
-    void write();
+
+private:
+    int highscore = 0;
+
+public:
+    void writeFile();
+    int getHighscore() { return highscore; }
+    void setHighscore(int newHighscore) { highscore = newHighscore; }
 };
 
 #endif

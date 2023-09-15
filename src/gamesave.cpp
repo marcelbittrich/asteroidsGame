@@ -2,24 +2,26 @@
 
 GameSave::GameSave()
 {
-    std::ifstream file ("savegame.txt");
+    std::ifstream file("savegame.txt");
     std::string line;
-    
+
     if (file.is_open())
     {
-        while (getline (file, line))
+        while (getline(file, line))
         {
             highscore = std::stoi(line);
         }
-    } else {
-        std::cout << "Couldn't open. sorry :(" << std::endl;
+    }
+    else
+    {
+        std::cout << "Could not open savegame.txt" << std::endl;
     }
 }
 
-void GameSave::write()
+void GameSave::writeFile()
 {
     std::ofstream file;
-    file.open ("savegame.txt", std::ios::out);
+    file.open("savegame.txt", std::ios::out);
     file << highscore;
     file.close();
 }

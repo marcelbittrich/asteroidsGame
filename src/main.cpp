@@ -22,24 +22,24 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			game->frameStart = SDL_GetTicks();
+			Uint32 frameStart = SDL_GetTicks();
 
 			game->handleEvents();
 			game->update();
-			Uint32 updateTime = SDL_GetTicks() - game->frameStart;
+			Uint32 updateTime = SDL_GetTicks() - frameStart;
 			game->render();
-			Uint32 renderTime = SDL_GetTicks() - updateTime - game->frameStart;
+			Uint32 renderTime = SDL_GetTicks() - updateTime - frameStart;
 
-			Uint32 loopTime = SDL_GetTicks() - game->frameStart;
+			Uint32 loopTime = SDL_GetTicks() - frameStart;
 
 			if (loopTime < frameCapTime)
 			{
 				SDL_Delay((int)(frameCapTime - loopTime));
 			}
 
-			game->frameTime = SDL_GetTicks() - game->frameStart;
+			Uint32 frameTime = SDL_GetTicks() - frameStart;
 
-			game->printPerformanceInfo(updateTime, renderTime, loopTime);
+			game->printPerformanceInfo(updateTime, renderTime, loopTime, frameTime);
 		}
 	};
 

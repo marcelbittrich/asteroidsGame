@@ -8,6 +8,13 @@
 
 class GameMenu
 {
+
+public:
+    GameMenu(){};
+    GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
+    void update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler);
+    void render();
+
 private:
     int width, height;
     bool showStartScreen = true;
@@ -29,13 +36,12 @@ private:
     SDL_Texture *scoreTextTexture;
     SDL_Renderer *renderer;
 
-public:
-    GameMenu(){};
-    GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
-    void update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler);
-    void render();
     int score;
     int highscore;
+
+public:
+    void setScore(int newScore) { score = newScore; }
+    void setHighscore(int newHighscore) { highscore = newHighscore; }
 };
 
 #endif // MENU_HPP

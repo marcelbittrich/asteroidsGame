@@ -1,23 +1,10 @@
-#include <iostream>
-#include <math.h>
 #include <vector>
-#include <stdexcept>
 #include <list>
-#include <numeric>
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "SDL2/SDL_gamecontroller.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_stdinc.h"
 
 #include "gameobjects.hpp"
-#include "shapes.hpp"
-#include "background.hpp"
-#include "initialization.hpp"
-#include "UIelements.hpp"
-#include "menu.hpp"
-#include "gamesave.hpp"
-#include "inputhandler.hpp"
 
 #ifndef GAME_HPP
 #define GAME_HPP
@@ -37,6 +24,29 @@ class Game
 public:
     Game();
     ~Game();
+    void init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
+    void handleEvents();
+    void update();
+    void render();
+    void clean();
+    void reset();
+
+    GameState gameState = GameState::STATE_IN_MENU;
+
+    void printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
+
+private:
+    bool isRunning;
+    // Game window values
+    int windowWidth;
+    int windowHeight;
+    class SDL_Window *window;
+    class SDL_Renderer *renderer;
+    void initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
+
+    // Control values
+    void initInputDevices();
+    class InputHandler *MyInputHandler;
 
     // Texture values
     class SDL_Texture *shipTex;
@@ -47,43 +57,56 @@ public:
     TTF_Font *font;
     TTF_Font *fontHuge;
 
-    // Game window values
-    int windowWidth;
-    int windowHeight;
+    void initTextures();
 
-    void init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
+    // Main menu values
+    class GameSave *myGameSave;
+    class GameMenu *myGameMenu;
 
-    // Control values
-    InputHandler *MyInputHandler;
+    void initMenu();
 
-    // Visuals
-    background *gameBackground;
+    // Gameplay values
+    class Ship *ship;
+    class background *gameBackground;
+    std::list<GameObject> colObjects;
 
-    void handleEvents();
-    void update();
-    void render();
-    void clean();
-    void reset();
+    void initGameplay();
 
-    bool isRunning;
-    SDL_Renderer *renderer;
+    int score;
+    int life;
+    int bombCount;
+    int FPS;
 
-    Uint32 frameStart = 0;
-    Uint32 frameTime = 0;
-    GameState gameState = GameState::STATE_IN_MENU;
+    /// Values for wave spwan system
+    float timeSinceLastAsteroidWave = 0;
+    int asteroidWave = 1;
 
-    // Performance assessment
+    /// Interaction values
+    bool newClick = true;
+    bool newPause = true;
+    bool pause = false;
+    bool newBombIgnition = true;
+
+    // UI values
+    class ShotMeter *shotMeter;
+    class UICounter *UIScore;
+    class UICounter *UILives;
+    class UICounter *UIBomb;
+    class UICounter *UIFPS;
+
+    void initUI();
+
+    // deltaTime calculation
+    Uint32 lastUpdateTime;
+
+    // Performance values
     bool showUpdateTime = false;
     bool showRenderTime = false;
+    bool showLoopTime = false;
     bool showFrameTime = false;
-    bool showDelayedFrameTime = false;
     bool showFPS = false;
 
-    void printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime);
-
-private:
-    SDL_Window *window;
-    Ship *ship;
+    std::vector<int> FPSVector;
 
 public:
     bool getIsRunning() { return isRunning; }
