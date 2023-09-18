@@ -1,10 +1,14 @@
 #include "gameobjects.hpp"
 
+// uncomment to disable assert()
+// #define NDEBUG
+#include <cassert>
+
 #define PI 3.14159265359
 
 int GameObject::newId = 0;
 
-SDL_Rect GameObject::getRect()
+SDL_Rect GameObject::getRenderRect()
 {
     SDL_Rect rect;
     rect.w = width;
@@ -16,39 +20,44 @@ SDL_Rect GameObject::getRect()
 
 Ship::Ship(int midPosX, int midPosY, int size) : GameObject()
 {
-    this->width = size;
-    this->height = size;
+    width = size;
+    height = size;
 
-    this->colRadius = size / 2 * sizeToCollisonRadiusRatio;
-
-    this->midPos = {(float)midPosX, (float)midPosY};
+    colRadius = size / 2 * sizeToCollisonRadiusRatio;
+    midPos = {(float)midPosX, (float)midPosY};
 
     animationCounter = 0;
+    timeLastShot = SDL_GetTicks();
 }
 
 Ship::Ship() : GameObject()
 {
 }
 
-void Ship::update(
-    InputHandler *MyInputHandler,
-    int windowWidth,
-    int windowHeight,
-    float deltaTime)
+void Ship::update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
 {
-    // update shooting capability and ship visibility
+    updateVisibility(deltaTime);
+    updateTransform(MyInputHandler, windowWidth, windowHeight, deltaTime);
+    updateAnimation(MyInputHandler, deltaTime);
+
+    if ((MyInputHandler->getControlBools()).isShooting)
+        shoot();
+}
+
+void Ship::updateVisibility(float deltaTime)
+{
     if (isVisible)
     {
         shotCounter = std::max((shotCounter - shotCounterDecay * deltaTime), 0.0f);
         if (shotCounter >= maxShotCounter)
             canShoot = false;
-        if (!canShoot && shotCounter <= shipCooldown)
+        if (!canShoot && shotCounter <= shipCooldownThreshold)
             canShoot = true;
     }
     else
     {
         canShoot = false;
-        shotCounter = maxShotCounter + 1;
+        shotCounter = maxShotCounter + 1; // turns the UI red
         timeNotVisible += deltaTime;
         if (timeNotVisible > respawnTime)
         {
@@ -57,33 +66,36 @@ void Ship::update(
             shotCounter = 0;
         }
     }
+}
 
-    // update position
-    float velocitySum = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+void Ship::updateTransform(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
+{
+    assert(MyInputHandler);
+    ControlBools CurrentControlBools = (MyInputHandler->getControlBools());
+
+    // Update transaltion
+    float scalarVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
     float velocityAngle = atan2(velocity.x, velocity.y);
 
-    velocitySum = std::max(velocitySum - velocityDecay * deltaTime, 0.0f);
-    velocity.x = (sin(velocityAngle) * velocitySum);
-    velocity.y = (cos(velocityAngle) * velocitySum);
+    scalarVelocity = std::max(scalarVelocity - velocityDecay * deltaTime, 0.0f);
+    velocity.x = (sin(velocityAngle) * scalarVelocity);
+    velocity.y = (cos(velocityAngle) * scalarVelocity);
 
-    ControlBools CurrentControlBools = (MyInputHandler->getControlBools());
-    if (CurrentControlBools.giveThrust)
+    if (CurrentControlBools.giveThrust && scalarVelocity < velocityMax)
     {
-        if (velocitySum <= velocityMax)
-        {
-            float deltaVelocityX = sin(rotation * PI / 180) * thrust * deltaTime;
-            float deltaVelocityY = -(cos(rotation * PI / 180)) * thrust * deltaTime;
-            velocity.x += deltaVelocityX;
-            velocity.y += deltaVelocityY;
-        }
+        float deltaVelocityX = sin(rotation * PI / 180) * thrust * deltaTime;
+        float deltaVelocityY = -(cos(rotation * PI / 180)) * thrust * deltaTime;
+        velocity.x += deltaVelocityX;
+        velocity.y += deltaVelocityY;
     }
 
     midPos.x += velocity.x * deltaTime;
     midPos.y += velocity.y * deltaTime;
 
+    // If ship leaves the screen, re-enter at opposite site
     midPos = calcPosIfLeaving(midPos, 0, windowWidth, windowHeight);
 
-    // update ship heading
+    // Update rotation
     if (CurrentControlBools.isTurningRight)
     {
         rotation += roatatingSpeed * deltaTime;
@@ -93,14 +105,17 @@ void Ship::update(
     {
         rotation -= roatatingSpeed * deltaTime;
     }
+}
 
-    // animation update
+void Ship::updateAnimation(InputHandler *MyInputHandler, float deltaTime)
+{
+    ControlBools CurrentControlBools = (MyInputHandler->getControlBools());
     if (CurrentControlBools.giveThrust)
     {
         if (SDL_GetTicks() - timeLastUpdated > timeBetweenSprites)
         {
             animationCounter++;
-            animationCounter = animationCounter % 3 + 1;
+            animationCounter = animationCounter % spriteCount + 1;
             timeLastUpdated = SDL_GetTicks();
         }
     }
@@ -110,61 +125,84 @@ void Ship::update(
     }
 }
 
+void Ship::shoot()
+{
+    Uint32 timeSinceLastShot = SDL_GetTicks() - timeLastShot;
+
+    if (canShoot && timeSinceLastShot > timeBetweenShots && shotCounter < maxShotCounter)
+    {
+        createShot();
+        timeLastShot = SDL_GetTicks();
+        shotCounter = shotCounter + 100;
+    }
+}
+
+void Ship::createShot()
+{
+    SDL_FPoint shotVelocityVector = {0, 0};
+
+    shotVelocityVector.x = sin(rotation / 180 * PI) * shotVelocity + velocity.x;
+    shotVelocityVector.y = -cos(rotation / 180 * PI) * shotVelocity + velocity.y;
+
+    Shot(midPos.x, midPos.y, shotVelocityVector, rotation);
+}
+
 void Ship::render(SDL_Renderer *renderer, SDL_Texture *shipTex)
 {
-    // inner shoot indicator triangle
-    SDL_Color meterColor;
-    if (canShoot)
-    {
-        meterColor = {0, 200, 0, 255};
-    }
-    else
-    {
-        meterColor = {200, 0, 0, 255};
-    }
+    assert(renderer && shipTex);
 
-    // calculate triangle size
+    renderShotMeter(renderer);
+    renderShip(renderer, shipTex);
+}
+
+void Ship::renderShotMeter(SDL_Renderer *renderer)
+{
+    SDL_Color meterColor = canShoot ? SDL_Color{0, 200, 0, 255} : SDL_Color{200, 0, 0, 255}; // Green : red
+
+    /// Render meter triangle.
+    /// Meter grows starting from the ships nose.
     SDL_FPoint shipNose;
     float noseDistanceToShipMid = height * 0.42;
     shipNose.x = midPos.x + SDL_sinf(rotation / 180 * PI) * noseDistanceToShipMid;
     shipNose.y = midPos.y - SDL_cosf(rotation / 180 * PI) * noseDistanceToShipMid;
 
+    /// Render black base layer.
     SDL_Color triangleBaseColor = {0, 0, 0, 255};
     float tringleWidth = width * 0.5f;
     float trinagleHeight = height * 0.625f;
-
     drawTriangle(renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, rotation, triangleBaseColor);
 
-    // overlay shot meter triangle
-    float shotMeterValue = std::min(shotCounter / maxShotCounter, 1.0f);
+    /// Overlay actual shot meter triangle
+    float shotMeterValue = std::min(shotCounter / maxShotCounter, 1.0f); // from 0 to 1
     if (shotMeterValue > 0.1f)
     {
         drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, rotation, meterColor);
     }
+}
 
-    // draw ship texture
+void Ship::renderShip(SDL_Renderer *renderer, SDL_Texture *shipTex)
+{
+    // Grey out texture during respawn
     if (!isVisible)
     {
         float timeStepSize = 0.25f;
-        int stepValue = timeNotVisible / timeStepSize;
-        // greyed out texture
-        if (stepValue % 2 == 1)
+        int stepValue = floor(timeNotVisible / timeStepSize);
+        if (stepValue % 2 == 0)
             SDL_SetTextureColorMod(shipTex, 100, 100, 100);
         else
             SDL_SetTextureColorMod(shipTex, 255, 255, 255);
     }
     else
     {
-        // default texture
         SDL_SetTextureColorMod(shipTex, 255, 255, 255);
     }
 
-    SDL_Rect srcR;
-    SDL_Rect destR = getRect();
-    srcR.w = 300;
-    srcR.h = 300;
-    srcR.x = srcR.w * animationCounter;
-    srcR.y = 0;
+    int currentSpriteStart = spriteWidth * animationCounter;
+    SDL_Rect srcR{currentSpriteStart,
+                  0,
+                  spriteWidth,
+                  spriteHeight};
+    SDL_Rect destR = getRenderRect();
 
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, rotation, NULL, SDL_FLIP_NONE);
 }
@@ -183,42 +221,6 @@ void Ship::respawn(SDL_Renderer *renderer)
 {
     reset(renderer);
     isVisible = false;
-}
-
-void Ship::createShot()
-{
-    SDL_FPoint shotVelocityVector = {0, 0};
-
-    shotVelocityVector.x = sin(rotation / 180 * PI) * shotVelocity + velocity.x;
-    shotVelocityVector.y = -cos(rotation / 180 * PI) * shotVelocity + velocity.y;
-
-    Shot(midPos.x, midPos.y, shotVelocityVector, rotation);
-}
-
-void Ship::shoot()
-{
-    if (canShoot)
-    {
-        if (Shot::shots.empty())
-        {
-            if (shotCounter < maxShotCounter)
-            {
-                createShot();
-                shotCounter = shotCounter + 100;
-            }
-        }
-        else
-        {
-            // auto lastShot = Shot::shots.end() - 1;
-            // Shot lastShotEnt = *lastShot;
-            Uint32 timeSinceLastShot = SDL_GetTicks() - Shot::shots.back().creationTime;
-            if (timeSinceLastShot > 250 && shotCounter < maxShotCounter)
-            {
-                createShot();
-                shotCounter = shotCounter + 100;
-            }
-        }
-    }
 }
 
 std::list<Asteroid> Asteroid::asteroids;
@@ -306,7 +308,7 @@ void Asteroid::render(SDL_Renderer *renderer, SDL_Texture *asteroidTexSmall, SDL
     }
     if (isVisible)
     {
-        SDL_Rect asteroidRect = getRect();
+        SDL_Rect asteroidRect = getRenderRect();
         SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
     }
 }
@@ -465,7 +467,7 @@ void Shot::update(int windowWidth, int windowHeight, float deltaTime)
 
 void Shot::render(SDL_Renderer *renderer, SDL_Texture *shotTex)
 {
-    SDL_Rect rect = getRect();
+    SDL_Rect rect = getRenderRect();
     SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
 }
 
@@ -598,7 +600,7 @@ void Bomb::render(SDL_Renderer *renderer, SDL_Texture *bombTex)
 {
     if (isVisible)
     {
-        SDL_Rect rect = getRect();
+        SDL_Rect rect = getRenderRect();
         SDL_RenderCopyEx(renderer, bombTex, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
     }
 }

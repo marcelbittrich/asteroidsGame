@@ -308,14 +308,8 @@ void Game::update()
         }
     }
 
-    bool isShooting = (MyInputHandler->getControlBools()).isShooting;
-    // Make Shots
-    if (isShooting)
-    {
-        ship->shoot();
-    }
-
-    shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
+    // Alternative Shot Meter - not used
+    // shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
 
     // Update Shots
     for (Shot &singleShot : Shot::shots)

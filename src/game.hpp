@@ -88,11 +88,11 @@ private:
     bool newBombIgnition = true;
 
     // UI values
-    class ShotMeter *shotMeter;
     class UICounter *UIScore;
     class UICounter *UILives;
     class UICounter *UIBomb;
     class UICounter *UIFPS;
+    class ShotMeter *shotMeter; // Alternative shot meter rendered below ship
 
     void initUI();
 
