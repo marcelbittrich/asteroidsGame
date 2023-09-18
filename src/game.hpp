@@ -35,6 +35,8 @@ public:
 
     void printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 
+    std::list<Bomb *> Bombs;
+
 private:
     bool isRunning;
     // Game window values

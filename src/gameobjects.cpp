@@ -28,6 +28,7 @@ Ship::Ship(int midPosX, int midPosY, int size) : GameObject()
 
     animationCounter = 0;
     timeLastShot = SDL_GetTicks();
+    timeLastBomb = SDL_GetTicks();
 }
 
 Ship::Ship() : GameObject()
@@ -42,12 +43,16 @@ void Ship::update(InputHandler *MyInputHandler, int windowWidth, int windowHeigh
 
     if ((MyInputHandler->getControlBools()).isShooting)
         shoot();
+
+    if ((MyInputHandler->getControlBools()).isUsingBomb)
+        useBomb();
 }
 
 void Ship::updateVisibility(float deltaTime)
 {
     if (isVisible)
     {
+        canBomb = true;
         shotCounter = std::max((shotCounter - shotCounterDecay * deltaTime), 0.0f);
         if (shotCounter >= maxShotCounter)
             canShoot = false;
@@ -56,6 +61,7 @@ void Ship::updateVisibility(float deltaTime)
     }
     else
     {
+        canBomb = false;
         canShoot = false;
         shotCounter = maxShotCounter + 1; // turns the UI red
         timeNotVisible += deltaTime;
@@ -132,8 +138,9 @@ void Ship::shoot()
     if (canShoot && timeSinceLastShot > timeBetweenShots && shotCounter < maxShotCounter)
     {
         createShot();
-        timeLastShot = SDL_GetTicks();
         shotCounter = shotCounter + 100;
+
+        timeLastShot = SDL_GetTicks();
     }
 }
 
@@ -145,6 +152,24 @@ void Ship::createShot()
     shotVelocityVector.y = -cos(rotation / 180 * PI) * shotVelocity + velocity.y;
 
     Shot(midPos.x, midPos.y, shotVelocityVector, rotation);
+}
+
+void Ship::useBomb()
+{
+    Uint32 timeSinceLastBomb = SDL_GetTicks() - timeLastBomb;
+
+    if (!collectedBombs.empty() && canBomb && timeSinceLastBomb > timeBetweenBombs)
+    {
+        auto iterator = collectedBombs.begin();
+        Bomb *Bomb = *iterator;
+
+        assert(Bomb);
+        Bomb->explode();
+
+        collectedBombs.erase(iterator);
+
+        timeLastBomb = SDL_GetTicks();
+    }
 }
 
 void Ship::render(SDL_Renderer *renderer, SDL_Texture *shipTex)
@@ -205,6 +230,12 @@ void Ship::renderShip(SDL_Renderer *renderer, SDL_Texture *shipTex)
     SDL_Rect destR = getRenderRect();
 
     SDL_RenderCopyEx(renderer, shipTex, &srcR, &destR, rotation, NULL, SDL_FLIP_NONE);
+}
+
+void Ship::collectBomb(Bomb *bomb)
+{
+    collectedBombs.push_back(bomb);
+    bomb->getCollect();
 }
 
 void Ship::reset(SDL_Renderer *renderer)
@@ -549,9 +580,6 @@ void handleDestruction(Asteroid destroyedAsteroid)
         AsteroidSizeType::Small);
 }
 
-std::list<Bomb> Bomb::bombs;
-std::list<Bomb *> Bomb::pCollectedBombs;
-
 Bomb::Bomb(int xPos, int yPos, SDL_FPoint velocity)
 {
     midPos.x = xPos;
@@ -564,10 +592,11 @@ Bomb::Bomb(int xPos, int yPos, SDL_FPoint velocity)
     width = size;
     height = size;
 
+    isCollected = false;
+    isExploding = false;
+
     float colRadiusOffset = 0.3;
     colRadius = size * colRadiusOffset;
-
-    bombs.push_back(*this);
 }
 
 void Bomb::update(int windowWidth, int windowHeight, float deltaTime, Ship *ship)
@@ -605,11 +634,10 @@ void Bomb::render(SDL_Renderer *renderer, SDL_Texture *bombTex)
     }
 }
 
-void Bomb::collect()
+void Bomb::getCollect()
 {
     isCollected = true;
     isVisible = false;
-    pCollectedBombs.push_back(this);
 }
 
 void Bomb::explode()

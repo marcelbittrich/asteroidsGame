@@ -12,13 +12,10 @@
 
 class GameObject
 {
-private:
-    static int newId;
-
-protected:
-    SDL_Rect getRenderRect();
-
 public:
+    GameObject() : id(newId++){};
+    static void resetId() { newId = 1; };
+
     int id;
     int width;
     int height;
@@ -29,8 +26,11 @@ public:
     SDL_FPoint velocity = {0, 0};
     SDL_FPoint midPos = {0, 0};
 
-    GameObject() : id(newId++){};
-    static void resetId() { newId = 1; };
+protected:
+    SDL_Rect getRenderRect();
+
+private:
+    static int newId;
 };
 
 class Ship : public GameObject
@@ -60,7 +60,7 @@ private:
     void updateTransform(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
     void updateAnimation(InputHandler *MyInputHandler, float deltaTime);
 
-    // shooting values
+    // Shooting values
     float shotVelocity = 1000;
     float shotCounter = 0.0f;
     float shotCounterDecay = 150.0;
@@ -69,9 +69,17 @@ private:
 
     bool canShoot = true; // will set to false during respawn
     Uint32 timeLastShot;
-    int timeBetweenShots = 250;
+    Uint32 timeBetweenShots = 250;
     void shoot();
     void createShot();
+
+    // Bombing values
+    std::list<class Bomb *> collectedBombs;
+
+    bool canBomb = true; // will set to false during respawn
+    Uint32 timeLastBomb;
+    Uint32 timeBetweenBombs = 250;
+    void useBomb();
 
     // Animation values
     int spriteWidth = 300;
@@ -92,6 +100,8 @@ public:
     int getMaxShotCounter() { return maxShotCounter; };
     bool getCanShoot() { return canShoot; };
     float getShotVelocity() { return shotVelocity; };
+    void collectBomb(class Bomb *bomb);
+    int getCollectedBombsSize() { return collectedBombs.size(); };
 };
 
 enum class AsteroidSizeType
@@ -103,10 +113,12 @@ enum class AsteroidSizeType
 class Asteroid : public GameObject
 {
 public:
-    AsteroidSizeType sizeType;
     Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType);
     void update(int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *asteroidTexSmall, SDL_Texture *asteroidTexMedium);
+
+    AsteroidSizeType sizeType;
+
     static std::list<Asteroid> asteroids;
     static float getColRadius(int size);
     static int getSize(AsteroidSizeType sizeType);
@@ -139,18 +151,18 @@ bool shotIsToOld(Shot shot);
 
 class Bomb : public GameObject
 {
+public:
+    Bomb(int xPos, int yPos, SDL_FPoint velocity);
+
 private:
     float angle = 0.0f;
 
 public:
-    static std::list<Bomb> bombs;
-    static std::list<Bomb *> pCollectedBombs;
-    Bomb(int xPos, int yPos, SDL_FPoint velocity);
-    Uint32 creationTime;
-    Uint32 ignitionTime;
+    Uint32 creationTime = 0;
+    Uint32 ignitionTime = 0;
     void update(int windowWidth, int windowHeight, float deltaTime, Ship *ship);
     void render(SDL_Renderer *renderer, SDL_Texture *bombTex);
-    void collect();
+    void getCollect();
     void explode();
     bool isDead = false;
     bool isExploding = false;

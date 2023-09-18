@@ -227,24 +227,6 @@ void Game::update()
         newClick = true;
     }
 
-    bool isUsingBomb = (MyInputHandler->getControlBools()).isUsingBomb;
-    if (isUsingBomb && newBombIgnition)
-    {
-        newBombIgnition = false;
-        if (!Bomb::pCollectedBombs.empty())
-        {
-            auto it = Bomb::pCollectedBombs.begin();
-            (*it)->explode();
-            Bomb::pCollectedBombs.erase(it);
-        }
-    }
-    else if (!isUsingBomb)
-    {
-        newBombIgnition = true;
-    }
-
-    bombCount = Bomb::pCollectedBombs.size();
-
     // Update Ship
     ship->update(MyInputHandler, windowWidth, windowHeight, deltaTime);
 
@@ -269,11 +251,11 @@ void Game::update()
     }
 
     // Check Ship Collision Asteroids
-    for (Bomb &bomb : Bomb::bombs)
+    for (Bomb *bomb : Bombs)
     {
-        if (!bomb.isExploding && doesCollide(*ship, bomb))
+        if (!bomb->isExploding && doesCollide(*ship, *bomb))
         {
-            bomb.collect();
+            ship->collectBomb(bomb);
         }
     }
 
@@ -344,7 +326,11 @@ void Game::update()
                 if (asteroidIt->sizeType == AsteroidSizeType::Small)
                 {
                     if (score % BOMB_SPAWN_ON_SCORE == 0)
-                        Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
+                    {
+                        Bomb *bomb = new Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
+                        Bombs.push_back(bomb);
+                    }
+
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     score++;
                     break;
@@ -367,18 +353,18 @@ void Game::update()
     }
 
     // Update Bombs
-    for (auto bombIt = Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); bombIt++)
+    for (Bomb *bomb : Bombs)
     {
-        bombIt->update(windowWidth, windowHeight, deltaTime, ship);
+        bomb->update(windowWidth, windowHeight, deltaTime, ship);
 
-        if (bombIt->isExploding)
+        if (bomb->isExploding)
         {
             bool hit = false;
             auto asteroidIt = Asteroid::asteroids.begin();
             while (asteroidIt != Asteroid::asteroids.end())
             {
-                std::cout << "Bomb colRadius: " << bombIt->colRadius << std::endl;
-                if (doesCollide(*bombIt, *asteroidIt))
+                std::cout << "Bomb colRadius: " << bomb->colRadius << std::endl;
+                if (doesCollide(*bomb, *asteroidIt))
                 {
                     hit = true;
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
@@ -394,19 +380,20 @@ void Game::update()
     }
 
     // Destoy Bombs
-    if (!Bomb::bombs.empty())
+    if (!Bombs.empty())
     {
-        auto bombIt = Bomb::bombs.begin();
-        while (bombIt != Bomb::bombs.end())
+        for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end();)
         {
-            bool didErase = false;
-            if (bombIt->isDead)
+            Bomb *bomb = *bombIterator;
+            if (bomb->isDead)
             {
-                bombIt = Bomb::bombs.erase(bombIt);
-                didErase = true;
+                delete bomb;
+                bombIterator = Bombs.erase(bombIterator);
             }
-            if (!didErase)
-                bombIt++;
+            else
+            {
+                bombIterator++;
+            }
         }
     }
 
@@ -415,7 +402,11 @@ void Game::update()
     colObjects.push_back(*ship);
     colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end());
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
-    colObjects.insert(colObjects.end(), Bomb::bombs.begin(), Bomb::bombs.end());
+
+    for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end(); bombIterator++)
+    {
+        colObjects.push_back(**bombIterator);
+    };
 
     gameBackground->update(colObjects, deltaTime);
 
@@ -451,7 +442,7 @@ void Game::update()
     UIScore->update(score, renderer);
     UIFPS->update(averageFPS, renderer);
     UILives->update(life - 1, renderer);
-    UIBomb->update(Bomb::pCollectedBombs.size(), renderer);
+    UIBomb->update(ship->getCollectedBombsSize(), renderer);
 }
 
 float Game::calculateDeltaTime()
@@ -470,7 +461,7 @@ bool Game::updateGameState()
     }
 
     // Check if player just died and present menu with score
-    if (life == 0 && gameState != STATE_IN_MENU)
+    if (life == 0 && gameState == STATE_IN_GAME)
     {
         gameState = STATE_IN_MENU;
 
@@ -519,9 +510,9 @@ void Game::render()
 
     gameBackground->render(renderer);
 
-    for (Bomb &bomb : Bomb::bombs)
+    for (Bomb *bomb : Bombs)
     {
-        bomb.render(renderer, bombTex);
+        bomb->render(renderer, bombTex);
     }
 
     for (Asteroid &asteroid : Asteroid::asteroids)
@@ -576,8 +567,7 @@ void Game::reset()
     GameObject::resetId();
     Asteroid::asteroids.clear();
     Shot::shots.clear();
-    Bomb::bombs.clear();
-    Bomb::pCollectedBombs.clear();
+    Bombs.clear();
 
     colObjects.clear();
 
