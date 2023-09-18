@@ -208,12 +208,7 @@ void Game::update()
 {
     float deltaTime = calculateDeltaTime();
 
-    bool keepUpdating;
-    keepUpdating = updateGameState();
-    if (!keepUpdating)
-        return;
-
-    keepUpdating = handlePause();
+    bool keepUpdating = updateGameState();
     if (!keepUpdating)
         return;
 
@@ -478,10 +473,9 @@ bool Game::updateGameState()
     if (gameState == STATE_IN_MENU)
     {
         myGameMenu->update(isRunning, gameState, MyInputHandler);
-        if (gameState != STATE_IN_GAME)
-            return false;
     }
 
+    // Check if player just died and present menu with score
     if (life == 0 && gameState != STATE_IN_MENU)
     {
         gameState = STATE_IN_MENU;
@@ -494,34 +488,25 @@ bool Game::updateGameState()
             myGameSave->setHighscore(score);
             myGameSave->writeFile();
         }
-        return false;
     }
 
-    return true;
-}
-
-bool Game::handlePause()
-{
     bool pausePressed = (MyInputHandler->getControlBools()).pausePressed;
-    if (pausePressed && newPause && !gameIsPaused)
+    if (pausePressed && gameState == STATE_IN_GAME && newPausePress)
     {
-        newPause = false;
-        gameIsPaused = true;
+        newPausePress = false;
+        gameState = STATE_PAUSE;
     }
-    else if (pausePressed && newPause && gameIsPaused)
+    else if (pausePressed && gameState == STATE_PAUSE && newPausePress)
     {
-        newPause = false;
-        gameIsPaused = false;
+        newPausePress = false;
+        gameState = STATE_IN_GAME;
     }
     else if (!pausePressed)
     {
-        newPause = true;
+        newPausePress = true;
     }
 
-    if (gameIsPaused)
-        return false;
-
-    return true;
+    return gameState == STATE_IN_GAME;
 }
 
 void Game::render()

@@ -83,7 +83,7 @@ private:
 
     /// Interaction values
     bool newClick = true;
-    bool newPause = true;
+    bool newPausePress = true;
     bool gameIsPaused = false;
     bool newBombIgnition = true;
 
@@ -114,7 +114,6 @@ private:
 
     float calculateDeltaTime();
     bool updateGameState();
-    bool handlePause();
 
 public:
     bool getIsRunning() { return isRunning; }

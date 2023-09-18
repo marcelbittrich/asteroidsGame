@@ -20,7 +20,8 @@ protected:
 
 public:
     int id;
-    int width, height;
+    int width;
+    int height;
     float colRadius;
 
     bool isVisible = true;
@@ -34,6 +35,16 @@ public:
 
 class Ship : public GameObject
 {
+public:
+    Ship();
+    Ship(int midPosX, int midPosY, int size);
+
+    void update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
+    void render(SDL_Renderer *renderer, SDL_Texture *shipTex);
+    void shoot();
+    void reset(SDL_Renderer *renderer);
+    void respawn(SDL_Renderer *renderer);
+
 private:
     // movement values
     float velocityMax = 1000;
@@ -52,6 +63,7 @@ private:
     float shipCooldown = maxShotCounter / 2;
     bool canShoot = true;
     Uint32 timeLastShot;
+    void createShot();
 
     // animation values
     float respawnTime = 3;
@@ -62,22 +74,10 @@ private:
 
     float rotation = 0; // Current rotation in degree
 
-    void createShot();
-
 public:
-    Ship();
-    Ship(int midPosX, int midPosY, int size);
-
-    void update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
-    void render(SDL_Renderer *renderer, SDL_Texture *shipTex);
-    void shoot();
-    void reset(SDL_Renderer *renderer);
-    void respawn(SDL_Renderer *renderer);
-
     float getMaxVelocity() { return velocityMax; };
     int getShotCounter() { return shotCounter; };
     int getMaxShotCounter() { return maxShotCounter; };
-
     bool getCanShoot() { return canShoot; };
     float getShotVelocity() { return shotVelocity; };
 };
@@ -108,16 +108,19 @@ void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType siz
 
 class Shot : public GameObject
 {
+public:
+    Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingAngle);
+    void update(int windowWidth, int windowHeight, float deltaTime);
+    void render(SDL_Renderer *renderer, SDL_Texture *shotTex);
+
 private:
     int life;
     float vAngle = 0;
 
 public:
     static std::list<Shot> shots;
-    Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingAngle);
+
     Uint32 creationTime;
-    void update(int windowWidth, int windowHeight, float deltaTime);
-    void render(SDL_Renderer *renderer, SDL_Texture *shotTex);
 };
 
 bool shotIsToOld(Shot shot);
