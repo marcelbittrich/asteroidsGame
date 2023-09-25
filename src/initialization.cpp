@@ -12,12 +12,12 @@ SDL_Point getRandomPosition(
         int x = rand() % windowWidth;
         int y = rand() % windowHeight;
         bool success = true;
-        for (const GameObject &gameObject : gameObjects)
+        for (GameObject &gameObject : gameObjects)
         {
-            float distance = sqrt(std::pow(gameObject.midPos.x - x, 2) + std::pow(gameObject.midPos.y - y, 2));
+            float distance = sqrt(std::pow(gameObject.getMidPos().x - x, 2) + std::pow(gameObject.getMidPos().y - y, 2));
 
             float objectColRadius;
-            (gameObject.id == 1) ? objectColRadius = 200 : objectColRadius = gameObject.colRadius;
+            (gameObject.getID() == 1) ? objectColRadius = 200 : objectColRadius = gameObject.getColRadius();
 
             if (distance < objectColRadius + colRadius)
             {

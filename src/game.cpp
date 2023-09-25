@@ -323,7 +323,8 @@ void Game::update()
                 {
                     if (score % BOMB_SPAWN_ON_SCORE == 0)
                     {
-                        Bomb *bomb = new Bomb(asteroidIt->midPos.x, asteroidIt->midPos.y, getRandomVelocity(0.0f, 0.5f));
+                        SDL_FPoint asteroidMidPos = asteroidIt->getMidPos();
+                        Bomb *bomb = new Bomb(asteroidMidPos.x, asteroidMidPos.y, getRandomVelocity(0.0f, 0.5f));
                         Bombs.push_back(bomb);
                     }
 

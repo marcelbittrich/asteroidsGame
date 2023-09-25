@@ -15,21 +15,36 @@ public:
     GameObject() : id(newId++){};
     static void resetId() { newId = 1; };
 
+    virtual void update(){};
+    virtual void render(){};
+
+protected:
     int id;
     int width;
     int height;
     float colRadius;
-
     bool isVisible = true; // indicator, false during respawn
 
     SDL_FPoint velocity = {0, 0};
     SDL_FPoint midPos = {0, 0};
 
-protected:
     SDL_Rect getRenderRect();
 
 private:
     static int newId;
+
+public:
+    int getID() { return id; };
+    int getWidth() { return width; };
+    int getHeight() { return height; };
+    float getColRadius() { return colRadius; };
+    bool getVisibility() { return isVisible; }
+    SDL_FPoint getMidPos() { return midPos; };
+    SDL_FPoint getVelocity() { return velocity; };
+
+    void setColRadius(float radius) { colRadius = radius; };
+    void setMidPos(float x, float y) { midPos = {x, y}; };
+    void setVelocity(float x, float y) { velocity = {x, y}; };
 };
 
 class Ship : public GameObject

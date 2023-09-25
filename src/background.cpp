@@ -84,31 +84,34 @@ void backgroundPoint::returnToOrigin(float deltaTime)
 
 void backgroundPoint::moveOut(GameObject colObject)
 {
+    float objectColRadius = colObject.getColRadius();
+    SDL_FPoint objectMidPos = colObject.getMidPos();
+
     // AABB collision check
-    bool bOverlapHorizontally = currentPos.x > (colObject.midPos.x - colObject.colRadius) && currentPos.x < (colObject.midPos.x + colObject.colRadius);
-    bool bOverlapVertically = currentPos.y > (colObject.midPos.y - colObject.colRadius) && currentPos.y < (colObject.midPos.y + colObject.colRadius);
+    bool bOverlapHorizontally = currentPos.x > (objectMidPos.x - objectColRadius) && currentPos.x < (objectMidPos.x + objectColRadius);
+    bool bOverlapVertically = currentPos.y > (objectMidPos.y - objectColRadius) && currentPos.y < (objectMidPos.y + objectColRadius);
 
     if (bOverlapHorizontally && bOverlapVertically)
     {
         // distance based collision check
-        bool bCollide = Utils::squareDistance(colObject.midPos, currentPos) <= (colObject.colRadius * colObject.colRadius);
+        bool bCollide = Utils::squareDistance(objectMidPos, currentPos) <= (objectColRadius * objectColRadius);
 
         // push out points to the edge of the colliding object
         if (bCollide)
         {
             //
             float VectorMidToPoint[2];
-            VectorMidToPoint[0] = currentPos.x - colObject.midPos.x;
-            VectorMidToPoint[1] = currentPos.y - colObject.midPos.y;
+            VectorMidToPoint[0] = currentPos.x - objectMidPos.x;
+            VectorMidToPoint[1] = currentPos.y - objectMidPos.y;
 
-            float distanceToObject = SDL_sqrtf(Utils::squareDistance(colObject.midPos, currentPos));
+            float distanceToObject = SDL_sqrtf(Utils::squareDistance(objectMidPos, currentPos));
             float VectorNormalized[2];
             VectorNormalized[0] = VectorMidToPoint[0] / distanceToObject;
             VectorNormalized[1] = VectorMidToPoint[1] / distanceToObject;
 
             // push point to edge of colRadius
-            currentPos.x = colObject.midPos.x + VectorNormalized[0] * colObject.colRadius;
-            currentPos.y = colObject.midPos.y + VectorNormalized[1] * colObject.colRadius;
+            currentPos.x = objectMidPos.x + VectorNormalized[0] * objectColRadius;
+            currentPos.y = objectMidPos.y + VectorNormalized[1] * objectColRadius;
 
             renderPos.x = round(currentPos.x);
             renderPos.y = round(currentPos.y);
@@ -179,17 +182,20 @@ void background::update(std::list<GameObject> colObjects, float deltaTime)
     int updatePointOperations = 0;
 
     // look for collisions with objects
-    for (const GameObject &object : colObjects)
+    for (GameObject &object : colObjects)
     {
-        if (object.isVisible)
+        float objectColRadius = object.getColRadius();
+        SDL_FPoint objectMidPos = object.getMidPos();
+
+        if (object.getVisibility())
         {
             // locate point area of object
-            int objectAreaPosX = object.midPos.x / pointAreaWidth;
-            int objectAreaPosY = object.midPos.y / pointAreaHeight;
+            int objectAreaPosX = objectMidPos.x / pointAreaWidth;
+            int objectAreaPosY = objectMidPos.y / pointAreaHeight;
 
             // defince area size of collision detection box
-            int collisionBoxWidth = object.colRadius / pointAreaWidth;
-            int collisionBoxHeight = object.colRadius / pointAreaHeight;
+            int collisionBoxWidth = objectColRadius / pointAreaWidth;
+            int collisionBoxHeight = objectColRadius / pointAreaHeight;
 
             for (int i = objectAreaPosX - collisionBoxWidth; i <= objectAreaPosX + collisionBoxWidth; i++)
             {

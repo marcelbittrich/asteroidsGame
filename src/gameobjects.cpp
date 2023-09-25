@@ -346,11 +346,16 @@ void Asteroid::render(SDL_Renderer *renderer, SDL_Texture *asteroidTexSmall, SDL
 
 bool doesCollide(GameObject firstObject, GameObject secondObject)
 {
-    if (!firstObject.isVisible || !secondObject.isVisible)
+    if (!firstObject.getVisibility() || !secondObject.getVisibility())
         return false;
 
-    float squareDistance = (firstObject.midPos.x - secondObject.midPos.x) * (firstObject.midPos.x - secondObject.midPos.x) + (firstObject.midPos.y - secondObject.midPos.y) * (firstObject.midPos.y - secondObject.midPos.y);
-    float squareColDistance = (firstObject.colRadius + secondObject.colRadius) * (firstObject.colRadius + secondObject.colRadius);
+    SDL_FPoint firstMidPos = firstObject.getMidPos();
+    float firstColRadius = firstObject.getColRadius();
+    SDL_FPoint secondMidPos = secondObject.getMidPos();
+    float secondColRadius = secondObject.getColRadius();
+
+    float squareDistance = (firstMidPos.x - secondMidPos.x) * (firstMidPos.x - secondMidPos.x) + (firstMidPos.y - secondMidPos.y) * (firstMidPos.y - secondMidPos.y);
+    float squareColDistance = (firstColRadius + secondColRadius) * (firstColRadius + secondColRadius);
 
     return squareDistance <= squareColDistance;
 }
@@ -366,9 +371,12 @@ std::vector<CollisionOccurrence> recentCollisions = {};
 
 bool didRecentlyCollide(GameObject firstObject, GameObject secondObject)
 {
+    int firstID = firstObject.getID();
+    int secondID = secondObject.getID();
+
     for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it++)
     {
-        if ((it->firstObjectId == firstObject.id && it->secondObjectId == secondObject.id) || (it->firstObjectId == secondObject.id && it->secondObjectId == firstObject.id))
+        if ((it->firstObjectId == firstID && it->secondObjectId == secondID) || (it->firstObjectId == secondID && it->secondObjectId == firstID))
         {
             if (SDL_GetTicks() > (it->time + 500))
             {
@@ -383,8 +391,8 @@ bool didRecentlyCollide(GameObject firstObject, GameObject secondObject)
         }
     }
     CollisionOccurrence collisionOccurrence;
-    collisionOccurrence.firstObjectId = firstObject.id;
-    collisionOccurrence.secondObjectId = secondObject.id;
+    collisionOccurrence.firstObjectId = firstID;
+    collisionOccurrence.secondObjectId = secondID;
     collisionOccurrence.time = SDL_GetTicks();
     recentCollisions.push_back(collisionOccurrence);
     return false;
@@ -395,35 +403,42 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     if (doesCollide(firstObject, secondObject) && !didRecentlyCollide(firstObject, secondObject))
     {
         // source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
+        SDL_FPoint firstObjectMidPos = firstObject.getMidPos();
+        SDL_FPoint firstObjectVelocity = firstObject.getVelocity();
+        SDL_FPoint secondObjectMidPos = secondObject.getMidPos();
+        SDL_FPoint secondObjectVelocity = secondObject.getVelocity();
 
         // distance vector
-        std::vector<float> normal;
-        normal.push_back(secondObject.midPos.x - firstObject.midPos.x);
-        normal.push_back(secondObject.midPos.y - firstObject.midPos.y);
+        float normal[2];
+        normal[0] = secondObjectMidPos.x - firstObjectMidPos.x;
+        normal[1] = secondObjectMidPos.y - firstObjectMidPos.y;
 
         // angle between object 1 and normal
-        float f1 = (firstObject.velocity.x * normal[0] + firstObject.velocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
+        float f1 = (firstObjectVelocity.x * normal[0] + firstObjectVelocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
         // parallel component for object 1
         std::vector<float> vp1 = {normal[0] * f1, normal[1] * f1};
         // vertical component for object 1
-        std::vector<float> vv1 = {firstObject.velocity.x - vp1[0], firstObject.velocity.y - vp1[1]};
+        std::vector<float> vv1 = {firstObjectVelocity.x - vp1[0], firstObjectVelocity.y - vp1[1]};
 
         // angle between object 2 and normal
-        float f2 = (secondObject.velocity.x * normal[0] + secondObject.velocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
+        float f2 = (secondObjectVelocity.x * normal[0] + secondObjectVelocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
         // parallel component for object 2
         std::vector<float> vp2 = {normal[0] * f2, normal[1] * f2};
         // vertical component for object 2
-        std::vector<float> vv2 = {secondObject.velocity.x - vp2[0], secondObject.velocity.y - vp2[1]};
+        std::vector<float> vv2 = {secondObjectVelocity.x - vp2[0], secondObjectVelocity.y - vp2[1]};
 
-        int weightObject1 = PI * firstObject.colRadius * firstObject.colRadius;
-        int weightObject2 = PI * secondObject.colRadius * secondObject.colRadius;
+        int weightObject1 = PI * firstObject.getColRadius() * firstObject.getColRadius();
+        int weightObject2 = PI * secondObject.getColRadius() * secondObject.getColRadius();
 
         if (weightObject1 == weightObject2)
         {
-            firstObject.velocity.x = vv1[0] + vp2[0];
-            firstObject.velocity.y = vv1[1] + vp2[1];
-            secondObject.velocity.x = vv2[0] + vp1[0];
-            secondObject.velocity.y = vv2[1] + vp1[1];
+            float velocityX = vv1[0] + vp2[0];
+            float velocityY = vv1[1] + vp2[1];
+            firstObject.setVelocity(velocityX, velocityY);
+
+            velocityX = vv2[0] + vp1[0];
+            velocityY = vv2[1] + vp1[1];
+            secondObject.setVelocity(velocityX, velocityY);
         }
         else
         {
@@ -435,10 +450,13 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
             vp2[0] = weightFactorX - vp2[0];
             vp2[1] = weightFactorY - vp2[1];
 
-            firstObject.velocity.x = vv1[0] + vp1[0];
-            firstObject.velocity.y = vv1[1] + vp1[1];
-            secondObject.velocity.x = vv2[0] + vp2[0];
-            secondObject.velocity.y = vv2[1] + vp2[1];
+            float velocityX = vv1[0] + vp1[0];
+            float velocityY = vv1[1] + vp1[1];
+            firstObject.setVelocity(velocityX, velocityY);
+
+            velocityX = vv2[0] + vp2[0];
+            velocityY = vv2[1] + vp2[1];
+            secondObject.setVelocity(velocityX, velocityY);
         }
     }
 }
@@ -446,9 +464,8 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
 void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects)
 {
     GameObject collisionObject = GameObject();
-    collisionObject.midPos = {(float)xPos, (float)yPos};
-
-    collisionObject.colRadius = Asteroid::getColRadius(Asteroid::getSize(sizeType));
+    collisionObject.setMidPos((float)xPos, (float)yPos);
+    collisionObject.setColRadius(Asteroid::getColRadius(Asteroid::getSize(sizeType)));
 
     bool isSafeToSpawn = true;
     for (auto it = gameobjects.begin(); it != gameobjects.end(); it++)
@@ -462,8 +479,8 @@ void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType siz
     if (isSafeToSpawn)
     {
         Asteroid(
-            collisionObject.midPos.x,
-            collisionObject.midPos.y,
+            collisionObject.getMidPos().x,
+            collisionObject.getMidPos().y,
             velocity,
             sizeType);
     }
@@ -561,22 +578,23 @@ void handleDestruction(Asteroid destroyedAsteroid)
 {
     int newAsteroidSize = Asteroid::getSize(AsteroidSizeType::Small);
 
-    SDL_FPoint oldMidPos = destroyedAsteroid.midPos;
-    SDL_FPoint oldVelocity = destroyedAsteroid.velocity;
+    SDL_FPoint oldMidPos = destroyedAsteroid.getMidPos();
+    SDL_FPoint oldVelocity = destroyedAsteroid.getVelocity();
 
     SDL_FPoint spawnDirection = rotate2DVector(oldVelocity, 90);
     spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
+
     Asteroid(
-        spawnDirection.x + destroyedAsteroid.midPos.x,
-        spawnDirection.y + destroyedAsteroid.midPos.y,
+        spawnDirection.x + oldMidPos.x,
+        spawnDirection.y + oldMidPos.y,
         {rotate2DVector(oldVelocity, 45).x * 2, rotate2DVector(oldVelocity, 45).y * 2},
         AsteroidSizeType::Small);
 
     spawnDirection = rotate2DVector(spawnDirection, 180);
     spawnDirection = set2DVectorLength(spawnDirection, newAsteroidSize / 2);
     Asteroid(
-        spawnDirection.x + destroyedAsteroid.midPos.x,
-        spawnDirection.y + destroyedAsteroid.midPos.y,
+        spawnDirection.x + oldMidPos.x,
+        spawnDirection.y + oldMidPos.y,
         {rotate2DVector(oldVelocity, -45).x * 2, rotate2DVector(oldVelocity, -45).y * 2},
         AsteroidSizeType::Small);
 }
@@ -612,7 +630,7 @@ void Bomb::update(int windowWidth, int windowHeight, float deltaTime, Ship *ship
     }
     if (isCollected && !isExploding)
     {
-        midPos = ship->midPos;
+        midPos = ship->getMidPos();
     }
     if (isExploding)
     {
