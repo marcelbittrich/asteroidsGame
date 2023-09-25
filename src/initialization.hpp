@@ -1,5 +1,4 @@
-#ifndef INITIALIZATION_HPP
-#define INITIALIZATION_HPP
+#pragma once
 
 #include <vector>
 #include <list>
@@ -13,5 +12,3 @@ void initAsteroids(GameObject ship, int windowWidth, int windowHeight);
 
 SDL_FPoint getRandomVelocity(float minVelocity, float maxVelocity);
 SDL_Point getRandomPosition(int windowWidth, int windowHeight, float colRadius, std::list<GameObject> gameObjects);
-
-#endif

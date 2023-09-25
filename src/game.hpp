@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <list>
 
@@ -6,12 +8,9 @@
 
 #include "gameobjects.hpp"
 
-#ifndef GAME_HPP
-#define GAME_HPP
-
 #define PI 3.14159265359
 
-enum GameState
+enum class GameState
 {
     STATE_IN_MENU,
     STATE_IN_GAME,
@@ -120,5 +119,3 @@ private:
 public:
     bool getIsRunning() { return isRunning; }
 };
-
-#endif /* game_hpp */

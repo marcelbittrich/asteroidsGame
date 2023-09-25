@@ -5,6 +5,16 @@
 
 #pragma region BackgroundPoint
 
+namespace Utils
+{
+    float squareDistance(SDL_FPoint PositionA, SDL_FPoint PositionB)
+    {
+        float squareDistanceX = (PositionA.x - PositionB.x) * (PositionA.x - PositionB.x);
+        float squareDistanceY = (PositionA.y - PositionB.y) * (PositionA.y - PositionB.y);
+        return squareDistanceX + squareDistanceY;
+    }
+}
+
 backgroundPoint::backgroundPoint()
 {
 }
@@ -31,7 +41,7 @@ backgroundPoint::backgroundPoint(float xPos, float yPos)
 void backgroundPoint::returnToOrigin(float deltaTime)
 {
     SDL_FPoint originPosF = {originPos.x, originPos.y};
-    squareDistanceToOrigin = squareDistance(currentPos, originPosF);
+    squareDistanceToOrigin = Utils::squareDistance(currentPos, originPosF);
     distanceToOrigin = SDL_sqrtf(squareDistanceToOrigin);
 
     float vectorDistance[2];
@@ -72,7 +82,7 @@ void backgroundPoint::returnToOrigin(float deltaTime)
     }
 }
 
-void backgroundPoint::update(GameObject colObject)
+void backgroundPoint::moveOut(GameObject colObject)
 {
     // AABB collision check
     bool bOverlapHorizontally = currentPos.x > (colObject.midPos.x - colObject.colRadius) && currentPos.x < (colObject.midPos.x + colObject.colRadius);
@@ -81,7 +91,7 @@ void backgroundPoint::update(GameObject colObject)
     if (bOverlapHorizontally && bOverlapVertically)
     {
         // distance based collision check
-        bool bCollide = squareDistance(colObject.midPos, currentPos) <= (colObject.colRadius * colObject.colRadius);
+        bool bCollide = Utils::squareDistance(colObject.midPos, currentPos) <= (colObject.colRadius * colObject.colRadius);
 
         // push out points to the edge of the colliding object
         if (bCollide)
@@ -91,7 +101,7 @@ void backgroundPoint::update(GameObject colObject)
             VectorMidToPoint[0] = currentPos.x - colObject.midPos.x;
             VectorMidToPoint[1] = currentPos.y - colObject.midPos.y;
 
-            float distanceToObject = SDL_sqrtf(squareDistance(colObject.midPos, currentPos));
+            float distanceToObject = SDL_sqrtf(Utils::squareDistance(colObject.midPos, currentPos));
             float VectorNormalized[2];
             VectorNormalized[0] = VectorMidToPoint[0] / distanceToObject;
             VectorNormalized[1] = VectorMidToPoint[1] / distanceToObject;
@@ -102,16 +112,10 @@ void backgroundPoint::update(GameObject colObject)
 
             renderPos.x = round(currentPos.x);
             renderPos.y = round(currentPos.y);
+
             onOrigin = false;
         }
     }
-}
-
-float backgroundPoint::squareDistance(SDL_FPoint PositionA, SDL_FPoint PositionB)
-{
-    float squareDistanceX = (PositionA.x - PositionB.x) * (PositionA.x - PositionB.x);
-    float squareDistanceY = (PositionA.y - PositionB.y) * (PositionA.y - PositionB.y);
-    return squareDistanceX + squareDistanceY;
 }
 
 void backgroundPoint::render(SDL_Renderer *renderer)
@@ -163,7 +167,7 @@ background::background(int windowWidth, int windowHeight)
         {
             float newPointYPos = pointAreaHeight * j + pointAreaHeight / 2.0f;
 
-            backgroundPoint *newPoint = new backgroundPoint(newPointXPos, newPointYPos);
+            backgroundPoint newPoint = backgroundPoint(newPointXPos, newPointYPos);
             backgroundPoints[i][j] = newPoint;
         }
     }
@@ -194,7 +198,18 @@ void background::update(std::list<GameObject> colObjects, float deltaTime)
                     // dont look for collsion outside of the visible area
                     if ((i >= 0 && i <= divider - 1) && (j >= 0 && j <= divider - 1))
                     {
-                        backgroundPoints[i][j]->update(object);
+                        /* Edge Distance Filter / Optimizazion
+                        float midPosDistance = SDL_sqrtf(Utils::squareDistance(object.midPos, backgroundPoints[i][j].currentPos));
+                        float distanceToColEdge = object.colRadius - midPosDistance;
+                        float edgeDistanceThreshold = 100.f;
+
+                        if (distanceToColEdge < edgeDistanceThreshold)
+                        {
+
+                        }
+                        */
+
+                        backgroundPoints[i][j].moveOut(object);
                         updatePointOperations++;
                     }
                 }
@@ -205,15 +220,14 @@ void background::update(std::list<GameObject> colObjects, float deltaTime)
     for (int i = 0; i != divider; i++)
     {
         for (int j = 0; j != divider; j++)
-            if (!backgroundPoints[i][j]->onOrigin)
+            if (!backgroundPoints[i][j].onOrigin)
             {
-                backgroundPoints[i][j]->returnToOrigin(deltaTime);
-                updatePointOperations++;
+                backgroundPoints[i][j].returnToOrigin(deltaTime);
             }
     }
 
     // debug
-    // std::cout << "Update Point Operations: " << updatePointOperations << std::endl;
+    std::cout << "Update Point Operations: " << updatePointOperations << std::endl;
 }
 
 void background::render(SDL_Renderer *renderer)
@@ -222,9 +236,9 @@ void background::render(SDL_Renderer *renderer)
     for (int i = 0; i != divider; i++)
     {
         for (int j = 0; j != divider; j++)
-            if (!backgroundPoints[i][j]->onOrigin)
+            if (!backgroundPoints[i][j].onOrigin)
             {
-                backgroundPoints[i][j]->render(renderer);
+                backgroundPoints[i][j].render(renderer);
             }
     }
 }

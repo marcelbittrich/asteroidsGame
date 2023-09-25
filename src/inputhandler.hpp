@@ -1,5 +1,4 @@
-#ifndef INPUTHANDLER_HPP
-#define INPUTHANDLER_HPP
+#pragma once
 
 struct ControlBools
 {
@@ -25,5 +24,3 @@ public:
 
     ControlBools getControlBools() { return controlBools; }
 };
-
-#endif

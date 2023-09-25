@@ -213,6 +213,7 @@ void Game::update()
         return;
 
     bool isLeftClicking = (MyInputHandler->getControlBools()).isLeftClicking;
+
     // Debug Bomb Spawn on Click
     if (isLeftClicking && newClick)
     {
@@ -230,15 +231,11 @@ void Game::update()
     // Update Ship
     ship->update(MyInputHandler, windowWidth, windowHeight, deltaTime);
 
-    // Update Asteroid Position
+    // Update Asteroid Position and check for collisions
     for (Asteroid &asteroid : Asteroid::asteroids)
     {
         asteroid.update(windowWidth, windowHeight, deltaTime);
-    }
 
-    // Check Ship Collision Asteroids
-    for (const Asteroid &asteroid : Asteroid::asteroids)
-    {
         if (doesCollide(*ship, asteroid))
         {
             if (--life == 0)
@@ -247,6 +244,15 @@ void Game::update()
             }
             ship->respawn(renderer);
             asteroidWave = 1;
+        }
+
+        for (Asteroid &asteroid2 : Asteroid::asteroids)
+        {
+            // std::cout << "Kombination: " << i << ", " << j << std::endl;
+            if (&asteroid != &asteroid2)
+            {
+                asteroidsCollide(asteroid, asteroid2);
+            }
         }
     }
 
@@ -280,23 +286,13 @@ void Game::update()
         asteroidWave++;
     }
 
-    // Check Asteroid Collision
-    for (auto it1 = Asteroid::asteroids.begin(); it1 != Asteroid::asteroids.end(); it1++)
-    {
-        for (auto it2 = std::next(it1, 1); it2 != Asteroid::asteroids.end(); it2++)
-        {
-            // std::cout << "Kombination: " << i << ", " << j << std::endl;
-            asteroidsCollide(*it1, *it2);
-        }
-    }
-
     // Alternative Shot Meter - not used
     // shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
 
     // Update Shots
-    for (Shot &singleShot : Shot::shots)
+    for (Shot &Shot : Shot::shots)
     {
-        singleShot.update(windowWidth, windowHeight, deltaTime);
+        Shot.update(windowWidth, windowHeight, deltaTime);
     }
 
     // Destroy Shots
@@ -363,7 +359,7 @@ void Game::update()
             auto asteroidIt = Asteroid::asteroids.begin();
             while (asteroidIt != Asteroid::asteroids.end())
             {
-                std::cout << "Bomb colRadius: " << bomb->colRadius << std::endl;
+                // std::cout << "Bomb colRadius: " << bomb->colRadius << std::endl;
                 if (doesCollide(*bomb, *asteroidIt))
                 {
                     hit = true;
@@ -455,15 +451,15 @@ float Game::calculateDeltaTime()
 
 bool Game::updateGameState()
 {
-    if (gameState == STATE_IN_MENU)
+    if (gameState == GameState::STATE_IN_MENU)
     {
         myGameMenu->update(isRunning, gameState, MyInputHandler);
     }
 
     // Check if player just died and present menu with score
-    if (life == 0 && gameState == STATE_IN_GAME)
+    if (life == 0 && gameState == GameState::STATE_IN_GAME)
     {
-        gameState = STATE_IN_MENU;
+        gameState = GameState::STATE_IN_MENU;
 
         myGameMenu->setScore(score);
         int oldHighscore = myGameSave->getHighscore();
@@ -476,27 +472,27 @@ bool Game::updateGameState()
     }
 
     bool pausePressed = (MyInputHandler->getControlBools()).pausePressed;
-    if (pausePressed && gameState == STATE_IN_GAME && newPausePress)
+    if (pausePressed && gameState == GameState::STATE_IN_GAME && newPausePress)
     {
         newPausePress = false;
-        gameState = STATE_PAUSE;
+        gameState = GameState::STATE_PAUSE;
     }
-    else if (pausePressed && gameState == STATE_PAUSE && newPausePress)
+    else if (pausePressed && gameState == GameState::STATE_PAUSE && newPausePress)
     {
         newPausePress = false;
-        gameState = STATE_IN_GAME;
+        gameState = GameState::STATE_IN_GAME;
     }
     else if (!pausePressed)
     {
         newPausePress = true;
     }
 
-    return gameState == STATE_IN_GAME;
+    return gameState == GameState::STATE_IN_GAME;
 }
 
 void Game::render()
 {
-    if (gameState == STATE_IN_MENU || gameState == STATE_RESET)
+    if (gameState == GameState::STATE_IN_MENU || gameState == GameState::STATE_RESET)
     {
         myGameMenu->render();
         return;
@@ -586,7 +582,7 @@ void Game::reset()
 
     lastUpdateTime = SDL_GetTicks();
 
-    gameState = STATE_IN_GAME;
+    gameState = GameState::STATE_IN_GAME;
 }
 
 void Game::printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)

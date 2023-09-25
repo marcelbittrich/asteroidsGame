@@ -1,5 +1,4 @@
-#ifndef BACKGROUND_HPP
-#define BACKGROUND_HPP
+#pragma once
 
 #include "SDL2/SDL.h"
 #include <list>
@@ -28,13 +27,11 @@ public:
     float putOnOriginDistance = 4.0;
 
     void returnToOrigin(float deltaTime);
-    void update(class GameObject colObject);
+    void moveOut(class GameObject colObject);
 
     // render values
     float pointSizeScale = 1.5;
     void render(SDL_Renderer *renderer);
-
-    float squareDistance(SDL_FPoint PositionA, SDL_FPoint PositionB);
 };
 
 class background
@@ -43,7 +40,7 @@ class background
     int width;
     int height;
 
-    backgroundPoint *backgroundPoints[divider][divider];
+    backgroundPoint backgroundPoints[divider][divider];
     float pointAreaWidth;
     float pointAreaHeight;
 
@@ -54,5 +51,3 @@ public:
     void update(std::list<class GameObject> colObjects, float deltaTime);
     void render(SDL_Renderer *renderer);
 };
-
-#endif // BACKGROUND_HPP

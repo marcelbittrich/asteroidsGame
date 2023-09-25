@@ -1,5 +1,4 @@
-#ifndef GAMEOBJECTS_HPP
-#define GAMEOBJECTS_HPP
+#pragma once
 
 #include <iostream>
 #include <math.h>
@@ -170,5 +169,3 @@ public:
 };
 
 SDL_FPoint calcPosIfLeaving(SDL_FPoint midPos, float radius, int windowWidth, int windowHeight);
-
-#endif

@@ -256,6 +256,18 @@ void Ship::respawn(SDL_Renderer *renderer)
 
 std::list<Asteroid> Asteroid::asteroids;
 
+Asteroid::Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType) : GameObject()
+{
+    this->midPos = {midPosX, midPosY};
+    this->sizeType = sizeType;
+    this->velocity = velocity;
+    int size = getSize(sizeType);
+    this->colRadius = getColRadius(size);
+    this->width = size;
+    this->height = size;
+    asteroids.push_back(*this);
+}
+
 int Asteroid::getSize(AsteroidSizeType sizeType)
 {
     int size;
@@ -270,18 +282,6 @@ float Asteroid::getColRadius(int size)
 {
     float colRadiusOffset = 0.6;
     return size / 2 * colRadiusOffset;
-}
-
-Asteroid::Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType) : GameObject()
-{
-    this->midPos = {midPosX, midPosY};
-    this->sizeType = sizeType;
-    this->velocity = velocity;
-    int size = getSize(sizeType);
-    this->colRadius = getColRadius(size);
-    this->width = size;
-    this->height = size;
-    asteroids.push_back(*this);
 }
 
 void Asteroid::update(int windowWidth, int windowHeight, float deltaTime)
@@ -348,10 +348,11 @@ bool doesCollide(GameObject firstObject, GameObject secondObject)
 {
     if (!firstObject.isVisible || !secondObject.isVisible)
         return false;
-    float distance;
-    distance = sqrt(pow(firstObject.midPos.x - secondObject.midPos.x, 2) + pow(firstObject.midPos.y - secondObject.midPos.y, 2));
 
-    return distance <= firstObject.colRadius + secondObject.colRadius;
+    float squareDistance = (firstObject.midPos.x - secondObject.midPos.x) * (firstObject.midPos.x - secondObject.midPos.x) + (firstObject.midPos.y - secondObject.midPos.y) * (firstObject.midPos.y - secondObject.midPos.y);
+    float squareColDistance = (firstObject.colRadius + secondObject.colRadius) * (firstObject.colRadius + secondObject.colRadius);
+
+    return squareDistance <= squareColDistance;
 }
 
 struct CollisionOccurrence

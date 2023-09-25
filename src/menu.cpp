@@ -61,7 +61,7 @@ void GameMenu::update(bool &isRunning, GameState &GameState, class InputHandler 
 
         if (startButtonRect.x < clickPosX && startButtonRect.x + startButtonRect.w > clickPosX && startButtonRect.y < clickPosY && startButtonRect.y + startButtonRect.h > clickPosY)
         {
-            GameState = STATE_RESET;
+            GameState = GameState::STATE_RESET;
             showStartScreen = false;
         }
 

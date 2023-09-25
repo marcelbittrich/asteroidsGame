@@ -1,5 +1,4 @@
-#ifndef MENU_HPP
-#define MENU_HPP
+#pragma once
 
 #include <list>
 
@@ -43,5 +42,3 @@ public:
     void setScore(int newScore) { score = newScore; }
     void setHighscore(int newHighscore) { highscore = newHighscore; }
 };
-
-#endif // MENU_HPP
