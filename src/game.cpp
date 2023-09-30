@@ -165,7 +165,7 @@ void Game::initMenu()
 
 void Game::initGameplay()
 {
-    gameBackground = background(windowWidth, windowHeight);
+    gameBackground = Background(windowWidth, windowHeight);
 
     ship = Ship(windowWidth / 2, windowHeight / 2, 50);
     colObjects.push_back(ship);

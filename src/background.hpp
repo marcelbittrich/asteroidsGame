@@ -4,50 +4,42 @@
 #include <list>
 #include <vector>
 
-class backgroundPoint
+class BackgroundPoint
 {
 public:
-    backgroundPoint();
-    backgroundPoint(float xPos, float yPos);
-
-    // float xPos, yPos;
-    bool onOrigin;
+    BackgroundPoint();
+    BackgroundPoint(float xPos, float yPos);
     SDL_FPoint currentPos;
     SDL_Point originPos;
     SDL_Point renderPos;
-
-    void returnToOrigin(float deltaTime);
-    void moveOut(class GameObject colObject);
-
-    // render values
-    float pointSizeScale = 1.5;
-    void render(SDL_Renderer *renderer);
-
-private:
     Uint8 color[4];
-
-    // returnToOrigin function values
-    float squareDistanceToOrigin, distanceToOrigin;
-    float minReturnVelocity = 0.5;
-    float distanceVelocityFunctionSteepness = 0.005;
-    float putOnOriginDistance = 4.0;
+    bool onOrigin;
 };
 
-class background
+class Background
 {
 public:
-    background();
-    background(int windowWidth, int windowHeight);
-
+    Background();
+    Background(int windowWidth, int windowHeight);
     void update(const std::list<class GameObject> &colObjects, float deltaTime);
     void render(SDL_Renderer *renderer);
 
 private:
     static const int divider = 100;
-    int width;
-    int height;
+    float pointSizeScale = 1.5;
+    int width = 0;
+    int height = 0;
 
-    backgroundPoint backgroundPoints[divider][divider];
-    float pointAreaWidth;
-    float pointAreaHeight;
+    BackgroundPoint backgroundPoints[divider][divider];
+    float pointAreaWidth = 0;
+    float pointAreaHeight = 0;
+
+    std::vector<uint32_t> horizontalIter, verticalIter;
+
+    void returnPointToOrigin(BackgroundPoint &point, float deltaTime);
+    void movePointOut(BackgroundPoint &point, class GameObject colObject);
+
+    float minReturnVelocity = 0.5;
+    float distanceVelocityFunctionSteepness = 0.005;
+    float putOnOriginDistance = 4.0;
 };
