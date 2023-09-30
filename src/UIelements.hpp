@@ -27,12 +27,12 @@ private:
     SDL_Rect background2;
     SDL_Rect meterBar;
     int xOffset, yOffset;
-    void reconstruct(SDL_Rect position, Ship *ship);
+    void reconstruct(SDL_Rect position, const Ship &ship);
 
 public:
     ShotMeter(){};
-    ShotMeter(Ship *ship, int xOffset, int yOffset, int width, int height);
-    void update(int shotCounter, int maxShotCounter, Ship *ship);
+    ShotMeter(const Ship &ship, int xOffset, int yOffset, int width, int height);
+    void update(int shotCounter, int maxShotCounter, const Ship &ship);
     void render(SDL_Renderer *renderer, bool canShoot);
 };
 

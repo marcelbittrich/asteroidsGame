@@ -40,7 +40,7 @@ backgroundPoint::backgroundPoint(float xPos, float yPos)
 
 void backgroundPoint::returnToOrigin(float deltaTime)
 {
-    SDL_FPoint originPosF = {originPos.x, originPos.y};
+    SDL_FPoint originPosF = {(float)originPos.x, (float)originPos.y};
     squareDistanceToOrigin = Utils::squareDistance(currentPos, originPosF);
     distanceToOrigin = SDL_sqrtf(squareDistanceToOrigin);
 
@@ -56,6 +56,7 @@ void backgroundPoint::returnToOrigin(float deltaTime)
     float distanceDependentVelocity = distanceVelocityFunctionSteepness * distanceToOrigin * distanceToOrigin;
     float returnToOriginVelocity = std::max(minReturnVelocity, distanceDependentVelocity) * deltaTime * 60.f;
 
+    float vectorChange[2];
     vectorChange[0] = (normalizedDistance[0] * returnToOriginVelocity);
     vectorChange[1] = (normalizedDistance[1] * returnToOriginVelocity);
 
@@ -176,13 +177,13 @@ background::background(int windowWidth, int windowHeight)
     }
 }
 
-void background::update(std::list<GameObject> colObjects, float deltaTime)
+void background::update(const std::list<GameObject> &colObjects, float deltaTime)
 {
     // debug, count update operations
     int updatePointOperations = 0;
 
     // look for collisions with objects
-    for (GameObject &object : colObjects)
+    for (const GameObject &object : colObjects)
     {
         float objectColRadius = object.getColRadius();
         SDL_FPoint objectMidPos = object.getMidPos();

@@ -22,5 +22,5 @@ public:
     void init();
     void handleInput(bool &isRunning);
 
-    ControlBools getControlBools() { return controlBools; }
+    ControlBools getControlBools() const { return controlBools; }
 };

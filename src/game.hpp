@@ -7,16 +7,12 @@
 #include "SDL2/SDL_stdinc.h"
 
 #include "gameobjects.hpp"
+#include "menu.hpp"
+#include "gamesave.hpp"
+#include "gamestate.hpp"
+#include "background.hpp"
 
 #define PI 3.14159265359
-
-enum class GameState
-{
-    STATE_IN_MENU,
-    STATE_IN_GAME,
-    STATE_RESET,
-    STATE_PAUSE
-};
 
 class Game
 {
@@ -29,46 +25,47 @@ public:
     void render();
     void clean();
     void reset();
-
     GameState gameState = GameState::STATE_IN_MENU;
 
     void printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 
-    std::list<Bomb *> Bombs;
+    std::list<Bomb> Bombs;
+
+    bool getIsRunning() const { return isRunning; }
 
 private:
     bool isRunning;
     // Game window values
     int windowWidth;
     int windowHeight;
-    class SDL_Window *window;
-    class SDL_Renderer *renderer;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
     void initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
 
     // Control values
     void initInputDevices();
-    class InputHandler *MyInputHandler;
+    InputHandler MyInputHandler;
 
     // Texture values
-    class SDL_Texture *shipTex;
-    class SDL_Texture *asteroidTexSmall;
-    class SDL_Texture *asteroidTexMedium;
-    class SDL_Texture *shotTex;
-    class SDL_Texture *bombTex;
+    SDL_Texture *shipTex;
+    SDL_Texture *asteroidTexSmall;
+    SDL_Texture *asteroidTexMedium;
+    SDL_Texture *shotTex;
+    SDL_Texture *bombTex;
     TTF_Font *font;
     TTF_Font *fontHuge;
 
     void initTextures();
 
     // Main menu values
-    class GameSave *myGameSave;
-    class GameMenu *myGameMenu;
+    GameSave myGameSave;
+    GameMenu myGameMenu;
 
     void initMenu();
 
     // Gameplay values
-    class Ship *ship;
-    class background *gameBackground;
+    Ship ship;
+    background gameBackground;
     std::list<GameObject> colObjects;
 
     void initGameplay();
@@ -115,7 +112,4 @@ private:
 
     float calculateDeltaTime();
     bool updateGameState();
-
-public:
-    bool getIsRunning() { return isRunning; }
 };

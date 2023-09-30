@@ -35,16 +35,16 @@ Ship::Ship() : GameObject()
 {
 }
 
-void Ship::update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
+void Ship::update(const InputHandler &MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
 {
     updateVisibility(deltaTime);
     updateTransform(MyInputHandler, windowWidth, windowHeight, deltaTime);
     updateAnimation(MyInputHandler, deltaTime);
 
-    if ((MyInputHandler->getControlBools()).isShooting)
+    if ((MyInputHandler.getControlBools()).isShooting)
         shoot();
 
-    if ((MyInputHandler->getControlBools()).isUsingBomb)
+    if ((MyInputHandler.getControlBools()).isUsingBomb)
         useBomb();
 }
 
@@ -74,10 +74,9 @@ void Ship::updateVisibility(float deltaTime)
     }
 }
 
-void Ship::updateTransform(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
+void Ship::updateTransform(const InputHandler &MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
 {
-    assert(MyInputHandler);
-    ControlBools CurrentControlBools = (MyInputHandler->getControlBools());
+    ControlBools CurrentControlBools = MyInputHandler.getControlBools();
 
     // Update transaltion
     float scalarVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
@@ -113,9 +112,9 @@ void Ship::updateTransform(InputHandler *MyInputHandler, int windowWidth, int wi
     }
 }
 
-void Ship::updateAnimation(InputHandler *MyInputHandler, float deltaTime)
+void Ship::updateAnimation(const InputHandler &MyInputHandler, float deltaTime)
 {
-    ControlBools CurrentControlBools = (MyInputHandler->getControlBools());
+    ControlBools CurrentControlBools = MyInputHandler.getControlBools();
     if (CurrentControlBools.giveThrust)
     {
         if (SDL_GetTicks() - timeLastUpdated > timeBetweenSprites)
@@ -344,7 +343,7 @@ void Asteroid::render(SDL_Renderer *renderer, SDL_Texture *asteroidTexSmall, SDL
     }
 }
 
-bool doesCollide(GameObject firstObject, GameObject secondObject)
+bool doesCollide(const GameObject &firstObject, const GameObject &secondObject)
 {
     if (!firstObject.getVisibility() || !secondObject.getVisibility())
         return false;
@@ -461,7 +460,7 @@ void asteroidsCollide(GameObject &firstObject, GameObject &secondObject)
     }
 }
 
-void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects)
+void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, const std::list<GameObject> &gameobjects)
 {
     GameObject collisionObject = GameObject();
     collisionObject.setMidPos((float)xPos, (float)yPos);

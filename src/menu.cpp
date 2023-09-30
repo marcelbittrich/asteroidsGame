@@ -1,5 +1,7 @@
 #include "menu.hpp"
 #include "inputhandler.hpp"
+#include "game.hpp"
+#include "gamestate.hpp"
 
 GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height)
 {
@@ -51,9 +53,9 @@ GameMenu::GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, i
     scoreTextRect = {};
 }
 
-void GameMenu::update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler)
+void GameMenu::update(bool &isRunning, GameState &gameState, const InputHandler &MyInputHandler)
 {
-    bool isLeftClicking = (MyInputHandler->getControlBools()).isLeftClicking;
+    bool isLeftClicking = (MyInputHandler.getControlBools()).isLeftClicking;
     if (isLeftClicking)
     {
         int clickPosX, clickPosY;
@@ -61,7 +63,7 @@ void GameMenu::update(bool &isRunning, GameState &GameState, class InputHandler 
 
         if (startButtonRect.x < clickPosX && startButtonRect.x + startButtonRect.w > clickPosX && startButtonRect.y < clickPosY && startButtonRect.y + startButtonRect.h > clickPosY)
         {
-            GameState = GameState::STATE_RESET;
+            gameState = GameState::STATE_RESET;
             showStartScreen = false;
         }
 

@@ -6,7 +6,6 @@
 
 class GameSave
 {
-
 public:
     GameSave();
 

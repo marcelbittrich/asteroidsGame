@@ -3,10 +3,6 @@
 
 InputHandler::InputHandler()
 {
-}
-
-void InputHandler::init()
-{
     controlBools = {false};
 }
 

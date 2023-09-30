@@ -11,4 +11,4 @@ void initSingleAsteroid(std::list<GameObject> &gameObjects, int windowWidth, int
 void initAsteroids(GameObject ship, int windowWidth, int windowHeight);
 
 SDL_FPoint getRandomVelocity(float minVelocity, float maxVelocity);
-SDL_Point getRandomPosition(int windowWidth, int windowHeight, float colRadius, std::list<GameObject> gameObjects);
+SDL_Point getRandomPosition(int windowWidth, int windowHeight, float colRadius, const std::list<GameObject> &gameObjects);

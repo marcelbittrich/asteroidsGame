@@ -34,13 +34,13 @@ private:
     static int newId;
 
 public:
-    int getID() { return id; };
-    int getWidth() { return width; };
-    int getHeight() { return height; };
-    float getColRadius() { return colRadius; };
-    bool getVisibility() { return isVisible; }
-    SDL_FPoint getMidPos() { return midPos; };
-    SDL_FPoint getVelocity() { return velocity; };
+    int getID() const { return id; };
+    int getWidth() const { return width; };
+    int getHeight() const { return height; };
+    float getColRadius() const { return colRadius; };
+    bool getVisibility() const { return isVisible; }
+    SDL_FPoint getMidPos() const { return midPos; };
+    SDL_FPoint getVelocity() const { return velocity; };
 
     void setColRadius(float radius) { colRadius = radius; };
     void setMidPos(float x, float y) { midPos = {x, y}; };
@@ -53,7 +53,7 @@ public:
     Ship();
     Ship(int midPosX, int midPosY, int size);
 
-    void update(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
+    void update(const InputHandler &MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *shipTex);
     void reset(SDL_Renderer *renderer);
     void respawn(SDL_Renderer *renderer);
@@ -71,8 +71,8 @@ private:
     float rotation = 0; // Current rotation in degree
     float roatatingSpeed = 180.0;
     float thrust = 350.0;
-    void updateTransform(InputHandler *MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
-    void updateAnimation(InputHandler *MyInputHandler, float deltaTime);
+    void updateTransform(const InputHandler &MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
+    void updateAnimation(const InputHandler &MyInputHandler, float deltaTime);
 
     // Shooting values
     float shotVelocity = 1000;
@@ -139,10 +139,10 @@ public:
 };
 
 // void initShip(int windowWidth, int windowHeight);
-bool doesCollide(GameObject firstObject, GameObject secondObject);
+bool doesCollide(const GameObject &firstObject, const GameObject &secondObject);
 void asteroidsCollide(GameObject &firstObject, GameObject &secondObject);
 void handleDestruction(Asteroid destoryedAsteroid);
-void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, std::list<GameObject> gameobjects);
+void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, const std::list<GameObject> &gameobjects);
 
 class Shot : public GameObject
 {

@@ -2,7 +2,7 @@
 
 int UIElement::newId = 0;
 
-ShotMeter::ShotMeter(Ship *ship, int xOffset, int yOffset, int width, int height)
+ShotMeter::ShotMeter(const Ship &ship, int xOffset, int yOffset, int width, int height)
 {
     this->xOffset = xOffset;
     this->yOffset = yOffset;
@@ -12,10 +12,10 @@ ShotMeter::ShotMeter(Ship *ship, int xOffset, int yOffset, int width, int height
     reconstruct(position, ship);
 }
 
-void ShotMeter::reconstruct(SDL_Rect position, Ship *ship)
+void ShotMeter::reconstruct(SDL_Rect position, const Ship &ship)
 {
-    position.x = ship->getMidPos().x + xOffset - position.w / 2;
-    position.y = ship->getMidPos().y + yOffset + position.h / 2;
+    position.x = ship.getMidPos().x + xOffset - position.w / 2;
+    position.y = ship.getMidPos().y + yOffset + position.h / 2;
     int borderOffset = 1;
     background1 = position;
     background2 = {background1.x + borderOffset,
@@ -25,7 +25,7 @@ void ShotMeter::reconstruct(SDL_Rect position, Ship *ship)
     meterBar = background2;
 }
 
-void ShotMeter::update(int shotCounter, int maxShotCounter, Ship *ship)
+void ShotMeter::update(int shotCounter, int maxShotCounter, const Ship &ship)
 {
     reconstruct(position, ship);
     float shotMeterPercent = (std::min((((float)shotCounter / (float)maxShotCounter) * (float)maxShotCounter), (float)maxShotCounter)) / (float)maxShotCounter;

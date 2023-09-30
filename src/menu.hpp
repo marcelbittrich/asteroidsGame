@@ -3,15 +3,16 @@
 #include <list>
 
 #include "SDL2/SDL.h"
-#include "game.hpp"
+#include "SDL2/SDL_ttf.h"
+#include "gamestate.hpp"
+#include "inputhandler.hpp"
 
 class GameMenu
 {
-
 public:
     GameMenu(){};
     GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
-    void update(bool &isRunning, GameState &GameState, class InputHandler *MyInputHandler);
+    void update(bool &isRunning, GameState &gameState, const InputHandler &MyInputHandler);
     void render();
 
 private:

@@ -4,7 +4,7 @@ SDL_Point getRandomPosition(
     int windowWidth,
     int windowHeight,
     float colRadius,
-    std::list<GameObject> gameObjects)
+    const std::list<GameObject> &gameObjects)
 {
     int maxTries = 10000;
     for (int i = 0; i < maxTries; i++)
@@ -12,7 +12,7 @@ SDL_Point getRandomPosition(
         int x = rand() % windowWidth;
         int y = rand() % windowHeight;
         bool success = true;
-        for (GameObject &gameObject : gameObjects)
+        for (const GameObject &gameObject : gameObjects)
         {
             float distance = sqrt(std::pow(gameObject.getMidPos().x - x, 2) + std::pow(gameObject.getMidPos().y - y, 2));
 
