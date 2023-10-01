@@ -3,8 +3,8 @@
 #include <vector>
 #include <list>
 
-#include "SDL2/SDL_ttf.h"
-#include "SDL2/SDL_stdinc.h"
+#include "SDL_ttf.h"
+#include "SDL_stdinc.h"
 
 #include "gameobjects.hpp"
 #include "menu.hpp"

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <list>
-#include "SDL2/SDL.h"
+#include "SDL.h"
 
 #include "gameobjects.hpp"
 #include "game.hpp"

@@ -75,15 +75,15 @@ Background::Background(int windowWidth, int windowHeight)
         }
     }
 
-    std::cout << "Size of Background point: " << sizeof(backgroundPoints[1][1]) << std::endl;
-    std::cout << "Size of whole Background: " << sizeof(*this) << std::endl;
+    //std::cout << "Size of Background point: " << sizeof(backgroundPoints[1][1]) << std::endl;
+    //std::cout << "Size of whole Background: " << sizeof(*this) << std::endl;
 }
 
 void Background::update(const std::list<GameObject> &colObjects, float deltaTime)
 {
 
-#define NO_MT 1
-#if MT
+#define NO_MT 0
+#if NO_MT
     // debug, count update operations
     int updatePointOperations = 0;
 
@@ -110,16 +110,6 @@ void Background::update(const std::list<GameObject> &colObjects, float deltaTime
                     // dont look for collsion outside of the visible area
                     if ((i >= 0 && i <= divider - 1) && (j >= 0 && j <= divider - 1))
                     {
-                        /* Edge Distance Filter / Optimizazion
-                        float midPosDistance = SDL_sqrtf(Utils::squareDistance(object.midPos, backgroundPoints[i][j].currentPos));
-                        float distanceToColEdge = object.colRadius - midPosDistance;
-                        float edgeDistanceThreshold = 100.f;
-
-                        if (distanceToColEdge < edgeDistanceThreshold)
-                        {
-
-                        }
-                        */
                         movePointOut(backgroundPoints[i][j], object);
                         updatePointOperations++;
                     }
@@ -168,15 +158,25 @@ void Background::update(const std::list<GameObject> &colObjects, float deltaTime
                                     });
                   });
 
-    std::cout << "Size of whole colobjects: " << sizeof(colObjects) << std::endl;
-
 #endif
-    // debug
-    // std::cout << "Update Point Operations: " << updatePointOperations << std::endl;
+
 }
 
 void Background::render(SDL_Renderer *renderer)
 {
+    // get current logic render size from renderer
+    int logicWidth, logicHeight;
+    SDL_RenderGetLogicalSize(renderer, &logicWidth, &logicHeight);
+
+    // get bigger background points by lowering the logic renderer size
+    int newlogiclogicWidth = round(logicWidth / pointSizeScale);
+    int newlogicHeight = round(logicHeight / pointSizeScale);
+
+    SDL_Surface *backgroundSurface = SDL_CreateRGBSurface(0, newlogiclogicWidth, newlogicHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+
+    SDL_LockSurface(backgroundSurface);
+    SDL_memset(backgroundSurface->pixels, 0, backgroundSurface->h * backgroundSurface->pitch);
+
     // only render points not on origin
     for (int i = 0; i != divider; i++)
     {
@@ -186,28 +186,43 @@ void Background::render(SDL_Renderer *renderer)
                 SDL_Point renderPos = backgroundPoints[i][j].renderPos;
                 Uint8 *color = backgroundPoints[i][j].color;
 
-                // get current logic render size from renderer
-                int logicWidth, logicHeight;
-                SDL_RenderGetLogicalSize(renderer, &logicWidth, &logicHeight);
-
-                // get bigger background points by lowering the logic renderer size
-                int newlogiclogicWidth = round(logicWidth / pointSizeScale);
-                int newlogicHeight = round(logicHeight / pointSizeScale);
-                SDL_RenderSetLogicalSize(renderer, newlogiclogicWidth, newlogicHeight);
-
                 // set the point render position according to the new logic render size
                 int scaledPosX = round(renderPos.x / pointSizeScale);
                 int scaledPosY = round(renderPos.y / pointSizeScale);
 
-                // render points
-                SDL_SetRenderDrawColor(renderer, color[0], color[1], color[2], color[3]);
-                SDL_RenderDrawPoint(renderer, scaledPosX, scaledPosY);
+                Uint32 pixel = SDL_MapRGBA(backgroundSurface->format, color[0], color[1], color[2], color[3]);
 
-                // reset logic render size
-                SDL_RenderSetLogicalSize(renderer, logicWidth, logicHeight);
+                if (scaledPosX < backgroundSurface->w && scaledPosX > 0 
+                    && scaledPosY < backgroundSurface->h && scaledPosY > 0)
+                {
+                    setPixel(backgroundSurface, scaledPosX, scaledPosY, pixel);
+                }
             }
     }
+    SDL_UnlockSurface(backgroundSurface);
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+    SDL_FreeSurface(backgroundSurface);
+    SDL_Rect textureRect = { 0, 0, newlogiclogicWidth, newlogicHeight };
+    SDL_Rect backgroundRect = { 0, 0, logicWidth, logicHeight };
+    SDL_RenderCopy(renderer, backgroundTexture, &textureRect, &backgroundRect);
+    SDL_DestroyTexture(backgroundTexture);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
+
+void Background::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
+{
+    //Convert the pixels to 32 bit
+    Uint32* pixels = (Uint32*)surface->pixels;
+
+    //Set the pixel
+    int position = (y * surface->w) + x;
+
+    pixels[position] = pixel;
+}
+
+
 
 void Background::returnPointToOrigin(BackgroundPoint &point, float deltaTime)
 {

@@ -3,9 +3,9 @@
 #include <iostream>
 #include <math.h>
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "SDL2/SDL_gamecontroller.h"
+#include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_gamecontroller.h"
 
 #include "shapes.hpp"
 #include "background.hpp"
@@ -16,6 +16,9 @@
 #include "game.hpp"
 #include "menu.hpp"
 #include "gamestate.hpp"
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // Gameplay parameters
 int STARTING_LIVES = 3;
@@ -128,32 +131,36 @@ void Game::initInputDevices()
 
 void Game::initTextures()
 {
-    SDL_Surface *image = IMG_Load("../img/ship_thrustanimation.png");
+    std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
+    fs::current_path(fs::temp_directory_path()); // (3)
+    std::cout << "Current path is " << fs::current_path() << '\n';
+
+    SDL_Surface *image = IMG_Load("D:/Dokumente/GameDev/Game/img/ship_thrustanimation.png");
     if (image == NULL)
     {
-        std::cout << IMG_GetError();
+        std::cout << IMG_GetError() << std::endl;
     }
     shipTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("../img/asteroid_small1.png");
+    image = IMG_Load("D:/Dokumente/GameDev/Game/img/asteroid_small1.png");
     asteroidTexSmall = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("../img/asteroid_medium1.png");
+    image = IMG_Load("D:/Dokumente/GameDev/Game/img/asteroid_medium1.png");
     asteroidTexMedium = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("../img/shot.png");
+    image = IMG_Load("D:/Dokumente/GameDev/Game/img/shot.png");
     shotTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    image = IMG_Load("../img/bomb.png");
+    image = IMG_Load("D:/Dokumente/GameDev/Game/img/bomb.png");
     bombTex = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
-    font = TTF_OpenFont("../font/joystix_monospace.ttf", 20);
-    fontHuge = TTF_OpenFont("../font/joystix_monospace.ttf", 120);
+    font = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 20);
+    fontHuge = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 120);
 }
 
 void Game::initMenu()
@@ -494,6 +501,7 @@ void Game::render()
 
     gameBackground.render(renderer);
 
+
     for (Bomb &bomb : Bombs)
     {
         bomb.render(renderer, bombTex);
@@ -502,20 +510,14 @@ void Game::render()
     for (Asteroid &asteroid : Asteroid::asteroids)
     {
         asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
-        // SDL_SetRenderDrawColor(renderer,0,0,255,255);
-        // drawCircle(renderer, asteroid.rect.x+asteroid.rect.w/2, asteroid.rect.y+asteroid.rect.h/2, round(asteroid.colRadius));
     }
 
     for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it++)
     {
         it->render(renderer, shotTex);
-        // SDL_SetRenderDrawColor(renderer,0,255,0,255);
-        // drawCircle(renderer, singleShot.rect.x+singleShot.rect.w/2, singleShot.rect.y+singleShot.rect.h/2, round(singleShot.colRadius));
     }
 
     ship.render(renderer, shipTex);
-    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    // drawCircle(renderer, ship.rect.x+ship.rect.w/2, ship.rect.y+ship.rect.h/2, round(ship.colRadius));
 
     UIScore->render(renderer);
     UILives->render(renderer);

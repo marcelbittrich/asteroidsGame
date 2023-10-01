@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SDL2/SDL.h"
+#include "SDL.h"
 #include <list>
 #include <vector>
 
@@ -26,7 +26,7 @@ public:
 
 private:
     static const int divider = 100;
-    float pointSizeScale = 1.5;
+    float pointSizeScale = 2.f;
     int width = 0;
     int height = 0;
 
@@ -42,4 +42,6 @@ private:
     float minReturnVelocity = 0.5;
     float distanceVelocityFunctionSteepness = 0.005;
     float putOnOriginDistance = 4.0;
+
+    void setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel);
 };
