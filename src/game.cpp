@@ -18,6 +18,7 @@
 #include "gamestate.hpp"
 
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 // Gameplay parameters
@@ -25,8 +26,8 @@ int STARTING_LIVES = 3;
 int STARTING_BOMB_COUNT = 0;
 // One in ... for dropping a bomb when destroing astroids.
 int BOMB_SPAWN_ON_SCORE = 50;
-float ASTEROID_SPAWN_DELTATIME = 3.0;
-float ASTEROID_SPAWN_SPEED_MULTI = 0.03;
+float ASTEROID_SPAWN_DELTATIME = 3.0f;
+float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
 
 Game::Game()
 {
@@ -35,10 +36,10 @@ Game::~Game()
 {
 }
 
-void Game::init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::Init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
-    initWindow(title, xpos, ypos, width, height, fullscreen);
-    initInputDevices();
+    InitWindow(title, xpos, ypos, width, height, fullscreen);
+    InitInputDevices();
 
     MyInputHandler = InputHandler();
 
@@ -53,7 +54,7 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
 
 #pragma region init functions
 
-void Game::initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::InitWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
     int flags = 0;
     if (fullscreen)
@@ -93,7 +94,7 @@ void Game::initWindow(const char *title, int xpos, int ypos, int width, int heig
     }
 }
 
-void Game::initInputDevices()
+void Game::InitInputDevices()
 {
     printf("%i joysticks were found.\n", SDL_NumJoysticks());
     for (int i = 1; i <= SDL_NumJoysticks(); ++i)
@@ -135,32 +136,28 @@ void Game::initTextures()
     fs::current_path(fs::temp_directory_path()); // (3)
     std::cout << "Current path is " << fs::current_path() << '\n';
 
-    SDL_Surface *image = IMG_Load("D:/Dokumente/GameDev/Game/img/ship_thrustanimation.png");
+    shipTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/ship_thrustanimation.png");
+    asteroidTexSmall = createTextureFromPath("D:/Dokumente/GameDev/Game/img/asteroid_small1.png");
+    asteroidTexMedium = createTextureFromPath("D:/Dokumente/GameDev/Game/img/asteroid_medium1.png");
+    shotTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/shot.png");
+    bombTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/bomb.png");
+
+    font = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 20);
+    fontHuge = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 120);
+}
+
+SDL_Texture* Game::createTextureFromPath(const char* path)
+{
+    SDL_Surface* image = IMG_Load(path);
+
     if (image == NULL)
     {
         std::cout << IMG_GetError() << std::endl;
     }
-    shipTex = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
 
-    image = IMG_Load("D:/Dokumente/GameDev/Game/img/asteroid_small1.png");
-    asteroidTexSmall = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
-
-    image = IMG_Load("D:/Dokumente/GameDev/Game/img/asteroid_medium1.png");
-    asteroidTexMedium = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
-
-    image = IMG_Load("D:/Dokumente/GameDev/Game/img/shot.png");
-    shotTex = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
-
-    image = IMG_Load("D:/Dokumente/GameDev/Game/img/bomb.png");
-    bombTex = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
-
-    font = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 20);
-    fontHuge = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 120);
+    return texture;
 }
 
 void Game::initMenu()
@@ -196,12 +193,12 @@ void Game::initUI()
 
 #pragma endregion
 
-void Game::handleEvents()
+void Game::HandleEvents()
 {
     MyInputHandler.handleInput(isRunning);
 }
 
-void Game::update()
+void Game::Update()
 {
     float deltaTime = calculateDeltaTime();
 
@@ -321,7 +318,7 @@ void Game::update()
                     if (score % BOMB_SPAWN_ON_SCORE == 0)
                     {
                         SDL_FPoint asteroidMidPos = asteroidIt->getMidPos();
-                        Bomb bomb = Bomb(asteroidMidPos.x, asteroidMidPos.y, getRandomVelocity(0.0f, 0.5f));
+                        Bomb bomb = Bomb((int)asteroidMidPos.x, (int)asteroidMidPos.y, getRandomVelocity(0.0f, 0.5f));
                         Bombs.push_back(bomb);
                     }
 
@@ -399,11 +396,11 @@ void Game::update()
         colObjects.push_back(*bombIterator);
     };
 
-    gameBackground.update(colObjects, deltaTime);
+    gameBackground.Update(colObjects, deltaTime);
 
-    if (deltaTime != 0)
+    if (deltaTime > 0)
     {
-        FPS = 1 / deltaTime;
+        float FPS = 1 / deltaTime;
         if (FPSVector.size() >= 10)
         {
             FPSVector.insert(FPSVector.begin(), FPS);
@@ -414,16 +411,12 @@ void Game::update()
             FPSVector.insert(FPSVector.begin(), FPS);
         }
     }
-    else
-    {
-        FPS = 0;
-    }
 
-    int averageFPS;
+    float averageFPS;
     if (!FPSVector.empty())
     {
-        auto count = (float)(FPSVector.size());
-        averageFPS = std::reduce(FPSVector.begin(), FPSVector.end()) / count;
+        int count = (int)(FPSVector.size());
+        averageFPS = std::reduce(FPSVector.begin(), FPSVector.end()) / (float)count;
     }
     else
     {
@@ -431,7 +424,7 @@ void Game::update()
     }
 
     UIScore->update(score, renderer);
-    UIFPS->update(averageFPS, renderer);
+    UIFPS->update((int)averageFPS, renderer);
     UILives->update(life - 1, renderer);
     UIBomb->update(ship.getCollectedBombsSize(), renderer);
 }
@@ -485,7 +478,7 @@ bool Game::updateGameState()
     return gameState == GameState::STATE_IN_GAME;
 }
 
-void Game::render()
+void Game::Render()
 {
     if (gameState == GameState::STATE_IN_MENU || gameState == GameState::STATE_RESET)
     {
@@ -499,7 +492,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &playArea);
 
-    gameBackground.render(renderer);
+    gameBackground.Render(renderer);
 
 
     for (Bomb &bomb : Bombs)
@@ -537,7 +530,7 @@ void Game::render()
     SDL_RenderPresent(renderer);
 }
 
-void Game::clean()
+void Game::Clean()
 {
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
@@ -548,7 +541,7 @@ void Game::clean()
     std::cout << "Game Cleaned" << std::endl;
 }
 
-void Game::reset()
+void Game::Reset()
 {
     GameObject::resetId();
     Asteroid::asteroids.clear();
@@ -574,7 +567,7 @@ void Game::reset()
     gameState = GameState::STATE_IN_GAME;
 }
 
-void Game::printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)
+void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)
 {
     if (showUpdateTime)
         std::cout << "Update Time: " << updateTime << " ";

@@ -17,99 +17,99 @@
 class Game
 {
 public:
-    Game();
-    ~Game();
-    void init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
-    void handleEvents();
-    void update();
-    void render();
-    void clean();
-    void reset();
-    GameState gameState = GameState::STATE_IN_MENU;
+	Game();
+	~Game();
+	void Init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
+	void HandleEvents();
+	void Update();
+	void Render();
+	void Clean();
+	void Reset();
+	GameState gameState = GameState::STATE_IN_MENU;
 
-    void printPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
+	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 
-    std::list<Bomb> Bombs;
+	std::list<Bomb> Bombs;
 
-    bool getIsRunning() const { return isRunning; }
+	bool GetIsRunning() const { return isRunning; }
 
 private:
-    bool isRunning;
-    // Game window values
-    int windowWidth;
-    int windowHeight;
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    void initWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen);
+	bool isRunning;
+	// Game window values
+	int windowWidth;
+	int windowHeight;
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+	void InitWindow(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
 
-    // Control values
-    void initInputDevices();
-    InputHandler MyInputHandler;
+	// Control values
+	void InitInputDevices();
+	InputHandler MyInputHandler;
 
-    // Texture values
-    SDL_Texture *shipTex;
-    SDL_Texture *asteroidTexSmall;
-    SDL_Texture *asteroidTexMedium;
-    SDL_Texture *shotTex;
-    SDL_Texture *bombTex;
-    TTF_Font *font;
-    TTF_Font *fontHuge;
+	// Texture values
+	SDL_Texture* shipTex;
+	SDL_Texture* asteroidTexSmall;
+	SDL_Texture* asteroidTexMedium;
+	SDL_Texture* shotTex;
+	SDL_Texture* bombTex;
+	TTF_Font* font;
+	TTF_Font* fontHuge;
 
-    void initTextures();
+	void initTextures();
+	SDL_Texture* Game::createTextureFromPath(const const char* path);
 
-    // Main menu values
-    GameSave myGameSave;
-    GameMenu myGameMenu;
+	// Main menu values
+	GameSave myGameSave;
+	GameMenu myGameMenu;
 
-    void initMenu();
+	void initMenu();
 
-    // Gameplay values
-    Ship ship;
-    Background gameBackground;
-    std::list<GameObject> colObjects;
+	// Gameplay values
+	Ship ship;
+	Background gameBackground;
+	std::list<GameObject> colObjects;
 
-    void initGameplay();
+	void initGameplay();
 
-    int score;
-    int life;
-    int bombCount;
-    int FPS;
+	int score;
+	int life;
+	int bombCount;
 
-    /// Values for wave spwan system
-    float timeSinceLastAsteroidWave = 0;
-    int asteroidWave = 1;
+	/// Values for wave spwan system
+	float timeSinceLastAsteroidWave = 0;
+	int asteroidWave = 1;
 
-    /// Interaction values
-    bool newClick = true;
-    bool newPausePress = true;
-    bool gameIsPaused = false;
-    bool newBombIgnition = true;
+	/// Interaction values
+	bool newClick = true;
+	bool newPausePress = true;
+	bool gameIsPaused = false;
+	bool newBombIgnition = true;
 
-    // UI values
-    class UICounter *UIScore;
-    class UICounter *UILives;
-    class UICounter *UIBomb;
-    class UICounter *UIFPS;
-    class ShotMeter *shotMeter; // Alternative shot meter rendered below ship
+	// UI values
+	class UICounter* UIScore;
+	class UICounter* UILives;
+	class UICounter* UIBomb;
+	class UICounter* UIFPS;
+	class ShotMeter* shotMeter; // Alternative shot meter rendered below ship
 
-    void initUI();
+	void initUI();
 
-    // deltaTime calculation
-    Uint32 lastUpdateTime;
+	// deltaTime calculation
+	Uint32 lastUpdateTime;
 
-    // Performance values
-    bool showUpdateTime = false;
-    bool showRenderTime = false;
-    bool showLoopTime = false;
-    bool showFrameTime = false;
-    bool showFPS = false;
+	// Performance values
+	bool showUpdateTime = false;
+	bool showRenderTime = false;
+	bool showLoopTime = false;
+	bool showFrameTime = false;
+	bool showFPS = false;
 
-    std::vector<int> FPSVector;
+	std::vector<float> FPSVector;
 
-    //
-    // Update
-    //
+	//
+	// Update
+	//
 
-    float calculateDeltaTime();
-    bool updateGameState();
+	float calculateDeltaTime();
+	bool updateGameState();
 };

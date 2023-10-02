@@ -1,28 +1,28 @@
 #include "game.hpp"
 #include "gamesave.hpp"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	const int TargetFPS = 1000;
 	const float frameCapTime = 1000.0f / TargetFPS;
 
 	Game game;
 
-	game.init("Asteroid Game Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
+	game.Init("Asteroid Game Project", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
 
-	while (game.getIsRunning())
+	while (game.GetIsRunning())
 	{
 		if (game.gameState == GameState::STATE_RESET)
 		{
-			game.reset();
+			game.Reset();
 		}
 		else
 		{
 			Uint32 frameStart = SDL_GetTicks();
-			game.handleEvents();
-			game.update();
+			game.HandleEvents();
+			game.Update();
 			Uint32 updateTime = SDL_GetTicks() - frameStart;
-			game.render();
+			game.Render();
 			Uint32 renderTime = SDL_GetTicks() - updateTime - frameStart;
 			Uint32 loopTime = SDL_GetTicks() - frameStart;
 
@@ -33,11 +33,11 @@ int main(int argc, char *argv[])
 
 			Uint32 frameTime = SDL_GetTicks() - frameStart;
 
-			game.printPerformanceInfo(updateTime, renderTime, loopTime, frameTime);
+			game.PrintPerformanceInfo(updateTime, renderTime, loopTime, frameTime);
 		}
 	};
 
-	game.clean();
+	game.Clean();
 
 	return 0;
 }

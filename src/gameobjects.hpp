@@ -75,11 +75,11 @@ private:
     void updateAnimation(const InputHandler &MyInputHandler, float deltaTime);
 
     // Shooting values
-    float shotVelocity = 1000;
+    float shotVelocity = 1000.f;
     float shotCounter = 0.0f;
-    float shotCounterDecay = 150.0;
+    float shotCounterDecay = 150.0f;
     float maxShotCounter = 1000.0f;
-    float shipCooldownThreshold = maxShotCounter / 2;
+    float shipCooldownThreshold = maxShotCounter / 2.f;
 
     bool canShoot = true; // will set to false during respawn
     Uint32 timeLastShot;
@@ -106,16 +106,16 @@ private:
     void renderShip(SDL_Renderer *renderer, SDL_Texture *shipTex);
 
     // collision values
-    float sizeToCollisonRadiusRatio = 0.6;
+    float sizeToCollisonRadiusRatio = 0.6f;
 
 public:
     float getMaxVelocity() { return velocityMax; };
-    int getShotCounter() { return shotCounter; };
-    int getMaxShotCounter() { return maxShotCounter; };
+    float getShotCounter() { return shotCounter; };
+    float getMaxShotCounter() { return maxShotCounter; };
     bool getCanShoot() { return canShoot; };
     float getShotVelocity() { return shotVelocity; };
     void collectBomb(class Bomb *bomb);
-    int getCollectedBombsSize() { return collectedBombs.size(); };
+    int getCollectedBombsSize() { return (int)collectedBombs.size(); };
 };
 
 enum class AsteroidSizeType
