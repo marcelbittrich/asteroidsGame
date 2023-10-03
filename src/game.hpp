@@ -56,7 +56,7 @@ private:
 	TTF_Font* fontHuge;
 
 	void initTextures();
-	SDL_Texture* Game::createTextureFromPath(const const char* path);
+	SDL_Texture* createTextureFromPath(const const char* path);
 
 	// Main menu values
 	GameSave myGameSave;

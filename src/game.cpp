@@ -171,7 +171,7 @@ void Game::initGameplay()
 {
     gameBackground = Background(windowWidth, windowHeight);
 
-    ship = Ship(windowWidth / 2, windowHeight / 2, 50);
+    ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
     colObjects.push_back(ship);
     initAsteroids(ship, windowWidth, windowHeight);
 
@@ -196,6 +196,91 @@ void Game::initUI()
 void Game::HandleEvents()
 {
     MyInputHandler.handleInput(isRunning);
+
+
+    // Collision Asteroid Asteroid
+    for (Asteroid& asteroid : Asteroid::asteroids)
+    {
+        if (doesCollide(ship, asteroid))
+        {
+            if (--life == 0)
+            {
+                break;
+            }
+            ship.respawn(renderer);
+            asteroidWave = 1;
+        }
+
+        for (Asteroid& asteroid2 : Asteroid::asteroids)
+        {
+            // std::cout << "Kombination: " << i << ", " << j << std::endl;
+            if (&asteroid != &asteroid2)
+            {
+                asteroidsCollide(asteroid, asteroid2);
+            }
+        }
+    }
+
+    // Collision Ship Asteroids
+    for (Bomb& bomb : Bombs)
+    {
+        if (!bomb.isExploding && doesCollide(ship, bomb))
+        {
+            ship.collectBomb(&bomb);
+        }
+    }
+
+    // Collisions Bomb Asteroid
+    for (Bomb& bomb : Bombs)
+    {
+        if (bomb.isExploding)
+        {
+            for (auto asteroidIt = Asteroid::asteroids.begin(); asteroidIt != Asteroid::asteroids.end(); )
+            {
+                // std::cout << "Bomb colRadius: " << bomb->colRadius << std::endl;
+                if (doesCollide(bomb, *asteroidIt))
+                {
+                    asteroidIt = Asteroid::asteroids.erase(asteroidIt);
+                }
+                else
+                {
+                    asteroidIt++;
+                }
+
+            }
+        }
+    }
+
+    //
+    // DESTROY ALL DEAD STUFF
+    //
+
+    // Shots
+    for (auto shotIt = Shot::shots.begin(); shotIt != Shot::shots.end(); )
+    {
+        if (shotIt->getIsDead())
+        {
+            shotIt = Shot::shots.erase(shotIt);
+        }
+        else
+        {
+            shotIt++;
+        }
+    }
+
+    // Bombs
+    for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end();)
+    {
+        Bomb bomb = *bombIterator;
+        if (bomb.isDead)
+        {
+            bombIterator = Bombs.erase(bombIterator);
+        }
+        else
+        {
+            bombIterator++;
+        }
+    }
 }
 
 void Game::Update()
@@ -222,41 +307,12 @@ void Game::Update()
         newClick = true;
     }
 
-    // Update Ship
+
     ship.update(MyInputHandler, windowWidth, windowHeight, deltaTime);
 
-    // Update Asteroid Position and check for collisions
-    for (Asteroid &asteroid : Asteroid::asteroids)
+    for (Asteroid& asteroid : Asteroid::asteroids)
     {
         asteroid.update(windowWidth, windowHeight, deltaTime);
-
-        if (doesCollide(ship, asteroid))
-        {
-            if (--life == 0)
-            {
-                break;
-            }
-            ship.respawn(renderer);
-            asteroidWave = 1;
-        }
-
-        for (Asteroid &asteroid2 : Asteroid::asteroids)
-        {
-            // std::cout << "Kombination: " << i << ", " << j << std::endl;
-            if (&asteroid != &asteroid2)
-            {
-                asteroidsCollide(asteroid, asteroid2);
-            }
-        }
-    }
-
-    // Check Ship Collision Asteroids
-    for (Bomb &bomb : Bombs)
-    {
-        if (!bomb.isExploding && doesCollide(ship, bomb))
-        {
-            ship.collectBomb(&bomb);
-        }
     }
 
     // Spawn New Asteroids
@@ -284,19 +340,9 @@ void Game::Update()
     // shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
 
     // Update Shots
-    for (Shot &Shot : Shot::shots)
+    for (Shot& Shot : Shot::shots)
     {
         Shot.update(windowWidth, windowHeight, deltaTime);
-    }
-
-    // Destroy Shots
-    if (!Shot::shots.empty())
-    {
-        auto firstShot = Shot::shots.begin();
-        if (shotIsToOld(*firstShot))
-        {
-            Shot::shots.erase(firstShot);
-        }
     }
 
     auto it = Shot::shots.begin();
@@ -344,57 +390,18 @@ void Game::Update()
     }
 
     // Update Bombs
-    for (Bomb &bomb : Bombs)
+    for (Bomb& bomb : Bombs)
     {
         bomb.update(windowWidth, windowHeight, deltaTime, &ship);
-
-        if (bomb.isExploding)
-        {
-            bool hit = false;
-            auto asteroidIt = Asteroid::asteroids.begin();
-            while (asteroidIt != Asteroid::asteroids.end())
-            {
-                // std::cout << "Bomb colRadius: " << bomb->colRadius << std::endl;
-                if (doesCollide(bomb, *asteroidIt))
-                {
-                    hit = true;
-                    asteroidIt = Asteroid::asteroids.erase(asteroidIt);
-                }
-                else
-                {
-                    hit = false;
-                }
-                if (!hit)
-                    asteroidIt++;
-            }
-        }
     }
 
-    // Destoy Bombs
-
-    for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end();)
-    {
-        Bomb bomb = *bombIterator;
-        if (bomb.isDead)
-        {
-            bombIterator = Bombs.erase(bombIterator);
-        }
-        else
-        {
-            bombIterator++;
-        }
-    }
 
     // Fill colObjects vector
     colObjects.clear();
     colObjects.push_back(ship);
     colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end());
     colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
-
-    for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end(); bombIterator++)
-    {
-        colObjects.push_back(*bombIterator);
-    };
+    colObjects.insert(colObjects.end(), Bombs.begin(), Bombs.end());
 
     gameBackground.Update(colObjects, deltaTime);
 
@@ -505,13 +512,12 @@ void Game::Render()
         asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
     }
 
-    for (auto it = Shot::shots.begin(); it != Shot::shots.end(); it++)
+    for (Shot &shot : Shot::shots)
     {
-        it->render(renderer, shotTex);
+        shot.render(renderer, shotTex);
     }
 
-    ship.render(renderer, shipTex);
-
+    ship.render(renderer);
     UIScore->render(renderer);
     UILives->render(renderer);
     UIBomb->render(renderer);
@@ -557,7 +563,7 @@ void Game::Reset()
     life = 3;
     bombCount = 0;
 
-    ship = Ship(windowWidth / 2, windowHeight / 2, 50);
+    ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
     colObjects.push_back(ship);
 
     initAsteroids(ship, windowWidth, windowHeight);

@@ -12,33 +12,48 @@
 class GameObject
 {
 public:
-    GameObject() : id(newId++){};
-    static void resetId() { newId = 1; };
+    GameObject() : id(s_NewId++){};
+    static void resetId() { s_NewId = 1; };
 
     virtual void update(){};
     virtual void render(){};
 
+    enum class Type {
+        Default,
+        Ship,
+        AsteroidSmall,
+        AsteroidMedium,
+        Bomb,
+        Shot
+    };
+    
+    Type objectType = Type::Default;
+
 protected:
-    int id;
-    int width;
-    int height;
-    float colRadius;
-    bool isVisible = true; // indicator, false during respawn
+
+    int id = -1;
+    int width = 0;
+    int height = 0;
+    float colRadius = 0;
+    bool isVisible = true; // Indicator, false during respawn.
+    bool isDead = false;  // Can be destroyed.
 
     SDL_FPoint velocity = {0, 0};
     SDL_FPoint midPos = {0, 0};
 
-    SDL_Rect getRenderRect();
+    SDL_Texture* m_texture = nullptr;
+    SDL_Rect getRenderRect() const;
 
 private:
-    static int newId;
+    inline static int s_NewId = 0;
 
 public:
     int getID() const { return id; };
     int getWidth() const { return width; };
     int getHeight() const { return height; };
     float getColRadius() const { return colRadius; };
-    bool getVisibility() const { return isVisible; }
+    bool getVisibility() const { return isVisible; };
+    bool getIsDead() const { return isDead; };
     SDL_FPoint getMidPos() const { return midPos; };
     SDL_FPoint getVelocity() const { return velocity; };
 
@@ -51,13 +66,12 @@ class Ship : public GameObject
 {
 public:
     Ship();
-    Ship(int midPosX, int midPosY, int size);
+    Ship(int midPosX, int midPosY, int size, SDL_Texture* texture);
 
     void update(const InputHandler &MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
-    void render(SDL_Renderer *renderer, SDL_Texture *shipTex);
+    void render(SDL_Renderer *renderer);
     void reset(SDL_Renderer *renderer);
     void respawn(SDL_Renderer *renderer);
-
 private:
     // Update shooting capability and ship visibility.
     // Ship is not visible during respawn.
@@ -82,7 +96,7 @@ private:
     float shipCooldownThreshold = maxShotCounter / 2.f;
 
     bool canShoot = true; // will set to false during respawn
-    Uint32 timeLastShot;
+    Uint32 timeLastShot = 0;
     Uint32 timeBetweenShots = 250;
     void shoot();
     void createShot();
@@ -91,7 +105,7 @@ private:
     std::list<class Bomb *> collectedBombs;
 
     bool canBomb = true; // will set to false during respawn
-    Uint32 timeLastBomb;
+    Uint32 timeLastBomb = 0;
     Uint32 timeBetweenBombs = 250;
     void useBomb();
 
@@ -101,9 +115,9 @@ private:
     int spriteCount = 3;  // Number of different sprites in texture
     int animationCounter; // Used to select sprite
     unsigned timeBetweenSprites = 300;
-    Uint32 timeLastUpdated;
+    Uint32 timeLastUpdated = 0;
     void renderShotMeter(SDL_Renderer *renderer);
-    void renderShip(SDL_Renderer *renderer, SDL_Texture *shipTex);
+    void renderShip(SDL_Renderer *renderer);
 
     // collision values
     float sizeToCollisonRadiusRatio = 0.6f;
@@ -151,17 +165,14 @@ public:
     void update(int windowWidth, int windowHeight, float deltaTime);
     void render(SDL_Renderer *renderer, SDL_Texture *shotTex);
 
-private:
-    int life;
-    float vAngle = 0;
-
-public:
     static std::list<Shot> shots;
-
+private:
     Uint32 creationTime;
-};
+    Uint32 maxLifeTime = 1000;
+    bool TooOld();
 
-bool shotIsToOld(Shot shot);
+    float vAngle = 0;
+};
 
 class Bomb : public GameObject
 {
