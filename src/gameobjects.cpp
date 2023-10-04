@@ -31,8 +31,6 @@ Ship::Ship(int midPosX, int midPosY, int size, SDL_Texture* texture)
 	timeLastShot = SDL_GetTicks();
 	timeLastBomb = SDL_GetTicks();
 
-	m_texture = texture;
-
 	objectType = Type::Ship;
 }
 
@@ -178,7 +176,7 @@ void Ship::useBomb()
 
 void Ship::render(SDL_Renderer* renderer)
 {
-	assert(renderer && m_texture);
+	assert(renderer && s_texture);
 
 	renderShotMeter(renderer);
 	renderShip(renderer);
@@ -217,13 +215,13 @@ void Ship::renderShip(SDL_Renderer* renderer)
 		float timeStepSize = 0.25f;
 		int stepValue = floor(timeNotVisible / timeStepSize);
 		if (stepValue % 2 == 0)
-			SDL_SetTextureColorMod(m_texture, 100, 100, 100);
+			SDL_SetTextureColorMod(s_texture, 100, 100, 100);
 		else
-			SDL_SetTextureColorMod(m_texture, 255, 255, 255);
+			SDL_SetTextureColorMod(s_texture, 255, 255, 255);
 	}
 	else
 	{
-		SDL_SetTextureColorMod(m_texture, 255, 255, 255);
+		SDL_SetTextureColorMod(s_texture, 255, 255, 255);
 	}
 
 	int currentSpriteStart = spriteWidth * animationCounter;
@@ -233,7 +231,7 @@ void Ship::renderShip(SDL_Renderer* renderer)
 				  spriteHeight };
 	SDL_Rect destR = getRenderRect();
 
-	SDL_RenderCopyEx(renderer, m_texture, &srcR, &destR, rotation, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, s_texture, &srcR, &destR, rotation, NULL, SDL_FLIP_NONE);
 }
 
 void Ship::collectBomb(Bomb* bomb)
@@ -332,16 +330,16 @@ void Asteroid::update(int windowWidth, int windowHeight, float deltaTime)
 	midPos = newMidPosistion;
 }
 
-void Asteroid::render(SDL_Renderer* renderer, SDL_Texture* asteroidTexSmall, SDL_Texture* asteroidTexMedium)
+void Asteroid::render(SDL_Renderer* renderer)
 {
 	SDL_Texture* asteroidTex = nullptr;
 	if (sizeType == AsteroidSizeType::Medium)
 	{
-		asteroidTex = asteroidTexMedium;
+		asteroidTex = s_textureMedium;
 	}
 	else if (sizeType == AsteroidSizeType::Small)
 	{
-		asteroidTex = asteroidTexSmall;
+		asteroidTex = s_textureSmall;
 	}
 	else
 	{
@@ -530,10 +528,10 @@ void Shot::update(int windowWidth, int windowHeight, float deltaTime)
 	}
 }
 
-void Shot::render(SDL_Renderer* renderer, SDL_Texture* shotTex)
+void Shot::render(SDL_Renderer* renderer)
 {
 	SDL_Rect rect = getRenderRect();
-	SDL_RenderCopyEx(renderer, shotTex, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, s_texture, NULL, &rect, vAngle, NULL, SDL_FLIP_NONE);
 }
 
 bool Shot::TooOld()
@@ -661,12 +659,12 @@ void Bomb::update(int windowWidth, int windowHeight, float deltaTime, Ship* ship
 	}
 }
 
-void Bomb::render(SDL_Renderer* renderer, SDL_Texture* bombTex)
+void Bomb::render(SDL_Renderer* renderer)
 {
 	if (isVisible)
 	{
 		SDL_Rect rect = getRenderRect();
-		SDL_RenderCopyEx(renderer, bombTex, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(renderer, s_texture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
 	}
 }
 

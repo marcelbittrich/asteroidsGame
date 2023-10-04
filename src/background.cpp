@@ -94,7 +94,7 @@ Background::Background(int windowWidth, int windowHeight)
 	//std::cout << "Size of whole Background: " << sizeof(*this) << std::endl;
 }
 
-void Background::Update(const std::list<GameObject>& colObjects, float deltaTime)
+void Background::Update(const std::list<GameObject>& gameObjects, float deltaTime)
 {
 
 #define NO_MT 0
@@ -143,7 +143,7 @@ void Background::Update(const std::list<GameObject>& colObjects, float deltaTime
 	}
 
 #else
-	for (const GameObject& object : colObjects)
+	for (const GameObject& object : gameObjects)
 	{
 		if (object.getVisibility())
 		{

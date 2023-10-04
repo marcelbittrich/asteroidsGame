@@ -67,7 +67,8 @@ private:
 	// Gameplay values
 	Ship ship;
 	Background gameBackground;
-	std::list<GameObject> colObjects;
+	std::list<GameObject> gameObjects;
+	std::list<GameObject*> gameObjectPtrs;
 
 	void initGameplay();
 

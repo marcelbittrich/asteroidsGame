@@ -21,7 +21,7 @@ class Background
 public:
 	Background();
 	Background(int windowWidth, int windowHeight);
-	void Update(const std::list<class GameObject>& colObjects, float deltaTime);
+	void Update(const std::list<class GameObject>& gameObjects, float deltaTime);
 	void Render(SDL_Renderer* renderer);
 
 private:

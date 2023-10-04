@@ -22,12 +22,12 @@
 namespace fs = std::filesystem;
 
 // Gameplay parameters
-int STARTING_LIVES = 3;
-int STARTING_BOMB_COUNT = 0;
+const int STARTING_LIVES = 3;
+const int STARTING_BOMB_COUNT = 0;
 // One in ... for dropping a bomb when destroing astroids.
-int BOMB_SPAWN_ON_SCORE = 50;
-float ASTEROID_SPAWN_DELTATIME = 3.0f;
-float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
+const int BOMB_SPAWN_ON_SCORE = 50;
+const float ASTEROID_SPAWN_DELTATIME = 3.0f;
+const float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
 
 Game::Game()
 {
@@ -137,10 +137,15 @@ void Game::initTextures()
     std::cout << "Current path is " << fs::current_path() << '\n';
 
     shipTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/ship_thrustanimation.png");
+    Ship::setTexture(shipTex);
     asteroidTexSmall = createTextureFromPath("D:/Dokumente/GameDev/Game/img/asteroid_small1.png");
+    Asteroid::setTextureSmall(asteroidTexSmall);
     asteroidTexMedium = createTextureFromPath("D:/Dokumente/GameDev/Game/img/asteroid_medium1.png");
+    Asteroid::setTextureMedium(asteroidTexMedium);
     shotTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/shot.png");
+    Shot::setTexture(shotTex);
     bombTex = createTextureFromPath("D:/Dokumente/GameDev/Game/img/bomb.png");
+    Bomb::setTexture(bombTex);
 
     font = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 20);
     fontHuge = TTF_OpenFont("D:/Dokumente/GameDev/Game/font/joystix_monospace.ttf", 120);
@@ -172,7 +177,7 @@ void Game::initGameplay()
     gameBackground = Background(windowWidth, windowHeight);
 
     ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
-    colObjects.push_back(ship);
+    gameObjects.push_back(ship);
     initAsteroids(ship, windowWidth, windowHeight);
 
     score = 0;
@@ -320,16 +325,16 @@ void Game::Update()
     if (timeSinceLastAsteroidWave >= ASTEROID_SPAWN_DELTATIME)
     {
         std::cout << "Spawn small ";
-        SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), colObjects);
+        SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), gameObjects);
         SDL_FPoint randomVelocity1 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-        spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, colObjects);
+        spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, gameObjects);
 
         if (asteroidWave % 3 == 0)
         {
             std::cout << "and large ";
-            SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), colObjects);
+            SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), gameObjects);
             SDL_FPoint randomVelocity2 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-            spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, colObjects);
+            spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, gameObjects);
         }
         std::cout << "asteroid" << std::endl;
         timeSinceLastAsteroidWave = 0;
@@ -397,13 +402,13 @@ void Game::Update()
 
 
     // Fill colObjects vector
-    colObjects.clear();
-    colObjects.push_back(ship);
-    colObjects.insert(colObjects.end(), Shot::shots.begin(), Shot::shots.end());
-    colObjects.insert(colObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
-    colObjects.insert(colObjects.end(), Bombs.begin(), Bombs.end());
+    gameObjects.clear();
+    gameObjects.push_back(ship);
+    gameObjects.insert(gameObjects.end(), Shot::shots.begin(), Shot::shots.end());
+    gameObjects.insert(gameObjects.end(), Asteroid::asteroids.begin(), Asteroid::asteroids.end());
+    gameObjects.insert(gameObjects.end(), Bombs.begin(), Bombs.end());
 
-    gameBackground.Update(colObjects, deltaTime);
+    gameBackground.Update(gameObjects, deltaTime);
 
     if (deltaTime > 0)
     {
@@ -501,23 +506,35 @@ void Game::Render()
 
     gameBackground.Render(renderer);
 
+    //ship.render(renderer);
+    gameObjectPtrs.push_back(&ship);
 
     for (Bomb &bomb : Bombs)
     {
-        bomb.render(renderer, bombTex);
+        //bomb.render(renderer);
+        gameObjectPtrs.push_back(&bomb);
     }
 
     for (Asteroid &asteroid : Asteroid::asteroids)
     {
-        asteroid.render(renderer, asteroidTexSmall, asteroidTexMedium);
+        //asteroid.render(renderer);
+        gameObjectPtrs.push_back(&asteroid);
     }
 
     for (Shot &shot : Shot::shots)
     {
-        shot.render(renderer, shotTex);
+        //shot.render(renderer);
+        gameObjectPtrs.push_back(&shot);
     }
 
-    ship.render(renderer);
+    for (auto objectIt = gameObjectPtrs.begin(); objectIt != gameObjectPtrs.end(); objectIt++)
+    {
+        (*objectIt)->render(renderer);
+    }
+
+    gameObjectPtrs.clear();
+
+
     UIScore->render(renderer);
     UILives->render(renderer);
     UIBomb->render(renderer);
@@ -554,7 +571,7 @@ void Game::Reset()
     Shot::shots.clear();
     Bombs.clear();
 
-    colObjects.clear();
+    gameObjects.clear();
 
     timeSinceLastAsteroidWave = 0;
     asteroidWave = 1;
@@ -564,7 +581,7 @@ void Game::Reset()
     bombCount = 0;
 
     ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
-    colObjects.push_back(ship);
+    gameObjects.push_back(ship);
 
     initAsteroids(ship, windowWidth, windowHeight);
 
