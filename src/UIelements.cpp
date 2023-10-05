@@ -2,12 +2,12 @@
 
 int UIElement::newId = 0;
 
-ShotMeter::ShotMeter(const Ship& ship, int xOffset, int yOffset, int width, int height)
+ShotMeter::ShotMeter(const Ship& ship, int xOffset, int yOffset, int m_width, int m_height)
 {
 	this->xOffset = xOffset;
 	this->yOffset = yOffset;
-	position.w = width;
-	position.h = height;
+	position.w = m_width;
+	position.h = m_height;
 
 	reconstruct(position, ship);
 }

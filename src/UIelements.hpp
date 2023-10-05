@@ -13,11 +13,11 @@ class UIElement
 protected:
     static int newId;
     SDL_Rect position;
-    bool isVisible = true;
+    bool m_isVisible = true;
 
 public:
-    int id;
-    UIElement() : id(newId++){};
+    int m_id;
+    UIElement() : m_id(newId++){};
 };
 
 class ShotMeter : public UIElement
@@ -31,7 +31,7 @@ private:
 
 public:
     ShotMeter(){};
-    ShotMeter(const Ship &ship, int xOffset, int yOffset, int width, int height);
+    ShotMeter(const Ship &ship, int xOffset, int yOffset, int m_width, int m_height);
     void update(int shotCounter, int maxShotCounter, const Ship &ship);
     void render(SDL_Renderer *renderer, bool canShoot);
 };

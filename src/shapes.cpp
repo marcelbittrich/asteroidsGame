@@ -36,11 +36,11 @@ void drawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 	}
 }
 
-void drawTriangle(SDL_Renderer* renderer, float x0, float y0, float width, float height, float angle, SDL_Color color)
+void drawTriangle(SDL_Renderer* renderer, float x0, float y0, float m_width, float m_height, float angle, SDL_Color color)
 {
 
-	float borderLine = SDL_sqrtf((width / 2) * (width / 2) + height * height);
-	float anglePoint = SDL_acosf(height / borderLine);
+	float borderLine = SDL_sqrtf((m_width / 2) * (m_width / 2) + m_height * m_height);
+	float anglePoint = SDL_acosf(m_height / borderLine);
 
 	SDL_FPoint peakPoint = { x0, y0 };
 	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-angle / 180.0 * 3.1415 + anglePoint), y0 + borderLine * SDL_cosf(-angle / 180.0 * 3.1415 + anglePoint) };

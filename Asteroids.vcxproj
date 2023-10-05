@@ -152,6 +152,7 @@
     <ClInclude Include="src\menu.hpp" />
     <ClInclude Include="src\shapes.hpp" />
     <ClInclude Include="src\UIelements.hpp" />
+    <ClInclude Include="src\vector2.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

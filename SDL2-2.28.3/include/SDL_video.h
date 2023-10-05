@@ -831,7 +831,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowID(SDL_Window * window);
  *
  * \sa SDL_GetWindowID
  */
-extern DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromID(Uint32 id);
+extern DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromID(Uint32 m_id);
 
 /**
  * Get the window flags.

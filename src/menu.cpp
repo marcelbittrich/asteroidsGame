@@ -3,10 +3,10 @@
 #include "game.hpp"
 #include "gamestate.hpp"
 
-GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int width, int height)
+GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int m_width, int m_height)
 {
-	this->width = width;
-	this->height = height;
+	this->m_width = m_width;
+	this->m_height = m_height;
 	this->font = font;
 	this->fontHuge = fontHuge;
 	this->renderer = renderer;
@@ -17,24 +17,24 @@ GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, i
 	gameOverTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverTextSurface);
 	SDL_FreeSurface(gameOverTextSurface);
 	SDL_QueryTexture(gameOverTextTexture, NULL, NULL, &gameOverTextRect.w, &gameOverTextRect.h);
-	gameOverTextRect.x = width / 2 - gameOverTextRect.w / 2;
+	gameOverTextRect.x = m_width / 2 - gameOverTextRect.w / 2;
 	gameOverTextRect.y = 100;
 
 	SDL_Surface* startScreenTextSurface = TTF_RenderText_Solid(fontHuge, "Asteroid", color);
 	startScreenTextTexture = SDL_CreateTextureFromSurface(renderer, startScreenTextSurface);
 	SDL_FreeSurface(startScreenTextSurface);
 	SDL_QueryTexture(startScreenTextTexture, NULL, NULL, &startScreenTextRect.w, &startScreenTextRect.h);
-	startScreenTextRect.x = width / 2 - startScreenTextRect.w / 2;
+	startScreenTextRect.x = m_width / 2 - startScreenTextRect.w / 2;
 	startScreenTextRect.y = 100;
 
 	SDL_Surface* controlInstructionsTextSurface = TTF_RenderText_Solid(font, "Move - Arrows, Shoot - Space, Bomb - Ctrl", color);
 	controlInstructionsTextTexture = SDL_CreateTextureFromSurface(renderer, controlInstructionsTextSurface);
 	SDL_FreeSurface(controlInstructionsTextSurface);
 	SDL_QueryTexture(controlInstructionsTextTexture, NULL, NULL, &controlInstructionsTextRect.w, &controlInstructionsTextRect.h);
-	controlInstructionsTextRect.x = width / 2 - controlInstructionsTextRect.w / 2;
+	controlInstructionsTextRect.x = m_width / 2 - controlInstructionsTextRect.w / 2;
 	controlInstructionsTextRect.y = 630;
 
-	startButtonRect = { 50, 400, width - 100, 80 };
+	startButtonRect = { 50, 400, m_width - 100, 80 };
 	SDL_Surface* startButtonSurface = TTF_RenderText_Solid(font, "Start", color);
 	startButtonTexture = SDL_CreateTextureFromSurface(renderer, startButtonSurface);
 	SDL_FreeSurface(startButtonSurface);
@@ -42,7 +42,7 @@ GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, i
 	startButtonTextRect.x = startButtonRect.x + startButtonRect.w / 2 - startButtonTextRect.w / 2;
 	startButtonTextRect.y = startButtonRect.y + startButtonRect.h / 2 - startButtonTextRect.h / 2;
 
-	exitButtonRect = { 50, 500, width - 100, 80 };
+	exitButtonRect = { 50, 500, m_width - 100, 80 };
 	SDL_Surface* exitButtonSurface = TTF_RenderText_Solid(font, "Exit", color);
 	exitButtonTexture = SDL_CreateTextureFromSurface(renderer, exitButtonSurface);
 	SDL_FreeSurface(exitButtonSurface);
@@ -115,7 +115,7 @@ void GameMenu::render()
 		scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
 		SDL_FreeSurface(scoreTextSurface);
 		SDL_QueryTexture(scoreTextTexture, NULL, NULL, &scoreTextRect.w, &scoreTextRect.h);
-		scoreTextRect.x = width / 2 - scoreTextRect.w / 2;
+		scoreTextRect.x = m_width / 2 - scoreTextRect.w / 2;
 		scoreTextRect.y = 300;
 		SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRect);
 		SDL_DestroyTexture(scoreTextTexture);

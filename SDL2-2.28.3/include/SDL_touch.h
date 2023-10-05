@@ -51,7 +51,7 @@ typedef enum
 
 typedef struct SDL_Finger
 {
-    SDL_FingerID id;
+    SDL_FingerID m_id;
     float x;
     float y;
     float pressure;

@@ -419,7 +419,7 @@ extern DECLSPEC SDL_TLSID SDLCALL SDL_TLSCreate(void);
  * \sa SDL_TLSCreate
  * \sa SDL_TLSSet
  */
-extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
+extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID m_id);
 
 /**
  * Set the current thread's value associated with a thread local storage ID.
@@ -444,7 +444,7 @@ extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
  * \sa SDL_TLSCreate
  * \sa SDL_TLSGet
  */
-extern DECLSPEC int SDLCALL SDL_TLSSet(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
+extern DECLSPEC int SDLCALL SDL_TLSSet(SDL_TLSID m_id, const void *value, void (SDLCALL *destructor)(void*));
 
 /**
  * Cleanup all TLS data for this thread.

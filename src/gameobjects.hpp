@@ -8,13 +8,16 @@
 
 #include "inputhandler.hpp"
 #include "shapes.hpp"
+#include "vector2.hpp"
 
 class GameObject
 {
 public:
-	GameObject() : id(s_NewId++) {};
-	static void resetId() { s_NewId = 1; };
+	GameObject() : m_id(s_NewId++) {}
+	GameObject(Vec2 midPos, Vec2 velocity) 
+		: m_id(s_NewId++), m_midPos(midPos), m_velocity(velocity) {}
 
+	static void resetId() { s_NewId = 1; }
 	virtual void update() {};
 	virtual void render(SDL_Renderer* renderer) {};
 
@@ -31,15 +34,15 @@ public:
 
 protected:
 
-	int id = -1;
-	int width = 0;
-	int height = 0;
-	float colRadius = 0;
-	bool isVisible = true; // Indicator, false during respawn.
-	bool isDead = false;  // Can be destroyed.
+	int m_id = -1;
+	int m_width = 0;
+	int m_height = 0;
+	float m_colRadius = 0;
+	bool m_isVisible = true; // Indicator, false during respawn.
+	bool m_isDead = false;  // Can be destroyed.
 
-	SDL_FPoint velocity = { 0, 0 };
-	SDL_FPoint midPos = { 0, 0 };
+	Vec2 m_midPos;
+	Vec2 m_velocity;
 
 	SDL_Rect getRenderRect() const;
 
@@ -47,25 +50,25 @@ private:
 	inline static int s_NewId = 0;
 
 public:
-	int getID() const { return id; };
-	int getWidth() const { return width; };
-	int getHeight() const { return height; };
-	float getColRadius() const { return colRadius; };
-	bool getVisibility() const { return isVisible; };
-	bool getIsDead() const { return isDead; };
-	SDL_FPoint getMidPos() const { return midPos; };
-	SDL_FPoint getVelocity() const { return velocity; };
+	int getID() const { return m_id; };
+	int getWidth() const { return m_width; };
+	int getHeight() const { return m_height; };
+	float getColRadius() const { return m_colRadius; };
+	bool getVisibility() const { return m_isVisible; };
+	bool getIsDead() const { return m_isDead; };
+	Vec2 getMidPos() const { return m_midPos; };
+	Vec2 getVelocity() const { return m_velocity; };
 
-	void setColRadius(float radius) { colRadius = radius; };
-	void setMidPos(float x, float y) { midPos = { x, y }; };
-	void setVelocity(float x, float y) { velocity = { x, y }; };
+	void setColRadius(float radius) { m_colRadius = radius; };
+	void setMidPos(float x, float y) { m_midPos = { x, y }; };
+	void setVelocity(float x, float y) { m_velocity = { x, y }; };
 };
 
 class Ship : public GameObject
 {
 public:
 	Ship();
-	Ship(int midPosX, int midPosY, int size, SDL_Texture* texture);
+	Ship(Vec2 midPos, int size, SDL_Texture* texture);
 
 	void update(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
 	void render(SDL_Renderer* renderer) override;
@@ -144,20 +147,26 @@ enum class AsteroidSizeType
 class Asteroid : public GameObject
 {
 public:
-	Asteroid(float midPosX, float midPosY, SDL_FPoint velocity, AsteroidSizeType sizeType);
+	Asteroid(Vec2 m_midPos, Vec2 m_velocity, AsteroidSizeType sizeType);
 	void update(int windowWidth, int windowHeight, float deltaTime);
 	void render(SDL_Renderer* renderer) override;
 
 	AsteroidSizeType sizeType;
 
 	static std::list<Asteroid> asteroids;
-	static float getColRadius(int size);
 	static int getSize(AsteroidSizeType sizeType);
+	static float getColRadius(int size);
 
 	static void setTextureSmall(SDL_Texture* texture) { s_textureSmall = texture; }
 	static void setTextureMedium(SDL_Texture* texture) { s_textureMedium = texture; }
 
+	void handleDestruction();
+
 private:
+	const float m_DestAstroidVelFactor = 2.0;
+	inline static const float m_colRadiusFactor = 0.6f;
+	static const int m_sizeSmall = 50;
+	static const int m_sizeMedium = 100;
 	inline static SDL_Texture* s_textureSmall;
 	inline static SDL_Texture* s_textureMedium;
 };
@@ -165,13 +174,13 @@ private:
 // void initShip(int windowWidth, int windowHeight);
 bool doesCollide(const GameObject& firstObject, const GameObject& secondObject);
 void asteroidsCollide(GameObject& firstObject, GameObject& secondObject);
-void handleDestruction(Asteroid destoryedAsteroid);
-void spawnAsteroid(int xPos, int yPos, SDL_FPoint velocity, AsteroidSizeType sizeType, const std::list<GameObject>& gameobjects);
+
+void spawnAsteroid(int xPos, int yPos, Vec2 m_velocity, AsteroidSizeType sizeType, const std::list<GameObject>& gameobjects);
 
 class Shot : public GameObject
 {
 public:
-	Shot(float midPosX, float midPosY, SDL_FPoint velocity, float shotHeadingAngle);
+	Shot(float midPosX, float midPosY, Vec2 m_velocity, float shotHeadingAngle);
 	void update(int windowWidth, int windowHeight, float deltaTime);
 	void render(SDL_Renderer* renderer) override;
 
@@ -191,7 +200,7 @@ private:
 class Bomb : public GameObject
 {
 public:
-	Bomb(int xPos, int yPos, SDL_FPoint velocity);
+	Bomb(int xPos, int yPos, Vec2 m_velocity);
 	static void setTexture(SDL_Texture* texture) { s_texture = texture; }
 
 private:
@@ -205,9 +214,9 @@ public:
 	void render(SDL_Renderer* renderer) override;
 	void getCollect();
 	void explode();
-	bool isDead = false;
+	bool m_isDead = false;
 	bool isExploding = false;
 	bool isCollected = false;
 };
 
-SDL_FPoint calcPosIfLeaving(SDL_FPoint midPos, float radius, int windowWidth, int windowHeight);
+Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHeight);

@@ -11,12 +11,12 @@ class GameMenu
 {
 public:
     GameMenu(){};
-    GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int width, int height);
+    GameMenu(TTF_Font *font, TTF_Font *fontHuge, SDL_Renderer *renderer, int m_width, int m_height);
     void update(bool &isRunning, GameState &gameState, const InputHandler &MyInputHandler);
     void render();
 
 private:
-    int width, height;
+    int m_width, m_height;
     bool showStartScreen = true;
     TTF_Font *font;
     TTF_Font *fontHuge;

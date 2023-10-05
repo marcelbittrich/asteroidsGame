@@ -16,6 +16,7 @@
 #include "game.hpp"
 #include "menu.hpp"
 #include "gamestate.hpp"
+#include "vector2.hpp"
 
 #include <filesystem>
 
@@ -36,9 +37,9 @@ Game::~Game()
 {
 }
 
-void Game::Init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::Init(const char *title, int xpos, int ypos, int m_width, int m_height, bool fullscreen)
 {
-    InitWindow(title, xpos, ypos, width, height, fullscreen);
+    InitWindow(title, xpos, ypos, m_width, m_height, fullscreen);
     InitInputDevices();
 
     MyInputHandler = InputHandler();
@@ -54,7 +55,7 @@ void Game::Init(const char *title, int xpos, int ypos, int width, int height, bo
 
 #pragma region init functions
 
-void Game::InitWindow(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::InitWindow(const char *title, int xpos, int ypos, int m_width, int m_height, bool fullscreen)
 {
     int flags = 0;
     if (fullscreen)
@@ -69,7 +70,7 @@ void Game::InitWindow(const char *title, int xpos, int ypos, int width, int heig
         if (TTF_Init())
             std::cout << "Font System Initialised!...";
 
-        window = SDL_CreateWindow(title, xpos, ypos, width, height, SDL_WINDOW_RESIZABLE);
+        window = SDL_CreateWindow(title, xpos, ypos, m_width, m_height, SDL_WINDOW_RESIZABLE);
         if (window)
         {
             std::cout << "Window created" << std::endl;
@@ -176,7 +177,7 @@ void Game::initGameplay()
 {
     gameBackground = Background(windowWidth, windowHeight);
 
-    ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
+    ship = Ship(Vec2(windowWidth / 2.f, windowHeight / 2.f), 50, shipTex);
     gameObjects.push_back(ship);
     initAsteroids(ship, windowWidth, windowHeight);
 
@@ -277,7 +278,7 @@ void Game::HandleEvents()
     for (auto bombIterator = Bombs.begin(); bombIterator != Bombs.end();)
     {
         Bomb bomb = *bombIterator;
-        if (bomb.isDead)
+        if (bomb.m_isDead)
         {
             bombIterator = Bombs.erase(bombIterator);
         }
@@ -325,15 +326,15 @@ void Game::Update()
     if (timeSinceLastAsteroidWave >= ASTEROID_SPAWN_DELTATIME)
     {
         std::cout << "Spawn small ";
-        SDL_Point randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), gameObjects);
-        SDL_FPoint randomVelocity1 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+        Vec2 randomPos1 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Small)), gameObjects);
+        Vec2 randomVelocity1 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
         spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, AsteroidSizeType::Small, gameObjects);
 
         if (asteroidWave % 3 == 0)
         {
             std::cout << "and large ";
-            SDL_Point randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), gameObjects);
-            SDL_FPoint randomVelocity2 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+            Vec2 randomPos2 = getRandomPosition(windowWidth, windowHeight, Asteroid::getColRadius(Asteroid::getSize(AsteroidSizeType::Medium)), gameObjects);
+            Vec2 randomVelocity2 = getRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
             spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, AsteroidSizeType::Medium, gameObjects);
         }
         std::cout << "asteroid" << std::endl;
@@ -368,7 +369,7 @@ void Game::Update()
                 {
                     if (score % BOMB_SPAWN_ON_SCORE == 0)
                     {
-                        SDL_FPoint asteroidMidPos = asteroidIt->getMidPos();
+                        Vec2 asteroidMidPos = asteroidIt->getMidPos();
                         Bomb bomb = Bomb((int)asteroidMidPos.x, (int)asteroidMidPos.y, getRandomVelocity(0.0f, 0.5f));
                         Bombs.push_back(bomb);
                     }
@@ -379,7 +380,7 @@ void Game::Update()
                 }
                 else if (asteroidIt->sizeType == AsteroidSizeType::Medium)
                 {
-                    handleDestruction(*asteroidIt);
+                    asteroidIt->handleDestruction();
                     asteroidIt = Asteroid::asteroids.erase(asteroidIt);
                     break;
                 }
@@ -580,7 +581,7 @@ void Game::Reset()
     life = 3;
     bombCount = 0;
 
-    ship = Ship(windowWidth / 2, windowHeight / 2, 50, shipTex);
+    ship = Ship(Vec2(windowWidth / 2.f, windowHeight / 2.f), 50, shipTex);
     gameObjects.push_back(ship);
 
     initAsteroids(ship, windowWidth, windowHeight);

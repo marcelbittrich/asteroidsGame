@@ -6,29 +6,11 @@
 #include <iostream>
 #include "gameobjects.hpp"
 
-namespace Utils
-{
-	float squareDistance(SDL_FPoint PositionA, SDL_FPoint PositionB)
-	{
-		float squareDistanceX = (PositionA.x - PositionB.x) * (PositionA.x - PositionB.x);
-		float squareDistanceY = (PositionA.y - PositionB.y) * (PositionA.y - PositionB.y);
-		return squareDistanceX + squareDistanceY;
-	}
-}
-
 BackgroundPoint::BackgroundPoint()
+	: currentPos(0.f, 0.f), originPos(0.f, 0.f)
 {
-	currentPos.x = 0.f;
-	currentPos.y = 0.f;
-
-	originPos.x = 0;
-	originPos.y = 0;
-
-	renderPos.x = 0;
-	renderPos.y = 0;
-
 	color[0] = 255;
-	color[1] = 255;
+	color[1] = 0;
 	color[2] = 255;
 	color[3] = 255;
 
@@ -36,16 +18,8 @@ BackgroundPoint::BackgroundPoint()
 }
 
 BackgroundPoint::BackgroundPoint(float xPos, float yPos)
+	: currentPos(xPos, yPos), originPos(xPos, yPos)
 {
-	currentPos.x = xPos;
-	currentPos.y = yPos;
-
-	originPos.x = (int)xPos;
-	originPos.y = (int)yPos;
-
-	renderPos.x = (int)xPos;
-	renderPos.y = (int)yPos;
-
 	color[0] = rand() % 255;
 	color[1] = rand() % 255;
 	color[2] = rand() % 255;
@@ -89,9 +63,6 @@ Background::Background(int windowWidth, int windowHeight)
 			backgroundPoints[i][j] = newPoint;
 		}
 	}
-
-	//std::cout << "Size of Background point: " << sizeof(backgroundPoints[1][1]) << std::endl;
-	//std::cout << "Size of whole Background: " << sizeof(*this) << std::endl;
 }
 
 void Background::Update(const std::list<GameObject>& gameObjects, float deltaTime)
@@ -197,19 +168,18 @@ void Background::Render(SDL_Renderer* renderer)
 		for (int j = 0; j != divider; j++)
 			if (!backgroundPoints[i][j].onOrigin)
 			{
-				SDL_Point renderPos = backgroundPoints[i][j].renderPos;
+				Vec2 currentPos = backgroundPoints[i][j].currentPos;
 				Uint8* color = backgroundPoints[i][j].color;
 
 				// Set the point position according to the new surface size
-				int scaledPosX = (int)round(renderPos.x / m_pointSizeScale);
-				int scaledPosY = (int)round(renderPos.y / m_pointSizeScale);
+				Vec2 scaledPos = currentPos / m_pointSizeScale;
 
 				Uint32 pixel = SDL_MapRGBA(backgroundSurface->format, color[0], color[1], color[2], color[3]);
 
-				if (scaledPosX < backgroundSurface->w && scaledPosX > 0
-					&& scaledPosY < backgroundSurface->h && scaledPosY > 0)
+				if (scaledPos.x < backgroundSurface->w && scaledPos.x > 0
+					&& scaledPos.y < backgroundSurface->h && scaledPos.y > 0)
 				{
-					setPixel(backgroundSurface, scaledPosX, scaledPosY, pixel);
+					setPixel(backgroundSurface, (int)scaledPos.x, (int)scaledPos.y, pixel);
 				}
 			}
 	}
@@ -240,45 +210,25 @@ void Background::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 void Background::returnPointToOrigin(BackgroundPoint& point, float deltaTime)
 {
 
-	SDL_FPoint originPosF = { (float)point.originPos.x, (float)point.originPos.y };
-	float squareDistanceToOrigin = Utils::squareDistance(point.currentPos, originPosF);
-	float distanceToOrigin = SDL_sqrtf(squareDistanceToOrigin);
-
-	float vectorDistance[2];
-	vectorDistance[0] = (point.originPos.x - point.currentPos.x);
-	vectorDistance[1] = (point.originPos.y - point.currentPos.y);
-
-	float normalizedDistance[2];
-	normalizedDistance[0] = (vectorDistance[0] / distanceToOrigin);
-	normalizedDistance[1] = (vectorDistance[1] / distanceToOrigin);
+	float distance = Vec2::Distance(point.currentPos, point.originPos);
+	Vec2 direction = point.originPos - point.currentPos;
+	Vec2 normalizedVector = direction / distance;
 
 	// points come back faster with more distance
-	float distanceDependentVelocity = m_distanceVelocityFunctionSteepness * distanceToOrigin * distanceToOrigin;
+	float distanceDependentVelocity = m_distanceVelocityFunctionSteepness * distance * distance;
 	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * deltaTime * 60.f;
 
-	float vectorChange[2];
-	vectorChange[0] = (normalizedDistance[0] * returnToOriginVelocity);
-	vectorChange[1] = (normalizedDistance[1] * returnToOriginVelocity);
+	Vec2 changeVector = normalizedVector * returnToOriginVelocity;
 
 	// if point would overshoot origin, put it on origin
-	if (vectorChange[0] * vectorChange[0] + vectorChange[1] * vectorChange[1] > squareDistanceToOrigin)
+	if (changeVector.SquareLength() > distance * distance)
 	{
-		point.currentPos.x = (float)point.originPos.x;
-		point.currentPos.y = (float)point.originPos.y;
-
-		point.renderPos.x = point.originPos.x;
-		point.renderPos.y = point.originPos.y;
-
+		point.currentPos = point.originPos;
 		point.onOrigin = true;
 	}
 	else
 	{
-		point.currentPos.x += vectorChange[0];
-		point.currentPos.y += vectorChange[1];
-
-		point.renderPos.x = (int)round(point.currentPos.x);
-		point.renderPos.y = (int)round(point.currentPos.y);
-
+		point.currentPos += changeVector;
 		point.onOrigin = false;
 	}
 }
@@ -286,37 +236,28 @@ void Background::returnPointToOrigin(BackgroundPoint& point, float deltaTime)
 void Background::movePointOut(BackgroundPoint& point, GameObject colObject)
 {
 	float objectColRadius = colObject.getColRadius();
-	SDL_FPoint objectMidPos = colObject.getMidPos();
+	Vec2 objectMidPos = Vec2(colObject.getMidPos().x, colObject.getMidPos().y); //TODO: delete when GameObjects got refactored with Vec2
 
 	// AABB collision check
-	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius) && point.currentPos.x < (objectMidPos.x + objectColRadius);
-	bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius) && point.currentPos.y < (objectMidPos.y + objectColRadius);
+	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius) 
+		&& point.currentPos.x < (objectMidPos.x + objectColRadius);
+	bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius) 
+		&& point.currentPos.y < (objectMidPos.y + objectColRadius);
 
 	if (bOverlapHorizontally && bOverlapVertically)
 	{
-		// distance based collision check
-		bool bCollide = Utils::squareDistance(objectMidPos, point.currentPos) <= (objectColRadius * objectColRadius);
-
-		// push out points to the edge of the colliding object
+		// Distance based collision check
+		bool bCollide = Vec2::SquareDistance(objectMidPos, point.currentPos) <= (objectColRadius * objectColRadius);
+		// Push points out to the edge of the colliding object
 		if (bCollide)
 		{
-			//
-			float VectorMidToPoint[2];
-			VectorMidToPoint[0] = point.currentPos.x - objectMidPos.x;
-			VectorMidToPoint[1] = point.currentPos.y - objectMidPos.y;
+			Vec2 direction = point.currentPos - objectMidPos;
+			float distance = Vec2::Distance(objectMidPos, point.currentPos);
 
-			float distanceToObject = SDL_sqrtf(Utils::squareDistance(objectMidPos, point.currentPos));
-			float VectorNormalized[2];
-			VectorNormalized[0] = VectorMidToPoint[0] / distanceToObject;
-			VectorNormalized[1] = VectorMidToPoint[1] / distanceToObject;
+			Vec2 normalizedVector = direction / distance;
 
-			// push point to edge of colRadius
-			point.currentPos.x = objectMidPos.x + VectorNormalized[0] * objectColRadius;
-			point.currentPos.y = objectMidPos.y + VectorNormalized[1] * objectColRadius;
-
-			point.renderPos.x = (int)round(point.currentPos.x);
-			point.renderPos.y = (int)round(point.currentPos.y);
-
+			// Push point to edge of colRadius
+			point.currentPos = objectMidPos + normalizedVector * objectColRadius;
 			point.onOrigin = false;
 		}
 	}

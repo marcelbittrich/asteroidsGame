@@ -19,7 +19,7 @@ class Game
 public:
 	Game();
 	~Game();
-	void Init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
+	void Init(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen);
 	void HandleEvents();
 	void Update();
 	void Render();
@@ -40,7 +40,7 @@ private:
 	int windowHeight;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	void InitWindow(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
+	void InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen);
 
 	// Control values
 	void InitInputDevices();
@@ -56,7 +56,7 @@ private:
 	TTF_Font* fontHuge;
 
 	void initTextures();
-	SDL_Texture* createTextureFromPath(const const char* path);
+	SDL_Texture* createTextureFromPath(const char* path);
 
 	// Main menu values
 	GameSave myGameSave;
