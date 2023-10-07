@@ -17,9 +17,9 @@ public:
 	GameObject(Vec2 midPos, Vec2 velocity) 
 		: m_id(s_NewId++), m_midPos(midPos), m_velocity(velocity) {}
 
-	static void resetId() { s_NewId = 1; }
-	virtual void update() {};
-	virtual void render(SDL_Renderer* renderer) {};
+	static void ResetId() { s_NewId = 1; }
+	virtual void Update() {};
+	virtual void Render(SDL_Renderer* renderer) {};
 
 	enum class Type {
 		Default,
@@ -32,14 +32,26 @@ public:
 
 	Type objectType = Type::Default;
 
-protected:
+	int GetID() const { return m_id; };
+	int GetWidth() const { return m_width; };
+	int GetHeight() const { return m_height; };
+	float GetColRadius() const { return m_colRadius; };
+	bool GetVisibility() const { return m_isVisible; };
+	bool GetIsDead() const { return m_isDead; };
+	Vec2 GetMidPos() const { return m_midPos; };
+	Vec2 GetVelocity() const { return m_velocity; };
 
-	int m_id = -1;
-	int m_width = 0;
-	int m_height = 0;
-	float m_colRadius = 0;
-	bool m_isVisible = true; // Indicator, false during respawn.
-	bool m_isDead = false;  // Can be destroyed.
+	void SetColRadius(float radius) { m_colRadius = radius; };
+	void SetMidPos(float x, float y) { m_midPos = { x, y }; };
+	void SetVelocity(float x, float y) { m_velocity = { x, y }; };
+
+protected:
+	int m_id			= -1;
+	int m_width			= 0;
+	int m_height		= 0;
+	float m_colRadius	= 0.f;
+	bool m_isVisible	= true;		// Indicator, false during respawn.
+	bool m_isDead		= false;	// Can be destroyed.
 
 	Vec2 m_midPos;
 	Vec2 m_velocity;
@@ -48,20 +60,6 @@ protected:
 
 private:
 	inline static int s_NewId = 0;
-
-public:
-	int getID() const { return m_id; };
-	int getWidth() const { return m_width; };
-	int getHeight() const { return m_height; };
-	float getColRadius() const { return m_colRadius; };
-	bool getVisibility() const { return m_isVisible; };
-	bool getIsDead() const { return m_isDead; };
-	Vec2 getMidPos() const { return m_midPos; };
-	Vec2 getVelocity() const { return m_velocity; };
-
-	void setColRadius(float radius) { m_colRadius = radius; };
-	void setMidPos(float x, float y) { m_midPos = { x, y }; };
-	void setVelocity(float x, float y) { m_velocity = { x, y }; };
 };
 
 class Ship : public GameObject
@@ -70,58 +68,58 @@ public:
 	Ship();
 	Ship(Vec2 midPos, int size, SDL_Texture* texture);
 
-	void update(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
-	void render(SDL_Renderer* renderer) override;
-	void reset(SDL_Renderer* renderer);
-	void respawn(SDL_Renderer* renderer);
+	void Update(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
+	void Render(SDL_Renderer* renderer) override;
+	void Reset(SDL_Renderer* renderer);
+	void Respawn(SDL_Renderer* renderer);
 
-	static void setTexture(SDL_Texture* texture) { s_texture = texture; }
+	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
 
 private:
 	inline static SDL_Texture* s_texture;
 	// Update shooting capability and ship visibility.
 	// Ship is not visible during respawn.
-	float respawnTime = 3;
-	float timeNotVisible = 0;
+	float m_respawnTime			= 3.f;
+	float m_timeNotVisible		= 0.f;
 	void updateVisibility(float deltaTime);
 
 	// movement values
-	float velocityMax = 1000;
-	float velocityDecay = 50;
-	float rotation = 0;
-	float roatatingSpeed = 180.0;
-	float thrust = 350.0;
+	float m_velocityMax			= 1000.f;
+	float m_velocityDecay		= 50.f;
+	float m_rotation			= 0.f;
+	float m_roatatingSpeed		= 180.f;
+	float m_thrust				= 350.f;
 	void updateTransform(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime);
 	void updateAnimation(const InputHandler& MyInputHandler, float deltaTime);
 
 	// Shooting values
-	float shotVelocity = 1000.f;
-	float shotCounter = 0.0f;
-	float shotCounterDecay = 150.0f;
-	float maxShotCounter = 1000.0f;
-	float shipCooldownThreshold = maxShotCounter / 2.f;
+	float m_shotVelocity		= 1000.f;
+	float m_shotCounter			= 0.0f;
+	float m_shotCounterDecay	= 150.0f;
+	float m_maxShotCounter		= 1000.0f;
+	float m_shipCooldownThreshold = m_maxShotCounter / 2.f;
 
-	bool canShoot = true; // will set to false during respawn
-	Uint32 timeLastShot = 0;
-	Uint32 timeBetweenShots = 250;
+	bool m_canShoot				= true;	// Indicator, false during respawn.
+	Uint32 m_timeLastShot		= 0;
+	Uint32 m_timeBetweenShots	= 250;
 	void shoot();
 	void createShot();
 
 	// Bombing values
-	std::list<class Bomb*> collectedBombs;
+	std::list<class Bomb*> m_collectedBombs;
 
-	bool canBomb = true; // will set to false during respawn
-	Uint32 timeLastBomb = 0;
-	Uint32 timeBetweenBombs = 250;
+	bool m_canBomb				= true;	// Indicator, false during respawn.
+	Uint32 m_timeLastBomb		= 0;
+	Uint32 m_timeBetweenBombs	= 250;
 	void useBomb();
 
 	// Animation values
-	int spriteWidth = 300;
-	int spriteHeight = 300;
-	int spriteCount = 3;  // Number of different sprites in texture
-	int animationCounter = 0; // Used to select sprite
-	unsigned timeBetweenSprites = 300;
-	Uint32 timeLastUpdated = 0;
+	int m_spriteWidth			= 300;
+	int m_spriteHeight			= 300;
+	int m_spriteCount			= 3;	// Number of different sprites in texture
+	int m_animationCounter		= 0;	// Used to select sprite
+	Uint32 m_timeBetweenSprites = 300;
+	Uint32 m_timeLastUpdated	= 0;
 	void renderShotMeter(SDL_Renderer* renderer);
 	void renderShip(SDL_Renderer* renderer);
 
@@ -129,13 +127,13 @@ private:
 	float sizeToCollisonRadiusRatio = 0.6f;
 
 public:
-	float getMaxVelocity() { return velocityMax; };
-	float getShotCounter() { return shotCounter; };
-	float getMaxShotCounter() { return maxShotCounter; };
-	bool getCanShoot() { return canShoot; };
-	float getShotVelocity() { return shotVelocity; };
+	float getMaxVelocity() { return m_velocityMax; };
+	float getShotCounter() { return m_shotCounter; };
+	float getMaxShotCounter() { return m_maxShotCounter; };
+	bool getCanShoot() { return m_canShoot; };
+	float getShotVelocity() { return m_shotVelocity; };
 	void collectBomb(class Bomb* bomb);
-	int getCollectedBombsSize() { return (int)collectedBombs.size(); };
+	int getCollectedBombsSize() { return (int)m_collectedBombs.size(); };
 };
 
 enum class AsteroidSizeType
@@ -148,14 +146,14 @@ class Asteroid : public GameObject
 {
 public:
 	Asteroid(Vec2 m_midPos, Vec2 m_velocity, AsteroidSizeType sizeType);
-	void update(int windowWidth, int windowHeight, float deltaTime);
-	void render(SDL_Renderer* renderer) override;
+	void Update(int windowWidth, int windowHeight, float deltaTime);
+	void Render(SDL_Renderer* renderer) override;
 
 	AsteroidSizeType sizeType;
 
 	static std::list<Asteroid> asteroids;
 	static int getSize(AsteroidSizeType sizeType);
-	static float getColRadius(int size);
+	static float GetColRadius(int size);
 
 	static void setTextureSmall(SDL_Texture* texture) { s_textureSmall = texture; }
 	static void setTextureMedium(SDL_Texture* texture) { s_textureMedium = texture; }
@@ -163,10 +161,10 @@ public:
 	void handleDestruction();
 
 private:
-	const float m_DestAstroidVelFactor = 2.0;
 	inline static const float m_colRadiusFactor = 0.6f;
-	static const int m_sizeSmall = 50;
-	static const int m_sizeMedium = 100;
+	const float m_DestAstroidVelFactor			= 2.0;
+	static const int m_sizeSmall				= 50;
+	static const int m_sizeMedium				= 100;
 	inline static SDL_Texture* s_textureSmall;
 	inline static SDL_Texture* s_textureMedium;
 };
@@ -174,49 +172,48 @@ private:
 
 bool doesCollide(const GameObject& firstObject, const GameObject& secondObject);
 void asteroidsCollide(GameObject& firstObject, GameObject& secondObject);
-
 void spawnAsteroid(int xPos, int yPos, Vec2 m_velocity, AsteroidSizeType sizeType, const std::list<GameObject>& gameobjects);
 
 class Shot : public GameObject
 {
 public:
 	Shot(float midPosX, float midPosY, Vec2 m_velocity, float shotHeadingAngle);
-	void update(int windowWidth, int windowHeight, float deltaTime);
-	void render(SDL_Renderer* renderer) override;
+	void Update(int windowWidth, int windowHeight, float deltaTime);
+	void Render(SDL_Renderer* renderer) override;
 
 	static std::list<Shot> shots;
-	static void setTexture(SDL_Texture* texture) { s_texture = texture; }
+	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
 
 private:
 	inline static SDL_Texture* s_texture;
 
-	Uint32 creationTime;
-	Uint32 maxLifeTime = 1000;
-	bool TooOld();
+	Uint32 m_creationTime	= 0;
+	Uint32 m_maxLifeTime	= 1000;
+	bool tooOld();
 
-	float vAngle = 0;
+	float m_rotation		= 0.f;
 };
 
 class Bomb : public GameObject
 {
 public:
 	Bomb(int xPos, int yPos, Vec2 m_velocity);
-	static void setTexture(SDL_Texture* texture) { s_texture = texture; }
+	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
 
-private:
-	float angle = 0.0f;
-	inline static SDL_Texture* s_texture;
-
-public:
-	Uint32 creationTime = 0;
-	Uint32 ignitionTime = 0;
-	void update(int windowWidth, int windowHeight, float deltaTime, Ship* ship);
-	void render(SDL_Renderer* renderer) override;
-	void getCollect();
-	void explode();
+	Uint32 m_creationTime = 0;
+	Uint32 m_ignitionTime = 0;
+	void Update(int windowWidth, int windowHeight, float deltaTime, Ship* ship);
+	void Render(SDL_Renderer* renderer) override;
+	void GetCollected();
+	void Explode();
 	bool m_isDead = false;
 	bool isExploding = false;
 	bool isCollected = false;
+
+private:
+	float m_rotation		= 0.0f;
+	float m_rotatingSpeed	= 10.f;
+	inline static SDL_Texture* s_texture;
 };
 
 Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHeight);

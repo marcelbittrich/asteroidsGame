@@ -6,7 +6,7 @@ InputHandler::InputHandler()
 	controlBools = { false };
 }
 
-void InputHandler::handleInput(bool& isRunning)
+void InputHandler::HandleInput(bool& isRunning)
 {
 
 	// std::cout << "handle keyboard input: " << event.key.keysym.sym << std::endl;

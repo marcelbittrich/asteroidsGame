@@ -14,10 +14,10 @@ Vec2 getRandomPosition(
 		bool success = true;
 		for (const GameObject& gameObject : gameObjects)
 		{
-			float distance = sqrtf(std::pow(gameObject.getMidPos().x - x, 2) + std::pow(gameObject.getMidPos().y - y, 2));
+			float distance = sqrtf(std::pow(gameObject.GetMidPos().x - x, 2) + std::pow(gameObject.GetMidPos().y - y, 2));
 
 			float objectColRadius;
-			(gameObject.getID() == 1) ? objectColRadius = 200 : objectColRadius = gameObject.getColRadius();
+			(gameObject.GetID() == 1) ? objectColRadius = 200 : objectColRadius = gameObject.GetColRadius();
 
 			if (distance < objectColRadius + m_colRadius)
 			{
@@ -61,7 +61,7 @@ void initSingleAsteroid(std::list<GameObject>& gameObjects, int windowWidth, int
 	float asteroidMinVel = 0;
 	float asteroidMaxVel = 1;
 	int size = Asteroid::getSize(sizeType);
-	float m_colRadius = Asteroid::getColRadius(size);
+	float m_colRadius = Asteroid::GetColRadius(size);
 	Vec2 randomPosition = getRandomPosition(
 		windowWidth, windowHeight, m_colRadius, gameObjects);
 	Asteroid(randomPosition, getRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);

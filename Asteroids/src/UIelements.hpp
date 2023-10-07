@@ -32,8 +32,8 @@ private:
 public:
     ShotMeter(){};
     ShotMeter(const Ship &ship, int xOffset, int yOffset, int m_width, int m_height);
-    void update(int shotCounter, int maxShotCounter, const Ship &ship);
-    void render(SDL_Renderer *renderer, bool canShoot);
+    void Update(int m_shotCounter, int m_maxShotCounter, const Ship &ship);
+    void Render(SDL_Renderer *renderer, bool m_canShoot);
 };
 
 enum class UICounterPosition
@@ -48,7 +48,7 @@ private:
     static std::list<UICounter> UICounters;
 
     std::string Name;
-    TTF_Font *font;
+    TTF_Font *m_font;
     SDL_Color color;
     int windowWidth, windowHeigt;
     int horizontalPadding, verticalPadding;
@@ -61,10 +61,10 @@ private:
 
 public:
     UICounter(){};
-    UICounter(std::string Name, TTF_Font *font, SDL_Color color,
+    UICounter(std::string Name, TTF_Font *m_font, SDL_Color color,
               int windowWidth, int windowHeigt,
               int horizontalPadding, int verticalPadding,
               UICounterPosition counterPosition, bool displayName);
-    void update(int numberToDisplay, SDL_Renderer *renderer);
-    void render(SDL_Renderer *renderer);
+    void Update(int numberToDisplay, SDL_Renderer *renderer);
+    void Render(SDL_Renderer *renderer);
 };

@@ -32,14 +32,12 @@ Background::Background()
 {
 }
 
-Background::Background(int windowWidth, int windowHeight)
+Background::Background(int windowWidth, int windowHeight, float pointScale)
+	: m_pointSizeScale(pointScale)
 {
-	m_height = windowHeight;
-	m_width = windowWidth;
-
-	// Devide the screen in areas each occupied by one point
-	float pointAreaWidth = m_width / (float)(divider);
-	float pointAreaHeight = m_height / (float)(divider);
+	// Devide the screen in areas, each occupied by one point.
+	float pointAreaWidth = windowWidth / (float)(divider);
+	float pointAreaHeight = windowHeight / (float)(divider);
 
 	horizontalIter.resize(divider);
 	verticalIter.resize(divider);
@@ -50,7 +48,7 @@ Background::Background(int windowWidth, int windowHeight)
 		verticalIter[i] = i;
 	}
 
-	// create background points in the middle of each area
+	// Create background points in the middle of each area.
 	for (int i = 0; i < divider; i++)
 	{
 		float newPointXPos = pointAreaWidth * i + pointAreaWidth / 2.0f;
@@ -67,56 +65,9 @@ Background::Background(int windowWidth, int windowHeight)
 
 void Background::Update(const std::list<GameObject>& gameObjects, float deltaTime)
 {
-
-#define NO_MT 0
-#if NO_MT
-	// debug, count update operations
-	int updatePointOperations = 0;
-
-	// look for collisions with objects
-	for (const GameObject& object : colObjects)
-	{
-		float objectColRadius = object.getColRadius();
-		SDL_FPoint objectMidPos = object.getMidPos();
-
-		if (object.getVisibility())
-		{
-			// locate point area of object
-			int objectAreaPosX = objectMidPos.x / pointAreaWidth;
-			int objectAreaPosY = objectMidPos.y / pointAreaHeight;
-
-			// defince area size of collision detection box
-			int collisionBoxWidth = objectColRadius / pointAreaWidth;
-			int collisionBoxHeight = objectColRadius / pointAreaHeight;
-
-			for (int i = objectAreaPosX - collisionBoxWidth; i <= objectAreaPosX + collisionBoxWidth; i++)
-			{
-				for (int j = objectAreaPosY - collisionBoxHeight; j <= objectAreaPosY + collisionBoxHeight; j++)
-				{
-					// dont look for collsion outside of the visible area
-					if ((i >= 0 && i <= divider - 1) && (j >= 0 && j <= divider - 1))
-					{
-						movePointOut(backgroundPoints[i][j], object);
-						updatePointOperations++;
-					}
-				}
-			}
-		}
-	}
-
-	for (int i = 0; i != divider; i++)
-	{
-		for (int j = 0; j != divider; j++)
-			if (!backgroundPoints[i][j].onOrigin)
-			{
-				returnPointToOrigin(backgroundPoints[i][j], deltaTime);
-			}
-	}
-
-#else
 	for (const GameObject& object : gameObjects)
 	{
-		if (object.getVisibility())
+		if (object.GetVisibility())
 		{
 			GameObject colObject = object;
 			std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
@@ -143,9 +94,6 @@ void Background::Update(const std::list<GameObject>& gameObjects, float deltaTim
 					}
 				});
 		});
-
-#endif
-
 }
 
 void Background::Render(SDL_Renderer* renderer)
@@ -184,6 +132,7 @@ void Background::Render(SDL_Renderer* renderer)
 			}
 	}
 
+	// Set sampling to nearest pixel
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
 	SDL_FreeSurface(backgroundSurface);
@@ -235,13 +184,13 @@ void Background::returnPointToOrigin(BackgroundPoint& point, float deltaTime)
 
 void Background::movePointOut(BackgroundPoint& point, GameObject colObject)
 {
-	float objectColRadius = colObject.getColRadius();
-	Vec2 objectMidPos = Vec2(colObject.getMidPos().x, colObject.getMidPos().y); //TODO: delete when GameObjects got refactored with Vec2
+	float objectColRadius = colObject.GetColRadius();
+	Vec2 objectMidPos = Vec2(colObject.GetMidPos().x, colObject.GetMidPos().y); //TODO: delete when GameObjects got refactored with Vec2
 
 	// AABB collision check
-	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius) 
+	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius)
 		&& point.currentPos.x < (objectMidPos.x + objectColRadius);
-	bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius) 
+	bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius)
 		&& point.currentPos.y < (objectMidPos.y + objectColRadius);
 
 	if (bOverlapHorizontally && bOverlapVertically)

@@ -15,5 +15,5 @@ private:
 public:
     void writeFile();
     int getHighscore() { return highscore; }
-    void setHighscore(int newHighscore) { highscore = newHighscore; }
+    void SetHighscore(int newHighscore) { highscore = newHighscore; }
 };

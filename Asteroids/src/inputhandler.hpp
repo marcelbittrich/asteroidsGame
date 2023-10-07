@@ -19,8 +19,7 @@ private:
 
 public:
     InputHandler();
-    void init();
-    void handleInput(bool &isRunning);
+    void HandleInput(bool &isRunning);
 
     ControlBools getControlBools() const { return controlBools; }
 };

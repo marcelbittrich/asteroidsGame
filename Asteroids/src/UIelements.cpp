@@ -14,8 +14,8 @@ ShotMeter::ShotMeter(const Ship& ship, int xOffset, int yOffset, int m_width, in
 
 void ShotMeter::reconstruct(SDL_Rect position, const Ship& ship)
 {
-	position.x = (int)(ship.getMidPos().x + xOffset - position.w / 2);
-	position.y = (int)(ship.getMidPos().y + yOffset + position.h / 2);
+	position.x = (int)(ship.GetMidPos().x + xOffset - position.w / 2);
+	position.y = (int)(ship.GetMidPos().y + yOffset + position.h / 2);
 	int borderOffset = 1;
 	background1 = position;
 	background2 = { background1.x + borderOffset,
@@ -25,20 +25,20 @@ void ShotMeter::reconstruct(SDL_Rect position, const Ship& ship)
 	meterBar = background2;
 }
 
-void ShotMeter::update(int shotCounter, int maxShotCounter, const Ship& ship)
+void ShotMeter::Update(int m_shotCounter, int m_maxShotCounter, const Ship& ship)
 {
 	reconstruct(position, ship);
-	float shotMeterPercent = (std::min((((float)shotCounter / (float)maxShotCounter) * (float)maxShotCounter), (float)maxShotCounter)) / (float)maxShotCounter;
+	float shotMeterPercent = (std::min((((float)m_shotCounter / (float)m_maxShotCounter) * (float)m_maxShotCounter), (float)m_maxShotCounter)) / (float)m_maxShotCounter;
 	meterBar.w = (int)(shotMeterPercent * background2.w);
 }
 
-void ShotMeter::render(SDL_Renderer* renderer, bool canShoot)
+void ShotMeter::Render(SDL_Renderer* renderer, bool m_canShoot)
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderFillRect(renderer, &background1);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
 	SDL_RenderFillRect(renderer, &background2);
-	canShoot ? SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255) : SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+	m_canShoot ? SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255) : SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &meterBar);
 }
 
@@ -46,14 +46,14 @@ std::list<UICounter> UICounter::UICounters;
 
 UICounter::UICounter(
 	std::string Name,
-	TTF_Font* font,
+	TTF_Font* m_font,
 	SDL_Color color,
 	int windowWidth,
 	int windowHeigt,
 	int horizontalPadding,
 	int verticalPadding,
 	UICounterPosition counterPosition,
-	bool displayName) : Name(Name), font(font), color(color),
+	bool displayName) : Name(Name), m_font(m_font), color(color),
 	windowWidth(windowWidth), windowHeigt(windowHeigt),
 	horizontalPadding(horizontalPadding), verticalPadding(verticalPadding),
 	counterPosition(counterPosition), displayName(displayName)
@@ -75,14 +75,14 @@ UICounter::UICounter(
 	UICounters.push_back(*this);
 }
 
-void UICounter::update(int numberToDisplay, SDL_Renderer* renderer)
+void UICounter::Update(int numberToDisplay, SDL_Renderer* renderer)
 {
 	std::string renderString = std::to_string(numberToDisplay);
 	if (displayName)
 		renderString = Name + ": " + renderString;
 
 	const char* pCString = renderString.c_str();
-	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, pCString, color);
+	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(m_font, pCString, color);
 	messageTexture = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
 	SDL_FreeSurface(surfaceMessage);
 	SDL_QueryTexture(messageTexture, NULL, NULL, &messageRect.w, &messageRect.h);
@@ -94,7 +94,7 @@ void UICounter::update(int numberToDisplay, SDL_Renderer* renderer)
 		messageRect.x = windowWidth - messageRect.w - horizontalPadding;
 }
 
-void UICounter::render(SDL_Renderer* renderer)
+void UICounter::Render(SDL_Renderer* renderer)
 {
 	if (!renderer)
 		return;

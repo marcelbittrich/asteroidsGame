@@ -52,8 +52,8 @@ private:
 	SDL_Texture* asteroidTexMedium;
 	SDL_Texture* shotTex;
 	SDL_Texture* bombTex;
-	TTF_Font* font;
-	TTF_Font* fontHuge;
+	TTF_Font* m_font;
+	TTF_Font* m_fontHuge;
 
 	void initTextures();
 	SDL_Texture* createTextureFromPath(const char* path);

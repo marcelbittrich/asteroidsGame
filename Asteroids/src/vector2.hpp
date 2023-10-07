@@ -101,7 +101,7 @@ struct Vec2
 
 	Vec2& Rotate(float degree)
 	{
-		float radian = degree * M_PI / 180.f;
+		float radian = degree * (float)M_PI / 180.f;
 		float x2 = x * cos(radian) - y * sin(radian);
 		float y2 = x * sin(radian) + y * cos(radian);
 		return Vec2(x2,y2);

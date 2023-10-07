@@ -21,7 +21,7 @@ class Background
 {
 public:
 	Background();
-	Background(int windowWidth, int windowHeight);
+	Background(int windowWidth, int windowHeight, float pointScale);
 	void Update(const std::list<class GameObject>& gameObjects, float deltaTime);
 	void Render(SDL_Renderer* renderer);
 
@@ -29,8 +29,6 @@ private:
 	static const int divider = 100;
 	BackgroundPoint backgroundPoints[divider][divider];
 	float m_pointSizeScale = 2.f;
-	int m_width = 0;
-	int m_height = 0;
 
 	std::vector<uint32_t> horizontalIter, verticalIter;
 	void returnPointToOrigin(BackgroundPoint& point, float deltaTime);
