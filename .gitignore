@@ -55,4 +55,4 @@ Thumbs.db
 .vs
 .vscode/
 *.zip
-
+/bin
