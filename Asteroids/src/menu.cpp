@@ -4,36 +4,30 @@
 #include "gamestate.hpp"
 
 GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight)
+	: m_width(windowWidth), m_height(windowHeight), m_font(font), m_fontHuge(fontHuge), m_renderer(renderer)
 {
-	this->m_width = windowWidth;
-	this->m_height = windowHeight;
-	this->m_font = font;
-	this->m_fontHuge = fontHuge;
-	this->m_renderer = renderer;
-
-	SDL_Color textColor = { 255, 255, 255, 255 };
 	SDL_Point position = {0 ,0};
 	const char* text = nullptr;
 
 	position = { m_width / 2 , 100 };
 	text = "Game Over";
-	createMenuText(m_gameOverTextRect, m_gameOverTextTexture, position, text, m_fontHuge, textColor, renderer);
+	createMenuText(m_gameOverTextRect, m_gameOverTextTexture, position, text, m_fontHuge, m_textColor, renderer);
 
 	position = { m_width / 2 , 150 };
 	text = "Asteroids";
-	createMenuText(m_startScreenTextRect, m_startScreenTextTexture, position, text, m_fontHuge, textColor, renderer);
+	createMenuText(m_startScreenTextRect, m_startScreenTextTexture, position, text, m_fontHuge, m_textColor, renderer);
 
 	position = { m_width / 2 , 630 };
 	text = "Move - Arrows, Shoot - Space, Bomb - Ctrl";
-	createMenuText(m_controlInstructionsTextRect, m_controlInstructionsTextTexture, position, text, m_font, textColor, renderer);
+	createMenuText(m_controlInstructionsTextRect, m_controlInstructionsTextTexture, position, text, m_font, m_textColor, renderer);
 
 	m_startButtonRect = { 50, 400, m_width - 100, 80 };
 	text = "Start";
-	createMenuButton(m_startButtonTextRect, m_startButtonTexture, m_startButtonRect, text, font, textColor, renderer);
+	createMenuButton(m_startButtonTextRect, m_startButtonTexture, m_startButtonRect, text, font, m_textColor, renderer);
 
 	m_exitButtonRect = { 50, 500, m_width - 100, 80 };
 	text = "Exit";
-	createMenuButton(m_exitButtonTextRect, m_exitButtonTexture, m_exitButtonRect, text, font, textColor, renderer);
+	createMenuButton(m_exitButtonTextRect, m_exitButtonTexture, m_exitButtonRect, text, font, m_textColor, renderer);
 
 	m_scoreTextRect = {};
 }
@@ -104,11 +98,12 @@ void GameMenu::relocateClick(int& clickPosX, int& clickPosY)
 
 void GameMenu::Render()
 {
+	// Clear screen to black.
 	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	SDL_RenderClear(m_renderer);
-	SDL_SetRenderDrawColor(m_renderer, 60, 60, 60, 255);
 
+	// Render start or game over message
 	if (m_showStartScreen)
 	{
 		SDL_RenderCopy(m_renderer, m_startScreenTextTexture, NULL, &m_startScreenTextRect);
@@ -120,34 +115,40 @@ void GameMenu::Render()
 
 	SDL_RenderCopy(m_renderer, m_controlInstructionsTextTexture, NULL, &m_controlInstructionsTextRect);
 
+	// Render buttons
+	SDL_SetRenderDrawColor(m_renderer, m_buttonColor.r, m_buttonColor.g, m_buttonColor.b, m_buttonColor.a);
+
 	SDL_RenderFillRect(m_renderer, &m_startButtonRect);
 	SDL_RenderCopy(m_renderer, m_startButtonTexture, NULL, &m_startButtonTextRect);
 
 	SDL_RenderFillRect(m_renderer, &m_exitButtonRect);
 	SDL_RenderCopy(m_renderer, m_exitButtonTexture, NULL, &m_exitButtonTextRect);
 
-	SDL_Color color = { 255, 255, 255, 255 };
+	// Render score message
 	if (!m_showStartScreen)
 	{
-		std::string scoreMessage = "";
-		if (m_score == m_highscore)
-		{
-			scoreMessage = std::to_string(m_score) + " NEW HIGHSCORE!!!!!!!111!";
-		}
-		else
-		{
-			scoreMessage = std::to_string(m_score) + " (Highscore: " + std::to_string(m_highscore) + ") Booooo!";
-		}
-		SDL_Surface* scoreTextSurface = TTF_RenderText_Solid(m_font, scoreMessage.c_str(), color);
-
-		m_scoreTextTexture = SDL_CreateTextureFromSurface(m_renderer, scoreTextSurface);
-		SDL_FreeSurface(scoreTextSurface);
-		SDL_QueryTexture(m_scoreTextTexture, NULL, NULL, &m_scoreTextRect.w, &m_scoreTextRect.h);
-		m_scoreTextRect.x = m_width / 2 - m_scoreTextRect.w / 2;
-		m_scoreTextRect.y = 300;
-		SDL_RenderCopy(m_renderer, m_scoreTextTexture, NULL, &m_scoreTextRect);
-		SDL_DestroyTexture(m_scoreTextTexture);
+		renderScoreMessage();
 	}
 
 	SDL_RenderPresent(m_renderer);
 }
+
+void GameMenu::renderScoreMessage()
+{
+	std::string scoreMessage = "";
+	if (m_score == m_highscore)
+	{
+		scoreMessage = std::to_string(m_score) + " NEW HIGHSCORE!!!!!!!111!";
+	}
+	else
+	{
+		scoreMessage = std::to_string(m_score) + " (Highscore: " + std::to_string(m_highscore) + ") Booooo!";
+	}
+
+	SDL_Point position = { m_width / 2 , 300 };
+	createMenuText(m_scoreTextRect, m_scoreTextTexture, position, scoreMessage.c_str(), m_font, m_textColor, m_renderer);
+	SDL_RenderCopy(m_renderer, m_scoreTextTexture, NULL, &m_scoreTextRect);
+	SDL_DestroyTexture(m_scoreTextTexture);
+}
+
+

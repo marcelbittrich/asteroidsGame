@@ -22,6 +22,10 @@ private:
     int m_width = 0;
     int m_height = 0;
     bool m_showStartScreen = true;
+
+    SDL_Color m_textColor = { 255, 255, 255, 255 };
+    SDL_Color m_buttonColor = { 60, 60, 60, 255 };
+
     TTF_Font* m_font = nullptr;
     TTF_Font* m_fontHuge = nullptr;
 
@@ -54,6 +58,7 @@ private:
 
     // Relocate the click position by the current window dimensions.
     void relocateClick(int& clickPosX, int& clickPosY);
+    void renderScoreMessage();
 
     int m_score;
     int m_highscore;
