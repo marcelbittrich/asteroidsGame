@@ -12,7 +12,7 @@ class GameMenu
 public:
     GameMenu() {};
     GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight);
-    void Update(bool& isRunning, GameState& gameState, const InputHandler& MyInputHandler);
+    void Update(bool& isRunning, GameState& gameState, const InputHandler& myInputHandler);
     void Render();
 
     void SetScore(int newScore) { m_score = newScore; }
@@ -51,15 +51,15 @@ private:
 
     SDL_Renderer* m_renderer = nullptr;
 
-    void createMenuText(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Point& centerPosition,
+    void CreateText(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Point& centerPosition,
         const char* text, TTF_Font* font, const SDL_Color color, SDL_Renderer* renderer);
-    void createMenuButton(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Rect& buttonDimensions,
+    void CreateButton(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Rect& buttonDimensions,
         const char* text, TTF_Font* font, const SDL_Color color, SDL_Renderer* renderer);
 
     // Relocate the click position by the current window dimensions.
-    void relocateClick(int& clickPosX, int& clickPosY);
-    void renderScoreMessage();
+    void RelocateClick(int& clickPosX, int& clickPosY);
+    void RenderScoreMessage();
 
-    int m_score;
-    int m_highscore;
+    int m_score = 0;
+    int m_highscore = 0;
 };

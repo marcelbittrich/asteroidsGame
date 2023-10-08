@@ -3,15 +3,11 @@
 
 InputHandler::InputHandler()
 {
-	controlBools = { false };
+	m_controlBools = { false };
 }
 
 void InputHandler::HandleInput(bool& isRunning)
 {
-
-	// std::cout << "handle keyboard input: " << event.key.keysym.sym << std::endl;
-	// std::cout << "controller input" << event.type << std::endl;
-
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event))
@@ -25,24 +21,24 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_UP:
-				controlBools.giveThrust = true;
+				m_controlBools.giveThrust = true;
 				break;
 			case SDLK_DOWN:
 				break;
 			case SDLK_RIGHT:
-				controlBools.isTurningRight = true;
+				m_controlBools.isTurningRight = true;
 				break;
 			case SDLK_LEFT:
-				controlBools.isTurningLeft = true;
+				m_controlBools.isTurningLeft = true;
 				break;
 			case SDLK_SPACE:
-				controlBools.isShooting = true;
+				m_controlBools.isShooting = true;
 				break;
 			case SDLK_LCTRL:
-				controlBools.isUsingBomb = true;
+				m_controlBools.isUsingBomb = true;
 				break;
 			case SDLK_p:
-				controlBools.pausePressed = true;
+				m_controlBools.pausePressed = true;
 				break;
 			default:
 				break;
@@ -52,24 +48,24 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_UP:
-				controlBools.giveThrust = false;
+				m_controlBools.giveThrust = false;
 				break;
 			case SDLK_DOWN:
 				break;
 			case SDLK_RIGHT:
-				controlBools.isTurningRight = false;
+				m_controlBools.isTurningRight = false;
 				break;
 			case SDLK_LEFT:
-				controlBools.isTurningLeft = false;
+				m_controlBools.isTurningLeft = false;
 				break;
 			case SDLK_SPACE:
-				controlBools.isShooting = false;
+				m_controlBools.isShooting = false;
 				break;
 			case SDLK_LCTRL:
-				controlBools.isUsingBomb = false;
+				m_controlBools.isUsingBomb = false;
 				break;
 			case SDLK_p:
-				controlBools.pausePressed = false;
+				m_controlBools.pausePressed = false;
 				break;
 			default:
 				break;
@@ -80,7 +76,7 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.button.button)
 			{
 			case SDL_BUTTON_LEFT:
-				controlBools.isLeftClicking = true;
+				m_controlBools.isLeftClicking = true;
 				break;
 			default:
 				break;
@@ -90,7 +86,7 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.button.button)
 			{
 			case SDL_BUTTON_LEFT:
-				controlBools.isLeftClicking = false;
+				m_controlBools.isLeftClicking = false;
 				break;
 			default:
 				break;
@@ -101,19 +97,19 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.cbutton.button)
 			{
 			case SDL_CONTROLLER_BUTTON_B:
-				controlBools.giveThrust = true;
+				m_controlBools.giveThrust = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-				controlBools.isTurningRight = true;
+				m_controlBools.isTurningRight = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-				controlBools.isTurningLeft = true;
+				m_controlBools.isTurningLeft = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-				controlBools.isShooting = true;
+				m_controlBools.isShooting = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-				controlBools.isUsingBomb = true;
+				m_controlBools.isUsingBomb = true;
 				break;
 			default:
 				break;
@@ -123,19 +119,19 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.cbutton.button)
 			{
 			case SDL_CONTROLLER_BUTTON_B:
-				controlBools.giveThrust = false;
+				m_controlBools.giveThrust = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-				controlBools.isTurningRight = false;
+				m_controlBools.isTurningRight = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-				controlBools.isTurningLeft = false;
+				m_controlBools.isTurningLeft = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-				controlBools.isShooting = false;
+				m_controlBools.isShooting = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-				controlBools.isUsingBomb = false;
+				m_controlBools.isUsingBomb = false;
 				break;
 			default:
 				break;

@@ -9,7 +9,7 @@ GameSave::GameSave()
 	{
 		while (getline(file, line))
 		{
-			highscore = std::stoi(line);
+			m_highscore = std::stoi(line);
 		}
 	}
 	else
@@ -18,10 +18,10 @@ GameSave::GameSave()
 	}
 }
 
-void GameSave::writeFile()
+void GameSave::WriteFile()
 {
 	std::ofstream file;
 	file.open("savegame.txt", std::ios::out);
-	file << highscore;
+	file << m_highscore;
 	file.close();
 }

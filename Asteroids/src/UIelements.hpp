@@ -27,7 +27,7 @@ private:
     SDL_Rect background2;
     SDL_Rect meterBar;
     int xOffset, yOffset;
-    void reconstruct(SDL_Rect position, const Ship &ship);
+    void Reconstruct(SDL_Rect position, const Ship &ship);
 
 public:
     ShotMeter(){};

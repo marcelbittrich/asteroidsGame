@@ -10,10 +10,10 @@ public:
     GameSave();
 
 private:
-    int highscore = 0;
+    int m_highscore = 0;
 
 public:
-    void writeFile();
-    int getHighscore() { return highscore; }
-    void SetHighscore(int newHighscore) { highscore = newHighscore; }
+    void WriteFile();
+    int GetHighscore() { return m_highscore; }
+    void SetHighscore(int newHighscore) { m_highscore = newHighscore; }
 };

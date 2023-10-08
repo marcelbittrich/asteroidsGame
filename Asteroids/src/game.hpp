@@ -11,8 +11,17 @@
 #include "gamesave.hpp"
 #include "gamestate.hpp"
 #include "background.hpp"
+#include "collisionhandler.h"
 
 #define PI 3.14159265359
+
+// Gameplay parameters
+const int STARTING_LIVES = 3;
+const int STARTING_BOMB_COUNT = 0;
+// One in ... for dropping a bomb when destroing astroids.
+const int BOMB_SPAWN_ON_SCORE = 50;
+const float ASTEROID_SPAWN_DELTATIME = 3.0f;
+const float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
 
 class Game
 {
@@ -28,10 +37,11 @@ public:
 	GameState gameState = GameState::STATE_IN_MENU;
 
 	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
-
-	std::list<Bomb> Bombs;
-
 	bool GetIsRunning() const { return isRunning; }
+
+	static void IncreaseScore() { score++; }
+	static int GetScore() { return score; }
+	static void DecreseLife() { life--; }
 
 private:
 	bool isRunning;
@@ -44,7 +54,7 @@ private:
 
 	// Control values
 	void InitInputDevices();
-	InputHandler MyInputHandler;
+	InputHandler myInputHandler;
 
 	// Texture values
 	SDL_Texture* shipTex;
@@ -55,26 +65,24 @@ private:
 	TTF_Font* m_font;
 	TTF_Font* m_fontHuge;
 
-	void initTextures();
-	SDL_Texture* createTextureFromPath(const char* path);
+	void InitTextures();
+	SDL_Texture* TextureFromPath(const char* path);
 
 	// Main menu values
 	GameSave myGameSave;
 	GameMenu myGameMenu;
 
-	void initMenu();
+	void InitMenu();
 
 	// Gameplay values
-	Ship ship;
 	Background gameBackground;
-	std::list<GameObject> gameObjects;
 	std::list<GameObject*> gameObjectPtrs;
 
-	void initGameplay();
+	void InitGameplay();
 
-	int score;
-	int life;
-	int bombCount;
+	inline static int score;
+	inline static int life;
+	inline static int bombCount;
 
 	/// Values for wave spwan system
 	float timeSinceLastAsteroidWave = 0;
@@ -93,7 +101,7 @@ private:
 	class UICounter* UIFPS;
 	class ShotMeter* shotMeter; // Alternative shot meter rendered below ship
 
-	void initUI();
+	void InitUI();
 
 	// deltaTime calculation
 	Uint32 lastUpdateTime;
@@ -111,6 +119,8 @@ private:
 	// Update
 	//
 
-	float calculateDeltaTime();
-	bool updateGameState();
+	float CalculateDeltaTime();
+	bool UpdateGameState();
+
+	CollisionHandler myCollisionhandler;
 };

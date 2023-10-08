@@ -11,28 +11,28 @@ GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, i
 
 	position = { m_width / 2 , 100 };
 	text = "Game Over";
-	createMenuText(m_gameOverTextRect, m_gameOverTextTexture, position, text, m_fontHuge, m_textColor, renderer);
+	CreateText(m_gameOverTextRect, m_gameOverTextTexture, position, text, m_fontHuge, m_textColor, renderer);
 
 	position = { m_width / 2 , 150 };
 	text = "Asteroids";
-	createMenuText(m_startScreenTextRect, m_startScreenTextTexture, position, text, m_fontHuge, m_textColor, renderer);
+	CreateText(m_startScreenTextRect, m_startScreenTextTexture, position, text, m_fontHuge, m_textColor, renderer);
 
 	position = { m_width / 2 , 630 };
 	text = "Move - Arrows, Shoot - Space, Bomb - Ctrl";
-	createMenuText(m_controlInstructionsTextRect, m_controlInstructionsTextTexture, position, text, m_font, m_textColor, renderer);
+	CreateText(m_controlInstructionsTextRect, m_controlInstructionsTextTexture, position, text, m_font, m_textColor, renderer);
 
 	m_startButtonRect = { 50, 400, m_width - 100, 80 };
 	text = "Start";
-	createMenuButton(m_startButtonTextRect, m_startButtonTexture, m_startButtonRect, text, font, m_textColor, renderer);
+	CreateButton(m_startButtonTextRect, m_startButtonTexture, m_startButtonRect, text, font, m_textColor, renderer);
 
 	m_exitButtonRect = { 50, 500, m_width - 100, 80 };
 	text = "Exit";
-	createMenuButton(m_exitButtonTextRect, m_exitButtonTexture, m_exitButtonRect, text, font, m_textColor, renderer);
+	CreateButton(m_exitButtonTextRect, m_exitButtonTexture, m_exitButtonRect, text, font, m_textColor, renderer);
 
 	m_scoreTextRect = {};
 }
 
-void GameMenu::createMenuText(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Point& centerPosition,
+void GameMenu::CreateText(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Point& centerPosition,
 	const char* text, TTF_Font* font, const SDL_Color color, SDL_Renderer* renderer)
 {
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
@@ -48,23 +48,23 @@ void GameMenu::createMenuText(SDL_Rect& renderRect, SDL_Texture*& texture, const
 	renderRect.h = textureHeight;
 }
 
-void GameMenu::createMenuButton(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Rect& buttonDimensions,
+void GameMenu::CreateButton(SDL_Rect& renderRect, SDL_Texture*& texture, const SDL_Rect& buttonDimensions,
 	const char* text, TTF_Font* font, const SDL_Color color, SDL_Renderer* renderer)
 {
 	SDL_Point centerPosition;
 	centerPosition.x = buttonDimensions.x + buttonDimensions.w / 2;
 	centerPosition.y = buttonDimensions.y + buttonDimensions.h / 2;
-	createMenuText(renderRect, texture, centerPosition, text, font, color, renderer);
+	CreateText(renderRect, texture, centerPosition, text, font, color, renderer);
 }
 
-void GameMenu::Update(bool& isRunning, GameState& gameState, const InputHandler& MyInputHandler)
+void GameMenu::Update(bool& isRunning, GameState& gameState, const InputHandler& myInputHandler)
 {
-	bool isLeftClicking = (MyInputHandler.getControlBools()).isLeftClicking;
+	bool isLeftClicking = (myInputHandler.GetControlBools()).isLeftClicking;
 	if (isLeftClicking)
 	{
 		int clickPosX, clickPosY;
 		SDL_GetMouseState(&clickPosX, &clickPosY);
-		relocateClick(clickPosX, clickPosY);
+		RelocateClick(clickPosX, clickPosY);
 
 		if (m_startButtonRect.x < clickPosX
 			&& m_startButtonRect.x + m_startButtonRect.w > clickPosX
@@ -85,7 +85,7 @@ void GameMenu::Update(bool& isRunning, GameState& gameState, const InputHandler&
 	}
 }
 
-void GameMenu::relocateClick(int& clickPosX, int& clickPosY)
+void GameMenu::RelocateClick(int& clickPosX, int& clickPosY)
 {
 	int currentWidth, currentHeight;
 	SDL_GetRendererOutputSize(m_renderer, &currentWidth, &currentHeight);
@@ -127,13 +127,13 @@ void GameMenu::Render()
 	// Render score message
 	if (!m_showStartScreen)
 	{
-		renderScoreMessage();
+		RenderScoreMessage();
 	}
 
 	SDL_RenderPresent(m_renderer);
 }
 
-void GameMenu::renderScoreMessage()
+void GameMenu::RenderScoreMessage()
 {
 	std::string scoreMessage = "";
 	if (m_score == m_highscore)
@@ -146,7 +146,7 @@ void GameMenu::renderScoreMessage()
 	}
 
 	SDL_Point position = { m_width / 2 , 300 };
-	createMenuText(m_scoreTextRect, m_scoreTextTexture, position, scoreMessage.c_str(), m_font, m_textColor, m_renderer);
+	CreateText(m_scoreTextRect, m_scoreTextTexture, position, scoreMessage.c_str(), m_font, m_textColor, m_renderer);
 	SDL_RenderCopy(m_renderer, m_scoreTextTexture, NULL, &m_scoreTextRect);
 	SDL_DestroyTexture(m_scoreTextTexture);
 }

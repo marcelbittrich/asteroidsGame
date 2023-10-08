@@ -15,11 +15,11 @@ typedef ControlBools ControlBools;
 class InputHandler
 {
 private:
-    ControlBools controlBools;
+    ControlBools m_controlBools;
 
 public:
     InputHandler();
     void HandleInput(bool &isRunning);
 
-    ControlBools getControlBools() const { return controlBools; }
+    ControlBools GetControlBools() const { return m_controlBools; }
 };

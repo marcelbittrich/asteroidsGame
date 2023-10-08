@@ -9,10 +9,10 @@ ShotMeter::ShotMeter(const Ship& ship, int xOffset, int yOffset, int m_width, in
 	position.w = m_width;
 	position.h = m_height;
 
-	reconstruct(position, ship);
+	Reconstruct(position, ship);
 }
 
-void ShotMeter::reconstruct(SDL_Rect position, const Ship& ship)
+void ShotMeter::Reconstruct(SDL_Rect position, const Ship& ship)
 {
 	position.x = (int)(ship.GetMidPos().x + xOffset - position.w / 2);
 	position.y = (int)(ship.GetMidPos().y + yOffset + position.h / 2);
@@ -27,7 +27,7 @@ void ShotMeter::reconstruct(SDL_Rect position, const Ship& ship)
 
 void ShotMeter::Update(int m_shotCounter, int m_maxShotCounter, const Ship& ship)
 {
-	reconstruct(position, ship);
+	Reconstruct(position, ship);
 	float shotMeterPercent = (std::min((((float)m_shotCounter / (float)m_maxShotCounter) * (float)m_maxShotCounter), (float)m_maxShotCounter)) / (float)m_maxShotCounter;
 	meterBar.w = (int)(shotMeterPercent * background2.w);
 }

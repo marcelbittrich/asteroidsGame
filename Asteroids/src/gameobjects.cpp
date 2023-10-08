@@ -3,51 +3,40 @@
 // uncomment to disable assert()
 // #define NDEBUG
 #include <cassert>
+#include "collisionhandler.h"
 
 #define PI 3.14159265359f
-
-SDL_Rect GameObject::getRenderRect() const
-{
-	SDL_Rect rect;
-	rect.w = m_width;
-	rect.h = m_height;
-	rect.x = (int)std::round(m_midPos.x - m_width / 2);
-	rect.y = (int)std::round(m_midPos.y - m_height / 2);
-	return rect;
-}
 
 Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture) 
 	: GameObject(midPos, 0.f)
 {
 	m_width = size;
 	m_height = size;
-	m_colRadius = size / 2 * sizeToCollisonRadiusRatio;
+	m_colRadius = size / 2 * m_colRadiusFactor;
 
 	m_animationCounter = 0;
 	m_timeLastShot = SDL_GetTicks();
 	m_timeLastBomb = SDL_GetTicks();
 
 	objectType = Type::Ship;
+
+	ships.push_back(*this);
 }
 
-Ship::Ship() : GameObject()
+void Ship::Update(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime)
 {
+	UpdateVisibility(deltaTime);
+	UpdateTransform(myInputHandler, windowWidth, windowHeight, deltaTime);
+	UpdateAnimation(myInputHandler, deltaTime);
+
+	if ((myInputHandler.GetControlBools()).isShooting)
+		Shoot();
+
+	if ((myInputHandler.GetControlBools()).isUsingBomb)
+		UseBomb();
 }
 
-void Ship::Update(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
-{
-	updateVisibility(deltaTime);
-	updateTransform(MyInputHandler, windowWidth, windowHeight, deltaTime);
-	updateAnimation(MyInputHandler, deltaTime);
-
-	if ((MyInputHandler.getControlBools()).isShooting)
-		shoot();
-
-	if ((MyInputHandler.getControlBools()).isUsingBomb)
-		useBomb();
-}
-
-void Ship::updateVisibility(float deltaTime)
+void Ship::UpdateVisibility(float deltaTime)
 {
 	if (m_isVisible)
 	{
@@ -73,9 +62,9 @@ void Ship::updateVisibility(float deltaTime)
 	}
 }
 
-void Ship::updateTransform(const InputHandler& MyInputHandler, int windowWidth, int windowHeight, float deltaTime)
+void Ship::UpdateTransform(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime)
 {
-	ControlBools CurrentControlBools = MyInputHandler.getControlBools();
+	ControlBools CurrentControlBools = myInputHandler.GetControlBools();
 
 	// Update transaltion
 	float scalarVelocity = m_velocity.Length();
@@ -111,9 +100,9 @@ void Ship::updateTransform(const InputHandler& MyInputHandler, int windowWidth, 
 	}
 }
 
-void Ship::updateAnimation(const InputHandler& MyInputHandler, float deltaTime)
+void Ship::UpdateAnimation(const InputHandler& myInputHandler, float deltaTime)
 {
-	ControlBools CurrentControlBools = MyInputHandler.getControlBools();
+	ControlBools CurrentControlBools = myInputHandler.GetControlBools();
 	if (CurrentControlBools.giveThrust)
 	{
 		if (SDL_GetTicks() - m_timeLastUpdated > m_timeBetweenSprites)
@@ -129,30 +118,30 @@ void Ship::updateAnimation(const InputHandler& MyInputHandler, float deltaTime)
 	}
 }
 
-void Ship::shoot()
+void Ship::Shoot()
 {
 	Uint32 timeSinceLastShot = SDL_GetTicks() - m_timeLastShot;
 
 	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots && m_shotCounter < m_maxShotCounter)
 	{
-		createShot();
+		CreateShot();
 		m_shotCounter = m_shotCounter + 100;
 
 		m_timeLastShot = SDL_GetTicks();
 	}
 }
 
-void Ship::createShot()
+void Ship::CreateShot()
 {
 	Vec2 shotVelocityVector = { 0, 0 };
 
 	shotVelocityVector.x = sin(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.x;
 	shotVelocityVector.y = -cos(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.y;
 
-	Shot(m_midPos.x, m_midPos.y, shotVelocityVector, m_rotation);
+	Shot(m_midPos, shotVelocityVector, m_rotation);
 }
 
-void Ship::useBomb()
+void Ship::UseBomb()
 {
 	Uint32 timeSinceLastBomb = SDL_GetTicks() - m_timeLastBomb;
 
@@ -170,15 +159,15 @@ void Ship::useBomb()
 	}
 }
 
-void Ship::Render(SDL_Renderer* renderer)
+void Ship::Render()
 {
-	assert(renderer && s_texture);
+	assert(s_renderer && s_texture);
 
-	renderShotMeter(renderer);
-	renderShip(renderer);
+	RenderShotMeter();
+	RenderShip();
 }
 
-void Ship::renderShotMeter(SDL_Renderer* renderer)
+void Ship::RenderShotMeter()
 {
 	SDL_Color meterColor = m_canShoot ? SDL_Color{ 0, 200, 0, 255 } : SDL_Color{ 200, 0, 0, 255 }; // Green : red
 
@@ -193,17 +182,17 @@ void Ship::renderShotMeter(SDL_Renderer* renderer)
 	SDL_Color triangleBaseColor = { 0, 0, 0, 255 };
 	float tringleWidth = m_width * 0.5f;
 	float trinagleHeight = m_height * 0.625f;
-	drawTriangle(renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
+	DrawTriangle(s_renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
 
 	/// Overlay actual shot meter triangle
 	float shotMeterValue = std::min(m_shotCounter / m_maxShotCounter, 1.0f); // from 0 to 1
 	if (shotMeterValue > 0.1f)
 	{
-		drawTriangle(renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, m_rotation, meterColor);
+		DrawTriangle(s_renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, m_rotation, meterColor);
 	}
 }
 
-void Ship::renderShip(SDL_Renderer* renderer)
+void Ship::RenderShip()
 {
 	// Grey out texture during respawn
 	if (!m_isVisible)
@@ -225,57 +214,52 @@ void Ship::renderShip(SDL_Renderer* renderer)
 				  0,
 				  m_spriteWidth,
 				  m_spriteHeight };
-	SDL_Rect destR = getRenderRect();
+	SDL_Rect destR = GetRenderRect();
 
-	SDL_RenderCopyEx(renderer, s_texture, &srcR, &destR, m_rotation, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(s_renderer, s_texture, &srcR, &destR, m_rotation, NULL, SDL_FLIP_NONE);
 }
 
-void Ship::collectBomb(Bomb* bomb)
+void Ship::CollectBomb(Bomb* bomb)
 {
 	m_collectedBombs.push_back(bomb);
-	bomb->GetCollected();
+	bomb->GetCollected(this);
 }
 
-void Ship::Reset(SDL_Renderer* renderer)
+void Ship::Reset()
 {
 	int windowWidth, windowHeight;
-	SDL_RenderGetLogicalSize(renderer, &windowWidth, &windowHeight);
+	SDL_RenderGetLogicalSize(s_renderer, &windowWidth, &windowHeight);
 
 	m_midPos = { windowWidth / 2.0f, windowHeight / 2.0f };
 	m_velocity = { 0.0f, 0.0f };
 	m_rotation = 0.f;
 }
 
-void Ship::Respawn(SDL_Renderer* renderer)
+void Ship::Respawn()
 {
-	Reset(renderer);
+	Reset();
 	m_isVisible = false;
 }
 
-std::list<Asteroid> Asteroid::asteroids;
-
-Asteroid::Asteroid(Vec2 midPos, Vec2 velocity, AsteroidSizeType sizeType) 
+Asteroid::Asteroid(Vec2 midPos, Vec2 velocity, Asteroid::SizeType sizeType) 
 	: GameObject(midPos, velocity), sizeType(sizeType)
 {
-	int size = getSize(sizeType);
+	int size = GetSize(sizeType);
 	m_colRadius = GetColRadius(size);
 	m_width = size;
 	m_height = size;
 
-	if (sizeType == AsteroidSizeType::Small)
-		objectType = Type::AsteroidSmall;
-	else
-		objectType = Type::AsteroidMedium;
+	objectType = Type::Asteroid;
 
 	asteroids.push_back(*this);
 }
 
-int Asteroid::getSize(AsteroidSizeType sizeType)
+int Asteroid::GetSize(Asteroid::SizeType sizeType)
 {
 	int size = -1;
-	if (sizeType == AsteroidSizeType::Small)
+	if (sizeType == Asteroid::SizeType::Small)
 		size = m_sizeSmall;
-	else if (sizeType == AsteroidSizeType::Medium)
+	else if (sizeType == Asteroid::SizeType::Medium)
 		size = m_sizeMedium;
 	return size;
 }
@@ -308,7 +292,7 @@ void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
 		{
 			if (m_id == otherAsteroid.m_id)
 				continue;
-			if (doesCollide(*this, otherAsteroid))
+			if (CollisionHandler::DoesCollide(*this, otherAsteroid))
 			{
 				canStayVisible = false;
 				break;
@@ -323,9 +307,9 @@ void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
 	m_midPos = newMidPosistion;
 }
 
-void Asteroid::handleDestruction()
+void Asteroid::HandleDestruction()
 {
-	int newAsteroidSize = Asteroid::getSize(AsteroidSizeType::Small);
+	int newAsteroidSize = Asteroid::GetSize(Asteroid::SizeType::Small);
 
 	Vec2 spawnDirection = m_velocity.Rotate(90);
 	spawnDirection.SetLength(newAsteroidSize / 2.f);
@@ -333,22 +317,22 @@ void Asteroid::handleDestruction()
 	Asteroid(
 		m_midPos + spawnDirection,
 		m_velocity.Rotate(45) * m_DestAstroidVelFactor,
-		AsteroidSizeType::Small);
+		Asteroid::SizeType::Small);
 
 	Asteroid(
 		m_midPos - spawnDirection,
 		m_velocity.Rotate(-45) * m_DestAstroidVelFactor,
-		AsteroidSizeType::Small);
+		Asteroid::SizeType::Small);
 }
 
-void Asteroid::Render(SDL_Renderer* renderer)
+void Asteroid::Render()
 {
 	SDL_Texture* asteroidTex = nullptr;
-	if (sizeType == AsteroidSizeType::Medium)
+	if (sizeType == Asteroid::SizeType::Medium)
 	{
 		asteroidTex = s_textureMedium;
 	}
-	else if (sizeType == AsteroidSizeType::Small)
+	else if (sizeType == Asteroid::SizeType::Small)
 	{
 		asteroidTex = s_textureSmall;
 	}
@@ -358,168 +342,21 @@ void Asteroid::Render(SDL_Renderer* renderer)
 	}
 	if (m_isVisible)
 	{
-		SDL_Rect asteroidRect = getRenderRect();
-		SDL_RenderCopyEx(renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
+		SDL_Rect asteroidRect = GetRenderRect();
+		SDL_RenderCopyEx(s_renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
 	}
 }
 
-bool doesCollide(const GameObject& firstObject, const GameObject& secondObject)
+Shot::Shot(Vec2 midPos, Vec2 velocity, float shotHeadingAngle)
+	: GameObject(midPos, velocity)
 {
-	if (!firstObject.GetVisibility() || !secondObject.GetVisibility())
-		return false;
-
-	Vec2 firstMidPos = firstObject.GetMidPos();
-	float firstColRadius = firstObject.GetColRadius();
-	Vec2 secondMidPos = secondObject.GetMidPos();
-	float secondColRadius = secondObject.GetColRadius();
-
-	float squareDistance = (firstMidPos.x - secondMidPos.x) * (firstMidPos.x - secondMidPos.x) + (firstMidPos.y - secondMidPos.y) * (firstMidPos.y - secondMidPos.y);
-	float squareColDistance = (firstColRadius + secondColRadius) * (firstColRadius + secondColRadius);
-
-	return squareDistance <= squareColDistance;
-}
-
-struct CollisionOccurrence
-{
-	int firstObjectId;
-	int secondObjectId;
-	Uint32 time;
-};
-
-std::vector<CollisionOccurrence> recentCollisions = {};
-
-bool didRecentlyCollide(GameObject firstObject, GameObject secondObject)
-{
-	int firstID = firstObject.GetID();
-	int secondID = secondObject.GetID();
-
-	for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it++)
-	{
-		if ((it->firstObjectId == firstID && it->secondObjectId == secondID) || (it->firstObjectId == secondID && it->secondObjectId == firstID))
-		{
-			if (SDL_GetTicks() > (it->time + 500))
-			{
-				it->time = SDL_GetTicks();
-				return false;
-			}
-			else
-			{
-				// std::cout << "Did recently collide" << std::endl;
-				return true;
-			}
-		}
-	}
-	CollisionOccurrence collisionOccurrence;
-	collisionOccurrence.firstObjectId = firstID;
-	collisionOccurrence.secondObjectId = secondID;
-	collisionOccurrence.time = SDL_GetTicks();
-	recentCollisions.push_back(collisionOccurrence);
-	return false;
-}
-
-void asteroidsCollide(GameObject& firstObject, GameObject& secondObject)
-{
-	if (doesCollide(firstObject, secondObject) && !didRecentlyCollide(firstObject, secondObject))
-	{
-		// source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
-		Vec2 firstObjectMidPos = firstObject.GetMidPos();
-		Vec2 firstObjectVelocity = firstObject.GetVelocity();
-		Vec2 secondObjectMidPos = secondObject.GetMidPos();
-		Vec2 secondObjectVelocity = secondObject.GetVelocity();
-
-		// distance vector
-		float normal[2];
-		normal[0] = secondObjectMidPos.x - firstObjectMidPos.x;
-		normal[1] = secondObjectMidPos.y - firstObjectMidPos.y;
-
-		// angle between object 1 and normal
-		float f1 = (firstObjectVelocity.x * normal[0] + firstObjectVelocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
-		// parallel component for object 1
-		std::vector<float> vp1 = { normal[0] * f1, normal[1] * f1 };
-		// vertical component for object 1
-		std::vector<float> vv1 = { firstObjectVelocity.x - vp1[0], firstObjectVelocity.y - vp1[1] };
-
-		// angle between object 2 and normal
-		float f2 = (secondObjectVelocity.x * normal[0] + secondObjectVelocity.y * normal[1]) / (normal[0] * normal[0] + normal[1] * normal[1]);
-		// parallel component for object 2
-		std::vector<float> vp2 = { normal[0] * f2, normal[1] * f2 };
-		// vertical component for object 2
-		std::vector<float> vv2 = { secondObjectVelocity.x - vp2[0], secondObjectVelocity.y - vp2[1] };
-
-		int weightObject1 = PI * firstObject.GetColRadius() * firstObject.GetColRadius();
-		int weightObject2 = PI * secondObject.GetColRadius() * secondObject.GetColRadius();
-
-		if (weightObject1 == weightObject2)
-		{
-			float velocityX = vv1[0] + vp2[0];
-			float velocityY = vv1[1] + vp2[1];
-			firstObject.SetVelocity(velocityX, velocityY);
-
-			velocityX = vv2[0] + vp1[0];
-			velocityY = vv2[1] + vp1[1];
-			secondObject.SetVelocity(velocityX, velocityY);
-		}
-		else
-		{
-			float weightFactorX = 2 * ((weightObject1 * vp1[0] + weightObject2 * vp2[0]) / (weightObject1 + weightObject2));
-			float weightFactorY = 2 * ((weightObject1 * vp1[1] + weightObject2 * vp2[1]) / (weightObject1 + weightObject2));
-
-			vp1[0] = weightFactorX - vp1[0];
-			vp1[1] = weightFactorY - vp1[1];
-			vp2[0] = weightFactorX - vp2[0];
-			vp2[1] = weightFactorY - vp2[1];
-
-			float velocityX = vv1[0] + vp1[0];
-			float velocityY = vv1[1] + vp1[1];
-			firstObject.SetVelocity(velocityX, velocityY);
-
-			velocityX = vv2[0] + vp2[0];
-			velocityY = vv2[1] + vp2[1];
-			secondObject.SetVelocity(velocityX, velocityY);
-		}
-	}
-}
-
-void spawnAsteroid(int xPos, int yPos, Vec2 velocity, AsteroidSizeType sizeType, const std::list<GameObject>& gameobjects)
-{
-	GameObject collisionObject = GameObject();
-	collisionObject.SetMidPos((float)xPos, (float)yPos);
-	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::getSize(sizeType)));
-
-	bool isSafeToSpawn = true;
-	for (auto it = gameobjects.begin(); it != gameobjects.end(); it++)
-	{
-		if (doesCollide(collisionObject, *it))
-		{
-			isSafeToSpawn = false;
-			break;
-		}
-	}
-	if (isSafeToSpawn)
-	{
-		Asteroid(
-			collisionObject.GetMidPos(),
-			velocity,
-			sizeType);
-	}
-}
-
-std::list<Shot> Shot::shots;
-
-Shot::Shot(float midPosX, float midPosY, Vec2 m_velocity, float shotHeadingAngle)
-{
-	this->m_velocity = m_velocity;
-	this->m_midPos = { midPosX, midPosY };
-
 	m_creationTime = SDL_GetTicks();
-
 	m_rotation = shotHeadingAngle;
 
-	float colRadiusOffset = 0.3;
-	int size = 20;
-	m_colRadius = size * colRadiusOffset;
-	this->m_width = size;
-	this->m_height = size;
+	m_colRadius = m_size * m_colRadiusFactor;
+
+	m_width = m_size;
+	m_height = m_size;
 
 	objectType = Type::Shot;
 
@@ -532,22 +369,115 @@ void Shot::Update(int windowWidth, int windowHeight, float deltaTime)
 	m_midPos.y += m_velocity.y * deltaTime;
 	// midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
 
-	if (tooOld())
+	if (TooOld())
 	{
 		m_isDead = true;
 	}
 }
 
-void Shot::Render(SDL_Renderer* renderer)
+void Shot::Render()
 {
-	SDL_Rect rect = getRenderRect();
-	SDL_RenderCopyEx(renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
+	SDL_Rect rect = GetRenderRect();
+	SDL_RenderCopyEx(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
 }
 
-bool Shot::tooOld()
+bool Shot::TooOld()
 {
 	Uint32 deltaTime = SDL_GetTicks() - m_creationTime;
 	return (m_maxLifeTime < deltaTime);
+}
+
+Bomb::Bomb(Vec2 midPos, Vec2 velocity)
+	: GameObject(midPos, velocity)
+{
+	m_creationTime = SDL_GetTicks();
+	m_isVisible = true;
+
+	m_width = m_size;
+	m_height = m_size;
+
+	isCollected = false;
+	isExploding = false;
+
+	m_colRadius = m_size * m_colRadiusFactor;
+
+	objectType = Type::Bomb;
+
+	bombs.push_back(*this);
+}
+
+void Bomb::Update(int windowWidth, int windowHeight, float deltaTime)
+{
+	if (!isCollected && !isExploding)
+	{
+		m_midPos.x += m_velocity.x * deltaTime * 60;
+		m_midPos.y += m_velocity.y * deltaTime * 60;
+		m_midPos = calcPosIfLeaving(m_midPos, m_colRadius, windowWidth, windowHeight);
+
+		m_rotation += m_rotatingSpeed * deltaTime;
+	}
+	if (isCollected && !isExploding && m_ownerShip)
+	{
+		m_midPos = m_ownerShip->GetMidPos();
+	}
+	if (isExploding)
+	{
+		float explosionVelocity = 20.0f;
+		float timeSinceIgnition = (SDL_GetTicks() - m_ignitionTime) / 1000.0f;
+		m_colRadius += timeSinceIgnition * explosionVelocity * deltaTime * 60;
+		if (timeSinceIgnition > 1.0f)
+		{
+			m_isDead = true;
+		}
+	}
+}
+
+void Bomb::Render()
+{
+	if (m_isVisible)
+	{
+		SDL_Rect rect = GetRenderRect();
+		SDL_RenderCopyEx(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
+	}
+}
+
+void Bomb::GetCollected(Ship* ownerShip)
+{
+	isCollected = true;
+	m_isVisible = false;
+	m_ownerShip = ownerShip;
+}
+
+void Bomb::Explode()
+{
+	isExploding = true;
+	m_isVisible = true;
+	m_ignitionTime = SDL_GetTicks();
+	m_ownerShip = nullptr;
+}
+
+void spawnAsteroid(int xPos, int yPos, Vec2 velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects)
+{
+	GameObject collisionObject = GameObject();
+	collisionObject.SetMidPos((float)xPos, (float)yPos);
+	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::GetSize(sizeType)));
+
+	bool isSafeToSpawn = true;
+	for (auto it = gameobjects.begin(); it != gameobjects.end(); it++)
+	{
+		if (CollisionHandler::DoesCollide(collisionObject, **it))
+		{
+			isSafeToSpawn = false;
+			break;
+		}
+	}
+	if (isSafeToSpawn)
+	{
+		Asteroid(
+			collisionObject.GetMidPos(),
+			velocity,
+			sizeType);
+	}
 }
 
 Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHeight)
@@ -575,71 +505,12 @@ Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHe
 	return newMidPos;
 }
 
-Bomb::Bomb(int xPos, int yPos, Vec2 m_velocity)
+SDL_Rect GameObject::GetRenderRect() const
 {
-	m_midPos.x = xPos;
-	m_midPos.y = yPos;
-	this->m_velocity = m_velocity;
-	m_creationTime = SDL_GetTicks();
-	m_isVisible = true;
-
-	int size = 50;
-	m_width = size;
-	m_height = size;
-
-	isCollected = false;
-	isExploding = false;
-
-	float colRadiusOffset = 0.3;
-	m_colRadius = size * colRadiusOffset;
-
-	objectType = Type::Bomb;
-}
-
-void Bomb::Update(int windowWidth, int windowHeight, float deltaTime, Ship* ship)
-{
-	if (!isCollected && !isExploding)
-	{
-		m_midPos.x += m_velocity.x * deltaTime * 60;
-		m_midPos.y += m_velocity.y * deltaTime * 60;
-		m_midPos = calcPosIfLeaving(m_midPos, m_colRadius, windowWidth, windowHeight);
-
-		m_rotation += m_rotatingSpeed * deltaTime;
-	}
-	if (isCollected && !isExploding)
-	{
-		m_midPos = ship->GetMidPos();
-	}
-	if (isExploding)
-	{
-		float explosionVelocity = 20.0f;
-		float timeSinceIgnition = (SDL_GetTicks() - m_ignitionTime) / 1000.0f;
-		m_colRadius += timeSinceIgnition * explosionVelocity * deltaTime * 60;
-		if (timeSinceIgnition > 1.0f)
-		{
-			m_isDead = true;
-		}
-	}
-}
-
-void Bomb::Render(SDL_Renderer* renderer)
-{
-	if (m_isVisible)
-	{
-		SDL_Rect rect = getRenderRect();
-		SDL_RenderCopyEx(renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
-	}
-}
-
-void Bomb::GetCollected()
-{
-	isCollected = true;
-	m_isVisible = false;
-}
-
-void Bomb::Explode()
-{
-	isExploding = true;
-	m_isVisible = true;
-	m_ignitionTime = SDL_GetTicks();
+	SDL_Rect rect;
+	rect.w = m_width;
+	rect.h = m_height;
+	rect.x = (int)std::round(m_midPos.x - m_width / 2);
+	rect.y = (int)std::round(m_midPos.y - m_height / 2);
+	return rect;
 }

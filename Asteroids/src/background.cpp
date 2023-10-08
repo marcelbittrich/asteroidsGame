@@ -63,20 +63,20 @@ Background::Background(int windowWidth, int windowHeight, float pointScale)
 	}
 }
 
-void Background::Update(const std::list<GameObject>& gameObjects, float deltaTime)
+void Background::Update(const std::list<GameObject*>& gameObjects, float deltaTime)
 {
-	for (const GameObject& object : gameObjects)
+	for (const GameObject* object : gameObjects)
 	{
-		if (object.GetVisibility())
+		if (object->GetVisibility())
 		{
-			GameObject colObject = object;
+			GameObject colObject = *object;
 			std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
 				[this, colObject](uint32_t i)
 				{
 					std::for_each(horizontalIter.begin(), horizontalIter.end(),
 					[this, i, colObject](uint32_t j)
 						{
-							movePointOut(backgroundPoints[i][j], colObject);
+							MovePointOut(backgroundPoints[i][j], colObject);
 						});
 				});
 		}
@@ -90,7 +90,7 @@ void Background::Update(const std::list<GameObject>& gameObjects, float deltaTim
 				{
 					if (!backgroundPoints[i][j].onOrigin)
 					{
-						returnPointToOrigin(backgroundPoints[i][j], deltaTime);
+						ReturnPointToOrigin(backgroundPoints[i][j], deltaTime);
 					}
 				});
 		});
@@ -127,7 +127,7 @@ void Background::Render(SDL_Renderer* renderer)
 				if (scaledPos.x < backgroundSurface->w && scaledPos.x > 0
 					&& scaledPos.y < backgroundSurface->h && scaledPos.y > 0)
 				{
-					setPixel(backgroundSurface, (int)scaledPos.x, (int)scaledPos.y, pixel);
+					SetPixel(backgroundSurface, (int)scaledPos.x, (int)scaledPos.y, pixel);
 				}
 			}
 	}
@@ -147,7 +147,7 @@ void Background::Render(SDL_Renderer* renderer)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
 
-void Background::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
+void Background::SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 {
 	Uint32* pixels = (Uint32*)surface->pixels;
 
@@ -156,7 +156,7 @@ void Background::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 	pixels[position] = pixel;
 }
 
-void Background::returnPointToOrigin(BackgroundPoint& point, float deltaTime)
+void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 {
 
 	float distance = Vec2::Distance(point.currentPos, point.originPos);
@@ -182,7 +182,7 @@ void Background::returnPointToOrigin(BackgroundPoint& point, float deltaTime)
 	}
 }
 
-void Background::movePointOut(BackgroundPoint& point, GameObject colObject)
+void Background::MovePointOut(BackgroundPoint& point, GameObject colObject)
 {
 	float objectColRadius = colObject.GetColRadius();
 	Vec2 objectMidPos = Vec2(colObject.GetMidPos().x, colObject.GetMidPos().y); //TODO: delete when GameObjects got refactored with Vec2

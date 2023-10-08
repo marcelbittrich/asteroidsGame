@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\background.cpp" />
+    <ClCompile Include="src\collisionhandler.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\gameobjects.cpp" />
     <ClCompile Include="src\gamesave.cpp" />
@@ -153,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\background.hpp" />
+    <ClInclude Include="src\collisionhandler.h" />
     <ClInclude Include="src\game.hpp" />
     <ClInclude Include="src\gameobjects.hpp" />
     <ClInclude Include="src\gamesave.hpp" />

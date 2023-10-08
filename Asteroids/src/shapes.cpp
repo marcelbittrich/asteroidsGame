@@ -1,7 +1,7 @@
 #include "shapes.hpp"
 
 //mid point circle algorithm based on https://en.wikipedia.org/w/index.php?title=Midpoint_circle_algorithm&oldid=889172082#C_example
-void drawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
+void DrawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 {
 	int x = radius - 1;
 	int y = 0;
@@ -36,15 +36,15 @@ void drawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 	}
 }
 
-void drawTriangle(SDL_Renderer* renderer, float x0, float y0, float m_width, float m_height, float m_rotation, SDL_Color color)
+void DrawTriangle(SDL_Renderer* renderer, float x0, float y0, float width, float height, float rotation, SDL_Color color)
 {
 
-	float borderLine = SDL_sqrtf((m_width / 2) * (m_width / 2) + m_height * m_height);
-	float anglePoint = SDL_acosf(m_height / borderLine);
+	float borderLine = SDL_sqrtf((width / 2) * (width / 2) + height * height);
+	float anglePoint = SDL_acosf(height / borderLine);
 
 	SDL_FPoint peakPoint = { x0, y0 };
-	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-m_rotation / 180.0 * 3.1415 + anglePoint), y0 + borderLine * SDL_cosf(-m_rotation / 180.0 * 3.1415 + anglePoint) };
-	SDL_FPoint bottomRightPoint = { x0 + borderLine * SDL_sinf(-m_rotation / 180.0 * 3.1415 - anglePoint), y0 + borderLine * SDL_cosf(-m_rotation / 180.0 * 3.1415 - anglePoint) };
+	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.0 * 3.1415 + anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.0 * 3.1415 + anglePoint) };
+	SDL_FPoint bottomRightPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.0 * 3.1415 - anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.0 * 3.1415 - anglePoint) };
 
 	std::vector< SDL_Vertex > verts =
 	{
