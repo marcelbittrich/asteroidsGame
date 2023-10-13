@@ -131,11 +131,6 @@ void GameMenu::RelocateClick(SDL_Point& clickPos)
 
 void GameMenu::Render()
 {
-	// Clear screen to black.
-	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(m_renderer);
-
 	for (const MenuText& text : textObjects)
 	{
 		if(text.isVisible)
@@ -149,8 +144,7 @@ void GameMenu::Render()
 			SDL_SetRenderDrawColor(m_renderer, m_buttonColor.r, m_buttonColor.g, m_buttonColor.b, m_buttonColor.a);
 			SDL_RenderFillRect(m_renderer, &button.buttonDim);
 			SDL_RenderCopy(m_renderer, button.texture, NULL, &button.textDim);
-		}
-			
+		}	
 	}
 
 	SDL_RenderPresent(m_renderer);
@@ -236,3 +230,30 @@ void MainMenu::UpdateScore(int newScore)
 	}
 }
 
+void PauseMenu::CreateDefaultPauseMenu()
+{
+	m_backgroundRect =
+	{
+		m_width / 2 - 200,
+		m_height / 2 - 100,
+		400,
+		200
+	};
+
+	SDL_Point position = { m_width / 2, m_height / 2 - 80};
+	AddText("PauseHeadline", "PAUSE", TextSize::Small, position);
+
+	position = { m_width / 2, m_height / 2 + 10 };
+	AddText("SoundText", "Sound", TextSize::Small, position);
+
+	SDL_Rect posAndDim = { m_width / 2, m_height / 2 + 60, 200, 40 };
+	AddButton("ExitButton", "Back", TextSize::Small, posAndDim, Game::changeStateToGame);
+}
+
+void PauseMenu::Render()
+{
+	SDL_SetRenderDrawColor(m_renderer, m_backgroundColor.r, m_backgroundColor.g, m_backgroundColor.b, m_backgroundColor.a);
+	SDL_RenderFillRect(m_renderer, &m_backgroundRect);
+
+	GameMenu::Render();
+}

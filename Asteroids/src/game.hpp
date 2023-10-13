@@ -84,6 +84,7 @@ private:
 	// Main menu values
 	GameSave myGameSave;
 	MainMenu myMainMenu;
+	PauseMenu myPauseMenu;
 
 	void InitMenu();
 

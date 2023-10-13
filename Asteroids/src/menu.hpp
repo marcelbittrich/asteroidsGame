@@ -29,7 +29,7 @@ public:
 	GameMenu() {};
 	GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight);
 	~GameMenu();
-	virtual void Update(const InputHandler& myInputHandler);
+	void Update(const InputHandler& myInputHandler);
 	virtual void Render();
 
 	enum class TextSize 
@@ -93,3 +93,19 @@ private:
 	int m_highscore = 0;
 	void OnStateChange();
 };
+
+class PauseMenu : public GameMenu
+{
+public:
+	PauseMenu() {};
+	PauseMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight)
+		: GameMenu(font, fontHuge, renderer, windowWidth, windowHeight) {};
+	
+	void CreateDefaultPauseMenu();
+
+	void Render() override;
+
+private:
+	SDL_Color m_backgroundColor = { 30,30,30,255 };
+	SDL_Rect m_backgroundRect = { 0,0,0,0 };
+}; 

@@ -156,6 +156,8 @@ void Game::InitMenu()
 	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
 	myMainMenu.CreateDefaultMainMenu();
 	myMainMenu.UpdateScore(myGameSave.GetHighscore());
+	myPauseMenu = PauseMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
+	myPauseMenu.CreateDefaultPauseMenu();
 }
 
 void Game::InitGameplay()
@@ -307,9 +309,6 @@ void Game::Update()
 		asteroidWave++;
 	}
 
-	// Alternative Shot Meter - not used
-	// shotMeter->update(ship->getShotCounter(), ship->getMaxShotCounter(), ship);
-
 	// Update Shots
 	for (Shot& Shot : Shot::shots)
 	{
@@ -370,6 +369,11 @@ bool Game::UpdateGameState()
 		myMainMenu.Update(myInputHandler);
 	}
 
+	if (gameState == GameState::PAUSE)
+	{
+		myPauseMenu.Update(myInputHandler);
+	}
+
 	// Check if player just died and present menu with score
 	if (life == 0 && gameState == GameState::IN_GAME)
 	{
@@ -406,17 +410,21 @@ bool Game::UpdateGameState()
 
 void Game::Render()
 {
+	// Render are outside the playArea grey.
+	// Only visible with aspect ratios unequal to 16/9.
+	SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+	SDL_RenderClear(renderer);
+
+	// Render playArea black
+	SDL_Rect playArea = { 0, 0, windowWidth, windowHeight };
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderFillRect(renderer, &playArea);
+
 	if (gameState == GameState::IN_MENU || gameState == GameState::RESET)
 	{
 		myMainMenu.Render();
 		return;
 	}
-
-	SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-	SDL_RenderClear(renderer);
-	SDL_Rect playArea = { 0, 0, windowWidth, windowHeight };
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderFillRect(renderer, &playArea);
 
 	gameBackground.Render(renderer);
 
@@ -430,14 +438,9 @@ void Game::Render()
 	UIBomb->Render(renderer);
 	UIFPS->Render(renderer);
 
-	// ShotMeter
-	// shotMeter.render(renderer, ship.canShoot);
-
-	if (life == 0)
+	if (gameState == GameState::PAUSE)
 	{
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
-		SDL_RenderFillRect(renderer, &playArea);
+		myPauseMenu.Render();
 	}
 
 	SDL_RenderPresent(renderer);
@@ -472,7 +475,6 @@ void Game::Reset()
 	bombCount = 0;
 
 	Ship(Vec2(windowWidth / 2.f, windowHeight / 2.f), 50, shipTex);
-
 	InitAsteroids(windowWidth, windowHeight);
 
 	lastUpdateTime = SDL_GetTicks();
