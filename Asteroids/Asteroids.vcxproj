@@ -166,6 +166,17 @@
     <ClInclude Include="src\UIelements.hpp" />
     <ClInclude Include="src\vector2.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2_image.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2_ttf.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

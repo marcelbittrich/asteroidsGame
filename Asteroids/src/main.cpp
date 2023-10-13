@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 
 	while (game.GetIsRunning())
 	{
-		if (game.gameState == GameState::STATE_RESET)
+		if (game.GetState() == Game::GameState::RESET)
 		{
 			game.Reset();
 		}

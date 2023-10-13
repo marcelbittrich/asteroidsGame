@@ -153,8 +153,9 @@ SDL_Texture* Game::TextureFromPath(const char* path)
 void Game::InitMenu()
 {
 	myGameSave = GameSave();
-	myGameMenu = GameMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
-	myGameMenu.SetHighscore(myGameSave.GetHighscore());
+	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
+	myMainMenu.CreateDefaultMainMenu();
+	myMainMenu.UpdateScore(myGameSave.GetHighscore());
 }
 
 void Game::InitGameplay()
@@ -364,50 +365,50 @@ float Game::CalculateDeltaTime()
 
 bool Game::UpdateGameState()
 {
-	if (gameState == GameState::STATE_IN_MENU)
+	if (gameState == GameState::IN_MENU)
 	{
-		myGameMenu.Update(isRunning, gameState, myInputHandler);
+		myMainMenu.Update(myInputHandler);
 	}
 
 	// Check if player just died and present menu with score
-	if (life == 0 && gameState == GameState::STATE_IN_GAME)
+	if (life == 0 && gameState == GameState::IN_GAME)
 	{
-		gameState = GameState::STATE_IN_MENU;
+		gameState = GameState::IN_MENU;
+		myMainMenu.ChangeState(MainMenu::State::GameOver);
+		myMainMenu.UpdateScore(score);
 
-		myGameMenu.SetScore(score);
 		int oldHighscore = myGameSave.GetHighscore();
 		if (score > oldHighscore)
 		{
-			myGameMenu.SetHighscore(score);
 			myGameSave.SetHighscore(score);
 			myGameSave.WriteFile();
 		}
 	}
 
 	bool pausePressed = myInputHandler.GetControlBools().pausePressed;
-	if (pausePressed && gameState == GameState::STATE_IN_GAME && newPausePress)
+	if (pausePressed && gameState == GameState::IN_GAME && newPausePress)
 	{
 		newPausePress = false;
-		gameState = GameState::STATE_PAUSE;
+		gameState = GameState::PAUSE;
 	}
-	else if (pausePressed && gameState == GameState::STATE_PAUSE && newPausePress)
+	else if (pausePressed && gameState == GameState::PAUSE && newPausePress)
 	{
 		newPausePress = false;
-		gameState = GameState::STATE_IN_GAME;
+		gameState = GameState::IN_GAME;
 	}
 	else if (!pausePressed)
 	{
 		newPausePress = true;
 	}
 
-	return gameState == GameState::STATE_IN_GAME;
+	return gameState == GameState::IN_GAME;
 }
 
 void Game::Render()
 {
-	if (gameState == GameState::STATE_IN_MENU || gameState == GameState::STATE_RESET)
+	if (gameState == GameState::IN_MENU || gameState == GameState::RESET)
 	{
-		myGameMenu.Render();
+		myMainMenu.Render();
 		return;
 	}
 
@@ -476,7 +477,7 @@ void Game::Reset()
 
 	lastUpdateTime = SDL_GetTicks();
 
-	gameState = GameState::STATE_IN_GAME;
+	gameState = GameState::IN_GAME;
 }
 
 void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)

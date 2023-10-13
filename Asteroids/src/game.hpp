@@ -34,17 +34,30 @@ public:
 	void Render();
 	void Clean();
 	void Reset();
-	GameState gameState = GameState::STATE_IN_MENU;
+
+	static enum class GameState
+	{
+		IN_MENU,
+		IN_GAME,
+		RESET,
+		PAUSE
+	};
 
 	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 	bool GetIsRunning() const { return isRunning; }
-
+	
 	static void IncreaseScore() { score++; }
 	static int GetScore() { return score; }
 	static void DecreseLife() { life--; }
+	GameState GetState() const { return gameState; }
 
+	static void changeStateToGame() { gameState = GameState::IN_GAME; }
+	static void changeStateToReset() { gameState = GameState::RESET; }
+	static void changeStateToPause() { gameState = GameState::PAUSE; }
+	static void exitGame() { isRunning = false; }
 private:
-	bool isRunning;
+	inline static GameState gameState = GameState::IN_MENU;
+	inline static bool isRunning = true;
 	// Game window values
 	int windowWidth;
 	int windowHeight;
@@ -70,7 +83,7 @@ private:
 
 	// Main menu values
 	GameSave myGameSave;
-	GameMenu myGameMenu;
+	MainMenu myMainMenu;
 
 	void InitMenu();
 
