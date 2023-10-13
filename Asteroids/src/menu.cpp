@@ -3,6 +3,8 @@
 #include "game.hpp"
 #include "gamestate.hpp"
 
+#include <algorithm>
+
 GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight)
 	: m_width(windowWidth), m_height(windowHeight), m_font(font), m_fontHuge(fontHuge), m_renderer(renderer)
 {}
@@ -19,7 +21,7 @@ GameMenu::~GameMenu()
 	}
 }
 
-void GameMenu::AddText(const std::string& id, const std::string& text, TextSize textSize, 
+void GameMenu::AddText(const std::string& id, const std::string& text, TextSize textSize,
 	SDL_Point centeredPosition, bool isVisible)
 {
 	TTF_Font* font = (textSize == TextSize::Small) ? m_font : m_fontHuge;
@@ -29,15 +31,44 @@ void GameMenu::AddText(const std::string& id, const std::string& text, TextSize 
 	textObjects.push_back(menuText);
 }
 
-void GameMenu::AddButton(const std::string& id, const std::string& text, TextSize textSize, 
+void GameMenu::AddButton(const std::string& id, const std::string& text, TextSize textSize,
 	SDL_Rect centeredPositionAndDimension, void(*callback)(), bool isVisible)
-{	
+{
 	TTF_Font* font = (textSize == TextSize::Small) ? m_font : m_fontHuge;
 	MenuButton menuButton = CreateButton(centeredPositionAndDimension, text.c_str(), font, m_textColor, m_renderer);
 	menuButton.id = id;
 	menuButton.isVisible = isVisible;
 	menuButton.callback = callback;
 	buttonObjects.push_back(menuButton);
+}
+
+void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, bool isVisible)
+{
+	Slider slider;
+	slider.id = id;
+	slider.isVisible = isVisible;
+	slider.dimensions =
+	{
+		centeredPositionAndDimension.x - centeredPositionAndDimension.w / 2,
+		centeredPositionAndDimension.y - centeredPositionAndDimension.h / 2,
+		centeredPositionAndDimension.w,
+		centeredPositionAndDimension.h
+	};
+	slider.indicatorDim =
+	{
+		slider.dimensions.x + (int)(slider.sliderValue * slider.dimensions.w) - centeredPositionAndDimension.h / 2,
+		slider.dimensions.y,
+		centeredPositionAndDimension.h,
+		centeredPositionAndDimension.h
+	};
+	slider.lineDim =
+	{
+		slider.dimensions.x,
+		slider.dimensions.y + slider.dimensions.h / 2,
+		slider.dimensions.w,
+		slider.lineThickness
+	};
+	sliderObjects.push_back(slider);
 }
 
 MenuText GameMenu::CreateText(const SDL_Point& centerPosition,
@@ -65,12 +96,12 @@ MenuText GameMenu::CreateText(const SDL_Point& centerPosition,
 MenuButton GameMenu::CreateButton(const SDL_Rect& centeredPositionAndDimension,
 	const char* text, TTF_Font* font, const SDL_Color color, SDL_Renderer* renderer)
 {
-	SDL_Point centerPosition = 
+	SDL_Point centerPosition =
 	{
 		centeredPositionAndDimension.x,
 		centeredPositionAndDimension.y
 	};
-	
+
 	MenuText buttonText = CreateText(centerPosition, text, font, color, renderer);
 	MenuButton button;
 	button.textDim = buttonText.textDim;
@@ -88,52 +119,85 @@ MenuButton GameMenu::CreateButton(const SDL_Rect& centeredPositionAndDimension,
 
 void GameMenu::Update(const InputHandler& myInputHandler)
 {
+	SDL_Point mousePos;
+	SDL_GetMouseState(&mousePos.x, &mousePos.y);
+	RelocateMouse(mousePos);
+
 	bool isLeftClicking = (myInputHandler.GetControlBools()).isLeftClicking;
 	if (isLeftClicking)
 	{
-		SDL_Point clickPos;
-		SDL_GetMouseState(&clickPos.x, &clickPos.y);
-		RelocateClick(clickPos);
-
 		for (const MenuButton& button : buttonObjects)
 		{
-			if (button.isVisible && IsButtonClicked(button, clickPos))
+			if (button.isVisible && IsClicked(button.buttonDim, mousePos))
 			{
 				if (!button.callback)
 					continue;
 				button.callback();
 			}
 		}
+		for (Slider& slider : sliderObjects)
+		{
+			if (slider.isVisible && IsClicked(slider.indicatorDim, mousePos))
+			{
+				slider.isDragged = true;
+			}
+		}
+	}
+	else
+	{
+		for (Slider& slider : sliderObjects)
+		{
+			slider.isDragged = false;
+		}
+	}
+
+	for (Slider& slider : sliderObjects)
+	{
+		if (slider.isDragged)
+		{
+			float newSliderValue = (mousePos.x - slider.dimensions.x) / (float)slider.dimensions.w;
+			slider.sliderValue = std::clamp<float>(newSliderValue, 0.f, 1.f);
+
+			std::cout << newSliderValue << std::endl;
+
+			slider.indicatorDim =
+			{
+				slider.dimensions.x + (int)(slider.sliderValue * slider.dimensions.w) - slider.indicatorDim.w / 2,
+				slider.dimensions.y,
+				slider.indicatorDim.w,
+				slider.indicatorDim.h
+			};
+		}
 	}
 }
 
-bool GameMenu::IsButtonClicked(MenuButton button, SDL_Point clickPos)
+bool GameMenu::IsClicked(SDL_Rect elementDim, SDL_Point clickPos)
 {
-	if (button.buttonDim.x < clickPos.x &&
-		button.buttonDim.x + button.buttonDim.w > clickPos.x &&
-		button.buttonDim.y < clickPos.y &&
-		button.buttonDim.y + button.buttonDim.h > clickPos.y)
+	if (elementDim.x < clickPos.x &&
+		elementDim.x + elementDim.w > clickPos.x &&
+		elementDim.y < clickPos.y &&
+		elementDim.y + elementDim.h > clickPos.y)
 		return true;
 	else
 		return false;
 }
 
-void GameMenu::RelocateClick(SDL_Point& clickPos)
+void GameMenu::RelocateMouse(SDL_Point& mousePos)
 {
 	int currentWidth, currentHeight;
 	SDL_GetRendererOutputSize(m_renderer, &currentWidth, &currentHeight);
 	int logicalWidth, logicalHeight;
 	SDL_RenderGetLogicalSize(m_renderer, &logicalWidth, &logicalHeight);
 
-	clickPos.x = ((float)clickPos.x / (float)currentWidth) * logicalWidth;
-	clickPos.y = ((float)clickPos.y / (float)currentHeight) * logicalHeight;
+	mousePos.x = ((float)mousePos.x / (float)currentWidth) * logicalWidth;
+	mousePos.y = ((float)mousePos.y / (float)currentHeight) * logicalHeight;
 }
 
 void GameMenu::Render()
 {
 	for (const MenuText& text : textObjects)
 	{
-		if(text.isVisible)
+		if (text.isVisible)
 			SDL_RenderCopy(m_renderer, text.texture, NULL, &text.textDim);
 	}
 
@@ -144,7 +208,18 @@ void GameMenu::Render()
 			SDL_SetRenderDrawColor(m_renderer, m_buttonColor.r, m_buttonColor.g, m_buttonColor.b, m_buttonColor.a);
 			SDL_RenderFillRect(m_renderer, &button.buttonDim);
 			SDL_RenderCopy(m_renderer, button.texture, NULL, &button.textDim);
-		}	
+		}
+	}
+
+	for (const Slider& slider : sliderObjects)
+	{
+		if (slider.isVisible)
+		{
+			SDL_SetRenderDrawColor(m_renderer, m_buttonColor.r, m_buttonColor.g, m_buttonColor.b, m_buttonColor.a);
+			SDL_RenderFillRect(m_renderer, &slider.lineDim);
+			SDL_SetRenderDrawColor(m_renderer, m_textColor.r, m_textColor.g, m_textColor.b, m_textColor.a);
+			SDL_RenderFillRect(m_renderer, &slider.indicatorDim);
+		}
 	}
 
 	SDL_RenderPresent(m_renderer);
@@ -175,7 +250,7 @@ void MainMenu::CreateDefaultMainMenu()
 
 void MainMenu::ChangeState(State newState)
 {
-	if (m_currentState != newState) 
+	if (m_currentState != newState)
 	{
 		m_currentState = newState;
 		OnStateChange();
@@ -240,13 +315,16 @@ void PauseMenu::CreateDefaultPauseMenu()
 		200
 	};
 
-	SDL_Point position = { m_width / 2, m_height / 2 - 80};
+	SDL_Point position = { m_width / 2, m_height / 2 - 80 };
 	AddText("PauseHeadline", "PAUSE", TextSize::Small, position);
 
-	position = { m_width / 2, m_height / 2 + 10 };
+	SDL_Rect posAndDim = { m_width / 2, m_height / 2 - 30, 200, 10 };
+	AddSlider("SoundSlider", posAndDim);
+
+	position = { m_width / 2, m_height / 2 };
 	AddText("SoundText", "Sound", TextSize::Small, position);
 
-	SDL_Rect posAndDim = { m_width / 2, m_height / 2 + 60, 200, 40 };
+	posAndDim = { m_width / 2, m_height / 2 + 60, 200, 40 };
 	AddButton("ExitButton", "Back", TextSize::Small, posAndDim, Game::changeStateToGame);
 }
 

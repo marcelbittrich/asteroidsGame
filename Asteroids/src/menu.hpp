@@ -9,7 +9,7 @@
 #include "inputhandler.hpp"
 
 
-struct MenuText
+static struct MenuText
 {
 	std::string id			= "Default";
 	SDL_Rect textDim		= { 0,0,0,0 };
@@ -17,10 +17,22 @@ struct MenuText
 	bool isVisible			= true;
 };
 
-struct MenuButton : MenuText
+static struct MenuButton : MenuText
 {
 	SDL_Rect buttonDim		= { 0,0,0,0 };
 	void (*callback)()		= nullptr;
+};
+
+static struct Slider
+{
+	std::string id = "DefaultSlider";
+	SDL_Rect dimensions = { 0,0,0,0 };
+	SDL_Rect indicatorDim = { 0,0,0,0 };
+	SDL_Rect lineDim = { 0,0,0,0 };
+	int lineThickness = 2;
+	float sliderValue = 0.5;
+	bool isDragged = false;
+	bool isVisible = true;
 };
 
 class GameMenu
@@ -42,6 +54,7 @@ public:
 		SDL_Point centeredPosition, bool isVisible = true);
 	void AddButton(const std::string& id, const std::string& text, TextSize textSize, 
 		SDL_Rect centeredPositionAndDimension, void(*callback)(), bool isVisible = true);
+	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, bool isVisible = true);
 
 protected:
 	int m_width = 0;
@@ -49,6 +62,7 @@ protected:
 
 	std::vector<MenuText> textObjects = {};
 	std::vector<MenuButton> buttonObjects = {};
+	std::vector<Slider> sliderObjects = {};
 
 	MenuText CreateText(const SDL_Point& centerPosition, const char* text, TTF_Font* font,
 		const SDL_Color color, SDL_Renderer* renderer);
@@ -64,9 +78,9 @@ protected:
 	SDL_Renderer* m_renderer = nullptr;
 
 private:
-	bool IsButtonClicked(MenuButton button, SDL_Point clickPos);
-	// Relocate the click position by the current window dimensions.
-	void RelocateClick(SDL_Point& clickPos);
+	bool IsClicked(SDL_Rect elementDim, SDL_Point clickPos);
+	// Relocate the mouse position to the logical window size by the current window dimensions.
+	void RelocateMouse(SDL_Point& mousePos);
 };
 
 class MainMenu : public GameMenu 
