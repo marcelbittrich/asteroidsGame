@@ -58,7 +58,7 @@ protected:
 	Vec2 m_midPos;
 	Vec2 m_velocity;
 
-	SDL_Rect GetRenderRect() const;
+	SDL_FRect GetRenderRect() const;
 	inline static SDL_Renderer* s_renderer = nullptr;
 
 private:

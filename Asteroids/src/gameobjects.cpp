@@ -138,7 +138,9 @@ void Ship::CreateShot()
 	shotVelocityVector.x = sin(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.x;
 	shotVelocityVector.y = -cos(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.y;
 
-	Shot(m_midPos, shotVelocityVector, m_rotation);
+	Vec2 direction = shotVelocityVector;
+	Vec2 spawnPoint = m_midPos + direction.Normalize() * m_height / 2.f;
+	Shot(spawnPoint, shotVelocityVector, m_rotation);
 }
 
 void Ship::UseBomb()
@@ -214,9 +216,9 @@ void Ship::RenderShip()
 				  0,
 				  m_spriteWidth,
 				  m_spriteHeight };
-	SDL_Rect destR = GetRenderRect();
+	SDL_FRect destR = GetRenderRect();
 
-	SDL_RenderCopyEx(s_renderer, s_texture, &srcR, &destR, m_rotation, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyExF(s_renderer, s_texture, &srcR, &destR, m_rotation, NULL, SDL_FLIP_NONE);
 }
 
 void Ship::CollectBomb(Bomb* bomb)
@@ -342,8 +344,8 @@ void Asteroid::Render()
 	}
 	if (m_isVisible)
 	{
-		SDL_Rect asteroidRect = GetRenderRect();
-		SDL_RenderCopyEx(s_renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
+		SDL_FRect asteroidRect = GetRenderRect();
+		SDL_RenderCopyExF(s_renderer, asteroidTex, NULL, &asteroidRect, 0.0f, NULL, SDL_FLIP_NONE);
 	}
 }
 
@@ -377,8 +379,8 @@ void Shot::Update(int windowWidth, int windowHeight, float deltaTime)
 
 void Shot::Render()
 {
-	SDL_Rect rect = GetRenderRect();
-	SDL_RenderCopyEx(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
+	SDL_FRect rect = GetRenderRect();
+	SDL_RenderCopyExF(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
 }
 
 bool Shot::TooOld()
@@ -436,8 +438,8 @@ void Bomb::Render()
 {
 	if (m_isVisible)
 	{
-		SDL_Rect rect = GetRenderRect();
-		SDL_RenderCopyEx(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
+		SDL_FRect rect = GetRenderRect();
+		SDL_RenderCopyExF(s_renderer, s_texture, NULL, &rect, m_rotation, NULL, SDL_FLIP_NONE);
 	}
 }
 
@@ -505,12 +507,12 @@ Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHe
 	return newMidPos;
 }
 
-SDL_Rect GameObject::GetRenderRect() const
+SDL_FRect GameObject::GetRenderRect() const
 {
-	SDL_Rect rect;
-	rect.w = m_width;
-	rect.h = m_height;
-	rect.x = (int)std::round(m_midPos.x - m_width / 2);
-	rect.y = (int)std::round(m_midPos.y - m_height / 2);
+	SDL_FRect rect;
+	rect.w = (float)m_width;
+	rect.h = (float)m_height;
+	rect.x = m_midPos.x - (float)m_width / 2.f;
+	rect.y = m_midPos.y - (float)m_height / 2.f;
 	return rect;
 }
