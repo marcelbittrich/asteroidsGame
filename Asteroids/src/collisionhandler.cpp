@@ -130,9 +130,11 @@ void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObje
 	if (asteroidPtr->sizeType == Asteroid::SizeType::Medium)
 	{
 		asteroidPtr->HandleDestruction();
+		
 	}
 	else
 	{
+		m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::SmallAsteroidExplode);
 		if (Game::GetScore() % BOMB_SPAWN_ON_SCORE == 0)
 		{
 			Bomb(asteroidPtr->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));

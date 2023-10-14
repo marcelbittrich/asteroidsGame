@@ -125,6 +125,7 @@ void Ship::Shoot()
 	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots && m_shotCounter < m_maxShotCounter)
 	{
 		CreateShot();
+		s_audioPlayer->PlaySoundEffect(EffectType::ShotSound);
 		m_shotCounter = m_shotCounter + 100;
 
 		m_timeLastShot = SDL_GetTicks();
@@ -223,6 +224,7 @@ void Ship::RenderShip()
 
 void Ship::CollectBomb(Bomb* bomb)
 {
+	s_audioPlayer->PlaySoundEffect(EffectType::BombCollectedSound);
 	m_collectedBombs.push_back(bomb);
 	bomb->GetCollected(this);
 }
@@ -239,6 +241,7 @@ void Ship::Reset()
 
 void Ship::Respawn()
 {
+	s_audioPlayer->PlaySoundEffect(EffectType::ShipDeath);
 	Reset();
 	m_isVisible = false;
 }
@@ -311,6 +314,8 @@ void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
 
 void Asteroid::HandleDestruction()
 {
+	s_audioPlayer->PlaySoundEffect(EffectType::BigAsteroidExplode);
+
 	int newAsteroidSize = Asteroid::GetSize(Asteroid::SizeType::Small);
 
 	Vec2 spawnDirection = m_velocity.Rotate(90);
@@ -452,6 +457,7 @@ void Bomb::GetCollected(Ship* ownerShip)
 
 void Bomb::Explode()
 {
+	s_audioPlayer->PlaySoundEffect(EffectType::BombExplode);
 	isExploding = true;
 	m_isVisible = true;
 	m_ignitionTime = SDL_GetTicks();

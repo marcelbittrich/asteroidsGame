@@ -8,7 +8,8 @@
 class CollisionHandler
 {
 public:
-	CollisionHandler() {}
+	CollisionHandler() {};
+	CollisionHandler(class Game* owner) : m_owner(owner) {};
 	void CheckCollisions(const std::list<GameObject*>& gameObjectPtrs);
 
 	static bool DoesCollide(const GameObject& object1, const GameObject& object2);
@@ -34,4 +35,6 @@ private:
 	};
 	bool RecentlyCollide(GameObject firstObject, GameObject secondObject);
 	std::vector<CollisionOccurrence> recentCollisions = {};
+
+	class Game* m_owner = nullptr;
 };

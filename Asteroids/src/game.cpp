@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_gamecontroller.h"
+#include "SDL_mixer.h"
 
 #include "shapes.hpp"
 #include "background.hpp"
@@ -17,6 +18,7 @@
 #include "menu.hpp"
 #include "gamestate.hpp"
 #include "vector2.hpp"
+
 
 Game::Game()
 {
@@ -32,11 +34,11 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 
 	myInputHandler = InputHandler();
 
+	InitSound();
 	InitTextures();
 	InitMenu();
 	InitGameplay();
 	InitUI();
-
 	// priming game time
 	lastUpdateTime = SDL_GetTicks();
 }
@@ -52,7 +54,7 @@ void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 		if (IMG_Init(IMG_INIT_PNG))
-			std::cout << "Iamge subsystem Initialised!..." << std::endl;
+			std::cout << "Image subsystem Initialised!..." << std::endl;
 		if (TTF_Init() == 0)
 			std::cout << "Font subsystem Initialised!..." << std::endl;
 		else
@@ -119,6 +121,19 @@ void Game::InitInputDevices()
 	}
 }
 
+void Game::InitSound()
+{
+	int flags = MIX_INIT_OGG|MIX_INIT_MP3;
+	if (Mix_Init(flags))
+		std::cout << "Sound subsystem Initialised!..." << std::endl;
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == 0)
+		std::cout << "SoundMixer opened!..." << std::endl;
+
+	myAudioPlayer = AudioPlayer();
+	GameObject::SetAudioPlayer(&myAudioPlayer);
+	myAudioPlayer.PlayMusic(MusicType::MenuMusic);
+}
+
 void Game::InitTextures()
 {
 	shipTex = TextureFromPath("./img/ship_thrustanimation.png");
@@ -153,10 +168,10 @@ SDL_Texture* Game::TextureFromPath(const char* path)
 void Game::InitMenu()
 {
 	myGameSave = GameSave();
-	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
+	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
 	myMainMenu.CreateDefaultMainMenu();
 	myMainMenu.UpdateScore(myGameSave.GetHighscore());
-	myPauseMenu = PauseMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight);
+	myPauseMenu = PauseMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
 	myPauseMenu.CreateDefaultPauseMenu();
 }
 
@@ -172,7 +187,7 @@ void Game::InitGameplay()
 	life = STARTING_LIVES;
 	bombCount = STARTING_BOMB_COUNT;
 
-	myCollisionhandler = CollisionHandler();
+	myCollisionhandler = CollisionHandler(this);
 }
 
 void Game::InitUI()
@@ -378,7 +393,8 @@ bool Game::UpdateGameState()
 	if (life == 0 && gameState == GameState::IN_GAME)
 	{
 		gameState = GameState::IN_MENU;
-		myMainMenu.ChangeState(MainMenu::State::GameOver);
+		myAudioPlayer.PlayMusic(MusicType::MenuMusic);
+		myMainMenu.ChangeState(MainMenu::MenuState::GameOver);
 		myMainMenu.UpdateScore(score);
 
 		int oldHighscore = myGameSave.GetHighscore();
@@ -394,11 +410,13 @@ bool Game::UpdateGameState()
 	{
 		newPausePress = false;
 		gameState = GameState::PAUSE;
+		myAudioPlayer.PlaySoundEffect(EffectType::PauseOpen);
 	}
 	else if (pausePressed && gameState == GameState::PAUSE && newPausePress)
 	{
 		newPausePress = false;
 		gameState = GameState::IN_GAME;
+		myAudioPlayer.PlaySoundEffect(EffectType::PauseClose);
 	}
 	else if (!pausePressed)
 	{
@@ -452,6 +470,8 @@ void Game::Clean()
 	SDL_DestroyRenderer(renderer);
 	TTF_CloseFont(m_fontHuge);
 	TTF_CloseFont(m_font);
+	Mix_CloseAudio();
+	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
@@ -460,6 +480,7 @@ void Game::Clean()
 
 void Game::Reset()
 {
+	myAudioPlayer.PlayMusic(MusicType::GameMusic);
 	GameObject::ResetId();
 	Ship::ships.clear();
 	Asteroid::asteroids.clear();

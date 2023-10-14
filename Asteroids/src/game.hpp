@@ -12,6 +12,7 @@
 #include "gamestate.hpp"
 #include "background.hpp"
 #include "collisionhandler.h"
+#include "audioplayer.hpp"
 
 #define PI 3.14159265359
 
@@ -45,16 +46,16 @@ public:
 
 	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 	bool GetIsRunning() const { return isRunning; }
-	
+
 	static void IncreaseScore() { score++; }
 	static int GetScore() { return score; }
 	static void DecreseLife() { life--; }
-	GameState GetState() const { return gameState; }
+	GameState& GetState() const { return gameState; }
+	AudioPlayer& GetAudioPlayer() { return myAudioPlayer; }
 
-	static void changeStateToGame() { gameState = GameState::IN_GAME; }
-	static void changeStateToReset() { gameState = GameState::RESET; }
-	static void changeStateToPause() { gameState = GameState::PAUSE; }
+	void changeState(GameState newState) { gameState = newState; }
 	static void exitGame() { isRunning = false; }
+
 private:
 	inline static GameState gameState = GameState::IN_MENU;
 	inline static bool isRunning = true;
@@ -68,6 +69,10 @@ private:
 	// Control values
 	void InitInputDevices();
 	InputHandler myInputHandler;
+
+	// Sound values
+	void InitSound();
+	AudioPlayer myAudioPlayer;
 
 	// Texture values
 	SDL_Texture* shipTex;
@@ -116,6 +121,8 @@ private:
 	class ShotMeter* shotMeter; // Alternative shot meter rendered below ship
 
 	void InitUI();
+
+
 
 	// deltaTime calculation
 	Uint32 lastUpdateTime;

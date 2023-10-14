@@ -9,6 +9,14 @@
 #include "inputhandler.hpp"
 #include "shapes.hpp"
 #include "vector2.hpp"
+#include "audioplayer.hpp"
+
+struct GameObjectShared
+{
+	SDL_Renderer* renderer;
+	AudioPlayer* audioPlayer;
+
+};
 
 class GameObject
 {
@@ -43,9 +51,10 @@ public:
 	void SetColRadius(float radius) { m_colRadius = radius; };
 	void SetMidPos(float x, float y) { m_midPos = { x, y }; };
 	void SetVelocity(float x, float y) { m_velocity = { x, y }; };
-	void SetIsDead(bool value)  { m_isDead = value; };
+	void SetIsDead(bool value) { m_isDead = value; };
 
 	static void SetRenderer(SDL_Renderer* renderer) { s_renderer = renderer; };
+	static void SetAudioPlayer(AudioPlayer* audioPlayer) { s_audioPlayer = audioPlayer; };
 
 protected:
 	int m_id			= -1;
@@ -60,6 +69,7 @@ protected:
 
 	SDL_FRect GetRenderRect() const;
 	inline static SDL_Renderer* s_renderer = nullptr;
+	inline static AudioPlayer* s_audioPlayer = nullptr;
 
 private:
 	inline static int s_NewId = 0;
@@ -86,6 +96,7 @@ public:
 
 	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
 	inline static std::vector<Ship> ships;
+
 private:
 	inline static SDL_Texture* s_texture;
 	// Update shooting capability and ship visibility.

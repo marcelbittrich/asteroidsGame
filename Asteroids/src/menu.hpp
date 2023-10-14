@@ -2,11 +2,13 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "gamestate.hpp"
 #include "inputhandler.hpp"
+#include "audioplayer.hpp"
 
 
 static struct MenuText
@@ -20,7 +22,7 @@ static struct MenuText
 static struct MenuButton : MenuText
 {
 	SDL_Rect buttonDim		= { 0,0,0,0 };
-	void (*callback)()		= nullptr;
+	std::function<void()> onPressCallback;
 };
 
 static struct Slider
@@ -33,13 +35,14 @@ static struct Slider
 	float sliderValue = 0.5;
 	bool isDragged = false;
 	bool isVisible = true;
+	std::function<void(float)> onChangeCallback;
 };
 
 class GameMenu
 {
 public:
 	GameMenu() {};
-	GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight);
+	GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight,class Game* owner);
 	~GameMenu();
 	void Update(const InputHandler& myInputHandler);
 	virtual void Render();
@@ -53,8 +56,8 @@ public:
 	void AddText(const std::string& id, const std::string& text, TextSize textSize, 
 		SDL_Point centeredPosition, bool isVisible = true);
 	void AddButton(const std::string& id, const std::string& text, TextSize textSize, 
-		SDL_Rect centeredPositionAndDimension, void(*callback)(), bool isVisible = true);
-	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, bool isVisible = true);
+		SDL_Rect centeredPositionAndDimension, std::function<void()> onPressCallback, bool isVisible = true);
+	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, std::function<void(float)> onChangeCallback, bool isVisible = true);
 
 protected:
 	int m_width = 0;
@@ -76,6 +79,7 @@ protected:
 	TTF_Font* m_fontHuge = nullptr;
 
 	SDL_Renderer* m_renderer = nullptr;
+	class Game* m_owner = nullptr;
 
 private:
 	bool IsClicked(SDL_Rect elementDim, SDL_Point clickPos);
@@ -86,40 +90,45 @@ private:
 class MainMenu : public GameMenu 
 {
 public:
-	enum class State 
+	enum class MenuState 
 	{
 		Start,
 		GameOver
 	};
 
 	MainMenu() {};
-	MainMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight) 
-		: GameMenu(font, fontHuge, renderer, windowWidth, windowHeight) {};
+	MainMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight,class Game* owner) 
+		: GameMenu(font, fontHuge, renderer, windowWidth, windowHeight, owner) {};
 	void CreateDefaultMainMenu();
 
-	void ChangeState(State newState);
+	void ChangeState(MenuState newState);
 	void UpdateScore(int newScore);
 
 private:
-	State m_currentState = State::Start;
+	MenuState m_currentState = MenuState::Start;
 	bool m_showStartScreen = true;
 
 	int m_highscore = 0;
-	void OnStateChange();
+	void OnMenuStateChange();
+	void OnStartPressed();
+	void OnExitPressed();
 };
 
 class PauseMenu : public GameMenu
 {
 public:
 	PauseMenu() {};
-	PauseMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight)
-		: GameMenu(font, fontHuge, renderer, windowWidth, windowHeight) {};
+	PauseMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight, class Game* owner)
+		: GameMenu(font, fontHuge, renderer, windowWidth, windowHeight, owner) {};
 	
 	void CreateDefaultPauseMenu();
 
 	void Render() override;
 
 private:
-	SDL_Color m_backgroundColor = { 30,30,30,255 };
-	SDL_Rect m_backgroundRect = { 0,0,0,0 };
+	SDL_Color	m_backgroundColor	= { 30,30,30,255 };
+	SDL_Rect	m_backgroundRect	= { 0,0,0,0 };
+
+	void OnVolumeChange(float);
+	void OnBackPressed();
 }; 

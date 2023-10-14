@@ -48,6 +48,9 @@
     <ClCompile Include="src\collisionhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\audioplayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\background.hpp">
@@ -86,10 +89,14 @@
     <ClInclude Include="src\collisionhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\audioplayer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2.dll" />
     <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2_image.dll" />
     <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2_ttf.dll" />
+    <CopyFileToFolders Include="..\dependencies\SDL2-2.28.3\lib\x64\SDL2_mixer.dll" />
   </ItemGroup>
 </Project>

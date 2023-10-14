@@ -2,11 +2,12 @@
 #include "inputhandler.hpp"
 #include "game.hpp"
 #include "gamestate.hpp"
+#include "audioplayer.hpp"
 
 #include <algorithm>
 
-GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight)
-	: m_width(windowWidth), m_height(windowHeight), m_font(font), m_fontHuge(fontHuge), m_renderer(renderer)
+GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight, Game* owner)
+	: m_width(windowWidth), m_height(windowHeight), m_font(font), m_fontHuge(fontHuge), m_renderer(renderer), m_owner(owner)
 {}
 
 GameMenu::~GameMenu()
@@ -32,17 +33,17 @@ void GameMenu::AddText(const std::string& id, const std::string& text, TextSize 
 }
 
 void GameMenu::AddButton(const std::string& id, const std::string& text, TextSize textSize,
-	SDL_Rect centeredPositionAndDimension, void(*callback)(), bool isVisible)
+	SDL_Rect centeredPositionAndDimension, std::function<void()> onPressCallback, bool isVisible)
 {
 	TTF_Font* font = (textSize == TextSize::Small) ? m_font : m_fontHuge;
 	MenuButton menuButton = CreateButton(centeredPositionAndDimension, text.c_str(), font, m_textColor, m_renderer);
 	menuButton.id = id;
 	menuButton.isVisible = isVisible;
-	menuButton.callback = callback;
+	menuButton.onPressCallback = onPressCallback;
 	buttonObjects.push_back(menuButton);
 }
 
-void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, bool isVisible)
+void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, std::function<void(float)> onChangeCallback, bool isVisible)
 {
 	Slider slider;
 	slider.id = id;
@@ -68,6 +69,8 @@ void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDime
 		slider.dimensions.w,
 		slider.lineThickness
 	};
+	slider.onChangeCallback = onChangeCallback;
+
 	sliderObjects.push_back(slider);
 }
 
@@ -130,9 +133,9 @@ void GameMenu::Update(const InputHandler& myInputHandler)
 		{
 			if (button.isVisible && IsClicked(button.buttonDim, mousePos))
 			{
-				if (!button.callback)
+				if (!button.onPressCallback)
 					continue;
-				button.callback();
+				button.onPressCallback();
 			}
 		}
 		for (Slider& slider : sliderObjects)
@@ -159,6 +162,7 @@ void GameMenu::Update(const InputHandler& myInputHandler)
 			slider.sliderValue = std::clamp<float>(newSliderValue, 0.f, 1.f);
 
 			std::cout << newSliderValue << std::endl;
+			slider.onChangeCallback(newSliderValue);
 
 			slider.indicatorDim =
 			{
@@ -232,10 +236,10 @@ void MainMenu::CreateDefaultMainMenu()
 	AddText("AsteroidsHeadline", "Asteroids", TextSize::Large, position);
 
 	SDL_Rect posAndDim = { m_width / 2, 400, m_width - 100, 80 };
-	AddButton("StartButton", "Start", TextSize::Small, posAndDim, Game::changeStateToReset);
+	AddButton("StartButton", "Start", TextSize::Small, posAndDim, [&]() { this->OnStartPressed(); });
 
 	posAndDim = { m_width / 2, 500, m_width - 100, 80 };
-	AddButton("ExitButton", "Exit", TextSize::Small, posAndDim, Game::exitGame);
+	AddButton("ExitButton", "Exit", TextSize::Small, posAndDim, [&]() { this->OnExitPressed(); });
 
 	position = { m_width / 2 , 630 };
 	AddText("ControlsText", "Move - Arrows, Shoot - Space, Bomb - Ctrl", TextSize::Small, position);
@@ -248,18 +252,18 @@ void MainMenu::CreateDefaultMainMenu()
 	AddText("HighscoreText", "Highscore Default Message", TextSize::Small, position, false);
 }
 
-void MainMenu::ChangeState(State newState)
+void MainMenu::ChangeState(MenuState newState)
 {
 	if (m_currentState != newState)
 	{
 		m_currentState = newState;
-		OnStateChange();
+		OnMenuStateChange();
 	}
 }
 
-void MainMenu::OnStateChange()
+void MainMenu::OnMenuStateChange()
 {
-	bool isStartState = (m_currentState == State::Start);
+	bool isStartState = (m_currentState == MenuState::Start);
 
 	for (MenuText& text : textObjects)
 	{
@@ -270,6 +274,18 @@ void MainMenu::OnStateChange()
 		if (text.id == "HighscoreText")
 			text.isVisible = !isStartState;
 	}
+}
+
+void MainMenu::OnStartPressed()
+{
+	m_owner->changeState(Game::GameState::RESET);
+	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::StartSound);
+}
+
+void MainMenu::OnExitPressed()
+{
+	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::EndSound);
+	m_owner->exitGame();
 }
 
 void MainMenu::UpdateScore(int newScore)
@@ -319,13 +335,13 @@ void PauseMenu::CreateDefaultPauseMenu()
 	AddText("PauseHeadline", "PAUSE", TextSize::Small, position);
 
 	SDL_Rect posAndDim = { m_width / 2, m_height / 2 - 30, 200, 10 };
-	AddSlider("SoundSlider", posAndDim);
+	AddSlider("SoundSlider", posAndDim, [&](float newValue) { this->OnVolumeChange(newValue); });
 
 	position = { m_width / 2, m_height / 2 };
 	AddText("SoundText", "Sound", TextSize::Small, position);
 
 	posAndDim = { m_width / 2, m_height / 2 + 60, 200, 40 };
-	AddButton("ExitButton", "Back", TextSize::Small, posAndDim, Game::changeStateToGame);
+	AddButton("BackButton", "Back", TextSize::Small, posAndDim, [&]() { this->OnBackPressed(); });
 }
 
 void PauseMenu::Render()
@@ -334,4 +350,15 @@ void PauseMenu::Render()
 	SDL_RenderFillRect(m_renderer, &m_backgroundRect);
 
 	GameMenu::Render();
+}
+
+void PauseMenu::OnVolumeChange(float newValue)
+{
+	m_owner->GetAudioPlayer().SetMasterVolume(newValue);
+}
+
+void PauseMenu::OnBackPressed()
+{
+	m_owner->changeState(Game::GameState::IN_GAME);
+	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::PauseClose);
 }

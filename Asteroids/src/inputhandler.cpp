@@ -21,14 +21,18 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_UP:
+			case SDLK_w:
 				m_controlBools.giveThrust = true;
 				break;
 			case SDLK_DOWN:
+			case SDLK_s:
 				break;
 			case SDLK_RIGHT:
+			case SDLK_d:
 				m_controlBools.isTurningRight = true;
 				break;
 			case SDLK_LEFT:
+			case SDLK_a:
 				m_controlBools.isTurningLeft = true;
 				break;
 			case SDLK_SPACE:
@@ -38,6 +42,7 @@ void InputHandler::HandleInput(bool& isRunning)
 				m_controlBools.isUsingBomb = true;
 				break;
 			case SDLK_p:
+			case SDLK_ESCAPE:
 				m_controlBools.pausePressed = true;
 				break;
 			default:
@@ -48,14 +53,18 @@ void InputHandler::HandleInput(bool& isRunning)
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_UP:
+			case SDLK_w:
 				m_controlBools.giveThrust = false;
 				break;
 			case SDLK_DOWN:
+			case SDLK_s:
 				break;
 			case SDLK_RIGHT:
+			case SDLK_d:
 				m_controlBools.isTurningRight = false;
 				break;
 			case SDLK_LEFT:
+			case SDLK_a:
 				m_controlBools.isTurningLeft = false;
 				break;
 			case SDLK_SPACE:
@@ -65,6 +74,7 @@ void InputHandler::HandleInput(bool& isRunning)
 				m_controlBools.isUsingBomb = false;
 				break;
 			case SDLK_p:
+			case SDLK_ESCAPE:
 				m_controlBools.pausePressed = false;
 				break;
 			default:
