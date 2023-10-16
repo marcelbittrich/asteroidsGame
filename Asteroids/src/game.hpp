@@ -9,16 +9,16 @@
 #include "gameobjects.hpp"
 #include "menu.hpp"
 #include "gamesave.hpp"
-#include "gamestate.hpp"
+#include "gamestates.hpp"
 #include "background.hpp"
 #include "collisionhandler.h"
 #include "audioplayer.hpp"
+#include "UIelements.hpp"
 
 #define PI 3.14159265359
 
 // Gameplay parameters
 const int STARTING_LIVES = 3;
-const int STARTING_BOMB_COUNT = 0;
 // One in ... for dropping a bomb when destroing astroids.
 const int BOMB_SPAWN_ON_SCORE = 50;
 const float ASTEROID_SPAWN_DELTATIME = 3.0f;
@@ -27,44 +27,62 @@ const float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
 class Game
 {
 public:
-	Game();
-	~Game();
-	void Init(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen);
+	Game() {};
+	~Game() {};
+	void Init(const char* title, int xpos, int ypos, int m_width, int m_height);
 	void HandleEvents();
 	void Update();
 	void Render();
 	void Clean();
-	void Reset();
-
-	static enum class GameState
-	{
-		IN_MENU,
-		IN_GAME,
-		RESET,
-		PAUSE
-	};
 
 	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 	bool GetIsRunning() const { return isRunning; }
 
+	void InitGameplayValues();
+	void SpawnAsteroidWave();
+
 	static void IncreaseScore() { score++; }
 	static int GetScore() { return score; }
 	static void DecreseLife() { life--; }
-	GameState& GetState() const { return gameState; }
-	AudioPlayer& GetAudioPlayer() { return myAudioPlayer; }
+	int GetLife() const { return life; }
 
-	void changeState(GameState newState) { gameState = newState; }
-	static void exitGame() { isRunning = false; }
+	SDL_Point GetWindowDim() const { return { windowWidth, windowHeight }; }
+
+	GameState* GetState() const { return gameState; }
+	AudioPlayer& GetAudioPlayer() { return myAudioPlayer; }
+	MainMenu& GetMainMenu() { return myMainMenu; }
+	PauseMenu& GetPauseMenu() { return myPauseMenu; }
+	GameSave& GetGameSave() { return myGameSave; }
+	CollisionHandler& GetCollisionHandler() { return myCollisionhandler; }
+	Background& GetBackground() { return gameBackground; }
+	std::list<GameObject*>& GetGameObjectPtrs() { return gameObjectPtrs; }
+
+	void SetNewPausePress(bool value) { newPausePress = value; }
+	bool GetNewPausePress() { return newPausePress; }
+	void SetTimeLastWave(float newValue) { timeSinceLastAsteroidWave = newValue; }
+	void AddTimeLastWave(float time) { timeSinceLastAsteroidWave += time; }
+	float GetTimeLastWave() const { return timeSinceLastAsteroidWave; }
+
+	void ChangeState(GameState* newState) { gameState = newState; }
+	static void ExitGame() { isRunning = false; }
+
+	friend MenuState;
+	inline static MenuState menuState;
+	friend LevelState;
+	inline static LevelState levelState;
+	friend PauseState;
+	inline static PauseState pauseState;
 
 private:
-	inline static GameState gameState = GameState::IN_MENU;
+	GameState* gameState = &menuState;
+
 	inline static bool isRunning = true;
 	// Game window values
 	int windowWidth;
 	int windowHeight;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	void InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen);
+	void InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height);
 
 	// Control values
 	void InitInputDevices();
@@ -94,6 +112,7 @@ private:
 	void InitMenu();
 
 	// Gameplay values
+	CollisionHandler myCollisionhandler;
 	Background gameBackground;
 	std::list<GameObject*> gameObjectPtrs;
 
@@ -114,15 +133,13 @@ private:
 	bool newBombIgnition = true;
 
 	// UI values
-	class UICounter* UIScore;
-	class UICounter* UILives;
-	class UICounter* UIBomb;
-	class UICounter* UIFPS;
-	class ShotMeter* shotMeter; // Alternative shot meter rendered below ship
+	class UICounter UIScore;
+	class UICounter UILives;
+	class UICounter UIBomb;
+	class UICounter UIFPS;
+	class ShotMeter shotMeter; // Alternative shot meter rendered below ship
 
 	void InitUI();
-
-
 
 	// deltaTime calculation
 	Uint32 lastUpdateTime;
@@ -136,12 +153,6 @@ private:
 
 	std::vector<float> FPSVector;
 
-	//
 	// Update
-	//
-
 	float CalculateDeltaTime();
-	bool UpdateGameState();
-
-	CollisionHandler myCollisionhandler;
 };

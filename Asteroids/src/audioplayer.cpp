@@ -21,11 +21,11 @@ AudioPlayer::AudioPlayer()
 	m_effects.push_back(createEffect(EffectType::BombExplode, "./sfx/effects/bombExplode_01.ogg", MIX_MAX_VOLUME / 2));
 	m_effects.push_back(createEffect(EffectType::ShipDeath, "./sfx/effects/shipDeath_01.ogg", MIX_MAX_VOLUME));
 
-	// Allocate 8 mixing channels
+	// Allocate 8 mixing channels.
 	Mix_AllocateChannels(8);
-	// Set master volume to default volume
-	m_masterVolume = std::clamp(m_masterVolume, 0.f, 1.f);
-	Mix_MasterVolume(m_masterVolume * MIX_MAX_VOLUME);
+
+	// Set master volume to default volume.
+	SetMasterVolume(m_masterVolume);
 }
 
 void AudioPlayer::PlayMusic(MusicType type)
@@ -63,10 +63,6 @@ Music AudioPlayer::createMusic(MusicType type, const std::string& path)
 {
 	Music newMusic;
 	newMusic.sample = Mix_LoadMUS(path.c_str());
-	if (!newMusic.sample)
-	{
-		std::cout << "Mix_LoadMUS " << path << ": " << Mix_GetError() << std::endl;
-	}
 	newMusic.type = type;
 	return newMusic;
 }

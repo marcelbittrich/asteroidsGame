@@ -20,19 +20,19 @@ struct BackgroundPoint
 class Background
 {
 public:
-	Background();
+	Background() {};
 	Background(int windowWidth, int windowHeight, float pointScale);
 	void Update(const std::list<class GameObject*>& gameObjects, float deltaTime);
 	void Render(SDL_Renderer* renderer);
 
 private:
 	static const int divider = 100;
-	BackgroundPoint backgroundPoints[divider][divider];
+	BackgroundPoint backgroundPoints[divider * divider];
 	float m_pointSizeScale = 2.f;
 
 	std::vector<uint32_t> horizontalIter, verticalIter;
 	void ReturnPointToOrigin(BackgroundPoint& point, float deltaTime);
-	void MovePointOut(BackgroundPoint& point, class GameObject colObject);
+	void MovePointOut(BackgroundPoint& point, const class GameObject* colObject);
 
 	float m_minReturnVelocity = 0.5f;
 	float m_distanceVelocityFunctionSteepness = 0.005f;

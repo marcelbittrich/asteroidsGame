@@ -6,7 +6,7 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "gamestate.hpp"
+#include "gamestates.hpp"
 #include "inputhandler.hpp"
 #include "audioplayer.hpp"
 
@@ -27,14 +27,14 @@ static struct MenuButton : MenuText
 
 static struct Slider
 {
-	std::string id = "DefaultSlider";
-	SDL_Rect dimensions = { 0,0,0,0 };
-	SDL_Rect indicatorDim = { 0,0,0,0 };
-	SDL_Rect lineDim = { 0,0,0,0 };
-	int lineThickness = 2;
-	float sliderValue = 0.5;
-	bool isDragged = false;
-	bool isVisible = true;
+	std::string id			= "DefaultSlider";
+	SDL_Rect dimensions		= { 0,0,0,0 };
+	SDL_Rect indicatorDim	= { 0,0,0,0 };
+	SDL_Rect lineDim		= { 0,0,0,0 };
+	int lineThickness		= 2;
+	float sliderValue		= 0.5;
+	bool isDragged			= false;
+	bool isVisible			= true;
 	std::function<void(float)> onChangeCallback;
 };
 
@@ -44,7 +44,7 @@ public:
 	GameMenu() {};
 	GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight,class Game* owner);
 	~GameMenu();
-	void Update(const InputHandler& myInputHandler);
+	void HandleEvents(const InputHandler& myInputHandler);
 	virtual void Render();
 
 	enum class TextSize 

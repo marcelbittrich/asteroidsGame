@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include "gamesave.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -8,33 +7,26 @@ int main(int argc, char* argv[])
 
 	Game game;
 
-	game.Init("Asteroids", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, 0);
+	game.Init("Asteroids", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720);
 
 	while (game.GetIsRunning())
 	{
-		if (game.GetState() == Game::GameState::RESET)
+		Uint32 frameStart = SDL_GetTicks();
+		game.HandleEvents();
+		game.Update();
+		Uint32 updateTime = SDL_GetTicks() - frameStart;
+		game.Render();
+		Uint32 renderTime = SDL_GetTicks() - updateTime - frameStart;
+		Uint32 loopTime = SDL_GetTicks() - frameStart;
+
+		if (loopTime < frameCapTime)
 		{
-			game.Reset();
+			SDL_Delay((int)(frameCapTime - loopTime));
 		}
-		else
-		{
-			Uint32 frameStart = SDL_GetTicks();
-			game.HandleEvents();
-			game.Update();
-			Uint32 updateTime = SDL_GetTicks() - frameStart;
-			game.Render();
-			Uint32 renderTime = SDL_GetTicks() - updateTime - frameStart;
-			Uint32 loopTime = SDL_GetTicks() - frameStart;
 
-			if (loopTime < frameCapTime)
-			{
-				SDL_Delay((int)(frameCapTime - loopTime));
-			}
+		Uint32 frameTime = SDL_GetTicks() - frameStart;
 
-			Uint32 frameTime = SDL_GetTicks() - frameStart;
-
-			game.PrintPerformanceInfo(updateTime, renderTime, loopTime, frameTime);
-		}
+		game.PrintPerformanceInfo(updateTime, renderTime, loopTime, frameTime);
 	};
 
 	game.Clean();

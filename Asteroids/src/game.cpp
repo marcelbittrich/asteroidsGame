@@ -16,20 +16,12 @@
 #include "inputhandler.hpp"
 #include "game.hpp"
 #include "menu.hpp"
-#include "gamestate.hpp"
+#include "gamestates.hpp"
 #include "vector2.hpp"
 
-
-Game::Game()
+void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height)
 {
-}
-Game::~Game()
-{
-}
-
-void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen)
-{
-	InitWindow(title, xpos, ypos, m_width, m_height, fullscreen);
+	InitWindow(title, xpos, ypos, m_width, m_height);
 	InitInputDevices();
 
 	myInputHandler = InputHandler();
@@ -43,24 +35,11 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	lastUpdateTime = SDL_GetTicks();
 }
 
-void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height, bool fullscreen)
+void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height)
 {
-	int flags = 0;
-	if (fullscreen)
-	{
-		flags = SDL_WINDOW_FULLSCREEN;
-	}
-
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
-		if (IMG_Init(IMG_INIT_PNG))
-			std::cout << "Image subsystem Initialised!..." << std::endl;
-		if (TTF_Init() == 0)
-			std::cout << "Font subsystem Initialised!..." << std::endl;
-		else
-			std::cout << TTF_GetError() << std::endl;
-
-		window = SDL_CreateWindow(title, xpos, ypos, m_width, m_height, SDL_WINDOW_RESIZABLE);
+		window = SDL_CreateWindow(title, xpos, ypos, m_width, m_height, SDL_WINDOW_RESIZABLE); // SDL_WINDOW_FULLSCREEN
 		if (window)
 		{
 			std::cout << "Window created" << std::endl;
@@ -68,13 +47,11 @@ void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_
 			windowHeight = 720;
 		}
 
-		renderer = SDL_CreateRenderer(window, -1, 0); // SDL_RENDERER_PRESENTVSYNC
+		renderer = SDL_CreateRenderer(window, -1, 0); // For vsync -> SDL_RENDERER_PRESENTVSYNC
 		if (renderer)
 		{
 			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 			SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
-			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-			SDL_RenderClear(renderer);
 			std::cout << "Renderer created!" << std::endl;
 		}
 		isRunning = true;
@@ -131,11 +108,19 @@ void Game::InitSound()
 
 	myAudioPlayer = AudioPlayer();
 	GameObject::SetAudioPlayer(&myAudioPlayer);
-	myAudioPlayer.PlayMusic(MusicType::MenuMusic);
 }
 
 void Game::InitTextures()
 {
+	if (IMG_Init(IMG_INIT_PNG))
+		std::cout << "Image subsystem Initialised!..." << std::endl;
+	else
+		std::cout << IMG_GetError() << std::endl;
+	if (TTF_Init() == 0)
+		std::cout << "Font subsystem Initialised!..." << std::endl;
+	else
+		std::cout << TTF_GetError() << std::endl;
+
 	shipTex = TextureFromPath("./img/ship_thrustanimation.png");
 	Ship::SetTexture(shipTex);
 	asteroidTexSmall = TextureFromPath("./img/asteroid_small1.png");
@@ -154,12 +139,10 @@ void Game::InitTextures()
 SDL_Texture* Game::TextureFromPath(const char* path)
 {
 	SDL_Surface* image = IMG_Load(path);
-
 	if (image == NULL)
 	{
 		std::cout << IMG_GetError() << std::endl;
 	}
-
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
 	SDL_FreeSurface(image);
 	return texture;
@@ -168,105 +151,42 @@ SDL_Texture* Game::TextureFromPath(const char* path)
 void Game::InitMenu()
 {
 	myGameSave = GameSave();
+
 	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
 	myMainMenu.CreateDefaultMainMenu();
 	myMainMenu.UpdateScore(myGameSave.GetHighscore());
+
 	myPauseMenu = PauseMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
 	myPauseMenu.CreateDefaultPauseMenu();
 }
 
 void Game::InitGameplay()
 {
-	gameBackground = Background(windowWidth, windowHeight, 2.0f);
-
-	GameObject::SetRenderer(renderer);
-	Ship(Vec2(windowWidth / 2.f, windowHeight / 2.f), 50, shipTex);
-	InitAsteroids(windowWidth, windowHeight);
-
-	score = 0;
-	life = STARTING_LIVES;
-	bombCount = STARTING_BOMB_COUNT;
-
 	myCollisionhandler = CollisionHandler(this);
+	gameBackground = Background(windowWidth, windowHeight, 2.0f);
+	GameObject::SetRenderer(renderer);
+	gameState->Enter(this);
 }
 
 void Game::InitUI()
 {
-	//shotMeter = new ShotMeter(ship, 0, 25, 40, 6);
-
 	SDL_Color white = { 255, 255, 255, 255 };
-	UIScore = new UICounter("Score", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
-	UILives = new UICounter("Lives", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-	UIBomb = new UICounter("Bombs", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-	UIFPS = new UICounter("FPS", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+	UIScore		= UICounter("Score", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
+	UILives		= UICounter("Lives", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+	UIBomb		= UICounter("Bombs", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+	UIFPS		= UICounter("FPS", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
 }
 
 void Game::HandleEvents()
 {
 	myInputHandler.HandleInput(isRunning);
 
-	myCollisionhandler.CheckCollisions(gameObjectPtrs);
-
-	//
-	// DESTROY ALL DEAD STUFF
-	//
-
-	gameObjectPtrs.clear();
-
-	for (auto shipIt = Ship::ships.begin(); shipIt != Ship::ships.end(); )
+	GameState* prevGameState = gameState;
+	gameState->HandleEvents(this, myInputHandler);
+	if (prevGameState != gameState)
 	{
-		if (shipIt->GetIsDead())
-		{
-			shipIt = Ship::ships.erase(shipIt);
-		}
-		else
-		{
-			gameObjectPtrs.push_back(&*shipIt);
-			shipIt++;
-		}
-	}
-
-	for (auto asteroidIt = Asteroid::asteroids.begin(); asteroidIt != Asteroid::asteroids.end(); )
-	{
-		if (asteroidIt->GetIsDead())
-		{
-			asteroidIt = Asteroid::asteroids.erase(asteroidIt);
-		}
-		else
-		{
-			gameObjectPtrs.push_back(&*asteroidIt);
-			asteroidIt++;
-		}
-	}
-
-	// Shots
-	for (auto shotIt = Shot::shots.begin(); shotIt != Shot::shots.end(); )
-	{
-		if (shotIt->GetIsDead())
-		{
-			shotIt = Shot::shots.erase(shotIt);
-		}
-		else
-		{
-			gameObjectPtrs.push_back(&*shotIt);
-			shotIt++;
-		}
-	}
-
-	// Bombs
-	for (auto bombIt = Bomb::bombs.begin(); bombIt != Bomb::bombs.end(); )
-	{
-		bool IsDead = bombIt->GetIsDead();
-
-		if (IsDead)
-		{
-			bombIt = Bomb::bombs.erase(bombIt);
-		}
-		else
-		{
-			gameObjectPtrs.push_back(&*bombIt);
-			bombIt++;
-		}
+		prevGameState->Exit(this);
+		gameState->Enter(this);
 	}
 }
 
@@ -274,99 +194,7 @@ void Game::Update()
 {
 	float deltaTime = CalculateDeltaTime();
 
-	bool keepUpdating = UpdateGameState();
-	if (!keepUpdating)
-		return;
-
-	bool isLeftClicking = (myInputHandler.GetControlBools()).isLeftClicking;
-
-	// Debug Bomb Spawn on Click
-	if (isLeftClicking && newClick)
-	{
-		newClick = false;
-		int mouseXPos, mouseYPos;
-		SDL_GetMouseState(&mouseXPos, &mouseYPos);
-		std::cout << "Left Click at: " << mouseXPos << " " << mouseYPos << std::endl;
-		// Bomb(mouseXPos, mouseYPos, getRandomVelocity(0.0f, 0.5f));
-	}
-	else if (!isLeftClicking)
-	{
-		newClick = true;
-	}
-
-	for (Ship& ship : Ship::ships)
-	{
-		ship.Update(myInputHandler, windowWidth, windowHeight, deltaTime);
-	}
-
-	for (Asteroid& asteroid : Asteroid::asteroids)
-	{
-		asteroid.Update(windowWidth, windowHeight, deltaTime);
-	}
-
-	// Spawn New Asteroids
-	timeSinceLastAsteroidWave += deltaTime;
-	if (timeSinceLastAsteroidWave >= ASTEROID_SPAWN_DELTATIME)
-	{
-		//std::cout << "Spawn small asteroid" << std::endl;
-		Vec2 randomPos1 = GetRandomPosition(windowWidth, windowHeight, Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Small)), gameObjectPtrs);
-		Vec2 randomVelocity1 = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-		spawnAsteroid(randomPos1.x, randomPos1.y, randomVelocity1, Asteroid::SizeType::Small, gameObjectPtrs);
-
-		if (asteroidWave % 3 == 0)
-		{
-			//std::cout << "Spawn large asteroid" << std::endl;
-			Vec2 randomPos2 = GetRandomPosition(windowWidth, windowHeight, Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Medium)), gameObjectPtrs);
-			Vec2 randomVelocity2 = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-			spawnAsteroid(randomPos2.x, randomPos2.y, randomVelocity2, Asteroid::SizeType::Medium, gameObjectPtrs);
-		}
-		timeSinceLastAsteroidWave = 0;
-		asteroidWave++;
-	}
-
-	// Update Shots
-	for (Shot& Shot : Shot::shots)
-	{
-		Shot.Update(windowWidth, windowHeight, deltaTime);
-	}
-
-	// Update Bombs
-	for (Bomb& bomb : Bomb::bombs)
-	{
-		bomb.Update(windowWidth, windowHeight, deltaTime);
-	}
-
-	gameBackground.Update(gameObjectPtrs, deltaTime);
-
-	if (deltaTime > 0)
-	{
-		float FPS = 1 / deltaTime;
-		if (FPSVector.size() >= 10)
-		{
-			FPSVector.insert(FPSVector.begin(), FPS);
-			FPSVector.pop_back();
-		}
-		else
-		{
-			FPSVector.insert(FPSVector.begin(), FPS);
-		}
-	}
-
-	float averageFPS;
-	if (!FPSVector.empty())
-	{
-		int count = (int)(FPSVector.size());
-		averageFPS = std::reduce(FPSVector.begin(), FPSVector.end()) / (float)count;
-	}
-	else
-	{
-		averageFPS = 0;
-	}
-
-	UIScore->Update(score, renderer);
-	UIFPS->Update((int)averageFPS, renderer);
-	UILives->Update(life - 1, renderer);
-	UIBomb->Update(Ship::ships[0].GetCollectedBombsSize(), renderer);
+	gameState->Update(this, deltaTime);
 }
 
 float Game::CalculateDeltaTime()
@@ -377,55 +205,6 @@ float Game::CalculateDeltaTime()
 	return deltaTime;
 }
 
-bool Game::UpdateGameState()
-{
-	if (gameState == GameState::IN_MENU)
-	{
-		myMainMenu.Update(myInputHandler);
-	}
-
-	if (gameState == GameState::PAUSE)
-	{
-		myPauseMenu.Update(myInputHandler);
-	}
-
-	// Check if player just died and present menu with score
-	if (life == 0 && gameState == GameState::IN_GAME)
-	{
-		gameState = GameState::IN_MENU;
-		myAudioPlayer.PlayMusic(MusicType::MenuMusic);
-		myMainMenu.ChangeState(MainMenu::MenuState::GameOver);
-		myMainMenu.UpdateScore(score);
-
-		int oldHighscore = myGameSave.GetHighscore();
-		if (score > oldHighscore)
-		{
-			myGameSave.SetHighscore(score);
-			myGameSave.WriteFile();
-		}
-	}
-
-	bool pausePressed = myInputHandler.GetControlBools().pausePressed;
-	if (pausePressed && gameState == GameState::IN_GAME && newPausePress)
-	{
-		newPausePress = false;
-		gameState = GameState::PAUSE;
-		myAudioPlayer.PlaySoundEffect(EffectType::PauseOpen);
-	}
-	else if (pausePressed && gameState == GameState::PAUSE && newPausePress)
-	{
-		newPausePress = false;
-		gameState = GameState::IN_GAME;
-		myAudioPlayer.PlaySoundEffect(EffectType::PauseClose);
-	}
-	else if (!pausePressed)
-	{
-		newPausePress = true;
-	}
-
-	return gameState == GameState::IN_GAME;
-}
-
 void Game::Render()
 {
 	// Render are outside the playArea grey.
@@ -433,33 +212,12 @@ void Game::Render()
 	SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
 	SDL_RenderClear(renderer);
 
-	// Render playArea black
+	// Render playArea black.
 	SDL_Rect playArea = { 0, 0, windowWidth, windowHeight };
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &playArea);
 
-	if (gameState == GameState::IN_MENU || gameState == GameState::RESET)
-	{
-		myMainMenu.Render();
-		return;
-	}
-
-	gameBackground.Render(renderer);
-
-	for (auto objectIt = gameObjectPtrs.begin(); objectIt != gameObjectPtrs.end(); objectIt++)
-	{
-		(*objectIt)->Render();
-	}
-
-	UIScore->Render(renderer);
-	UILives->Render(renderer);
-	UIBomb->Render(renderer);
-	UIFPS->Render(renderer);
-
-	if (gameState == GameState::PAUSE)
-	{
-		myPauseMenu.Render();
-	}
+	gameState->Render(this, renderer);
 
 	SDL_RenderPresent(renderer);
 }
@@ -478,31 +236,6 @@ void Game::Clean()
 	std::cout << "Game Cleaned" << std::endl;
 }
 
-void Game::Reset()
-{
-	myAudioPlayer.PlayMusic(MusicType::GameMusic);
-	GameObject::ResetId();
-	Ship::ships.clear();
-	Asteroid::asteroids.clear();
-	Shot::shots.clear();
-	Bomb::bombs.clear();
-	gameObjectPtrs.clear();
-
-	timeSinceLastAsteroidWave = 0;
-	asteroidWave = 1;
-
-	score = 0;
-	life = 3;
-	bombCount = 0;
-
-	Ship(Vec2(windowWidth / 2.f, windowHeight / 2.f), 50, shipTex);
-	InitAsteroids(windowWidth, windowHeight);
-
-	lastUpdateTime = SDL_GetTicks();
-
-	gameState = GameState::IN_GAME;
-}
-
 void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)
 {
 	if (showUpdateTime)
@@ -517,4 +250,34 @@ void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loo
 		std::cout << "FPS: " << 1000 / frameTime << " ";
 	if (showUpdateTime || showRenderTime || showLoopTime || showFrameTime || showFPS)
 		std::cout << std::endl;
+}
+
+void Game::InitGameplayValues()
+{
+	life = STARTING_LIVES;
+
+	timeSinceLastAsteroidWave = 0.f;
+	asteroidWave = 1;
+	score = 0;
+	bombCount = 0;
+}
+
+void Game::SpawnAsteroidWave()
+{
+	//std::cout << "Spawn small asteroid" << std::endl;
+	Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
+		Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Small)), gameObjectPtrs);
+	Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+	spawnAsteroid(randomPos.x, randomPos.y, randomVelocity, Asteroid::SizeType::Small, gameObjectPtrs);
+
+	if (asteroidWave % 3 == 0)
+	{
+		//std::cout << "Spawn large asteroid" << std::endl;
+		Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
+			Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Medium)), gameObjectPtrs);
+		Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+		spawnAsteroid(randomPos.x, randomPos.y, randomVelocity, Asteroid::SizeType::Medium, gameObjectPtrs);
+	}
+	SetTimeLastWave(0);
+	asteroidWave++;
 }

@@ -51,6 +51,9 @@
     <ClCompile Include="src\audioplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\gamestates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\background.hpp">
@@ -65,7 +68,7 @@
     <ClInclude Include="src\gamesave.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gamestate.hpp">
+    <ClInclude Include="src\gamestates.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\initialization.hpp">

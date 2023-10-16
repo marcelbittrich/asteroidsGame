@@ -1,7 +1,7 @@
 #include "menu.hpp"
 #include "inputhandler.hpp"
 #include "game.hpp"
-#include "gamestate.hpp"
+#include "gamestates.hpp"
 #include "audioplayer.hpp"
 
 #include <algorithm>
@@ -120,7 +120,7 @@ MenuButton GameMenu::CreateButton(const SDL_Rect& centeredPositionAndDimension,
 	return button;
 }
 
-void GameMenu::Update(const InputHandler& myInputHandler)
+void GameMenu::HandleEvents(const InputHandler& myInputHandler)
 {
 	SDL_Point mousePos;
 	SDL_GetMouseState(&mousePos.x, &mousePos.y);
@@ -161,7 +161,6 @@ void GameMenu::Update(const InputHandler& myInputHandler)
 			float newSliderValue = (mousePos.x - slider.dimensions.x) / (float)slider.dimensions.w;
 			slider.sliderValue = std::clamp<float>(newSliderValue, 0.f, 1.f);
 
-			std::cout << newSliderValue << std::endl;
 			slider.onChangeCallback(newSliderValue);
 
 			slider.indicatorDim =
@@ -278,14 +277,13 @@ void MainMenu::OnMenuStateChange()
 
 void MainMenu::OnStartPressed()
 {
-	m_owner->changeState(Game::GameState::RESET);
-	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::StartSound);
+	m_owner->ChangeState(&Game::levelState);
 }
 
 void MainMenu::OnExitPressed()
 {
 	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::EndSound);
-	m_owner->exitGame();
+	m_owner->ExitGame();
 }
 
 void MainMenu::UpdateScore(int newScore)
@@ -359,6 +357,5 @@ void PauseMenu::OnVolumeChange(float newValue)
 
 void PauseMenu::OnBackPressed()
 {
-	m_owner->changeState(Game::GameState::IN_GAME);
-	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::PauseClose);
+	m_owner->ChangeState(&Game::levelState);
 }

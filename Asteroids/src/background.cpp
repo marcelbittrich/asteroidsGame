@@ -28,10 +28,6 @@ BackgroundPoint::BackgroundPoint(float xPos, float yPos)
 	onOrigin = true;
 }
 
-Background::Background()
-{
-}
-
 Background::Background(int windowWidth, int windowHeight, float pointScale)
 	: m_pointSizeScale(pointScale)
 {
@@ -39,6 +35,7 @@ Background::Background(int windowWidth, int windowHeight, float pointScale)
 	float pointAreaWidth = windowWidth / (float)(divider);
 	float pointAreaHeight = windowHeight / (float)(divider);
 
+	// Iterators of for_each loops, for parallel execution.
 	horizontalIter.resize(divider);
 	verticalIter.resize(divider);
 
@@ -56,9 +53,8 @@ Background::Background(int windowWidth, int windowHeight, float pointScale)
 		for (int j = 0; j < divider; j++)
 		{
 			float newPointYPos = pointAreaHeight * j + pointAreaHeight / 2.0f;
-
 			BackgroundPoint newPoint = BackgroundPoint(newPointXPos, newPointYPos);
-			backgroundPoints[i][j] = newPoint;
+			backgroundPoints[i * divider + j] = newPoint;
 		}
 	}
 }
@@ -69,14 +65,13 @@ void Background::Update(const std::list<GameObject*>& gameObjects, float deltaTi
 	{
 		if (object->GetVisibility())
 		{
-			GameObject colObject = *object;
 			std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
-				[this, colObject](uint32_t i)
+				[this, object](uint32_t i)
 				{
 					std::for_each(horizontalIter.begin(), horizontalIter.end(),
-					[this, i, colObject](uint32_t j)
+					[this, i, object](uint32_t j)
 						{
-							MovePointOut(backgroundPoints[i][j], colObject);
+							MovePointOut(backgroundPoints[i * divider + j], object);
 						});
 				});
 		}
@@ -88,9 +83,9 @@ void Background::Update(const std::list<GameObject*>& gameObjects, float deltaTi
 			std::for_each(horizontalIter.begin(), horizontalIter.end(),
 			[this, i, deltaTime](uint32_t j)
 				{
-					if (!backgroundPoints[i][j].onOrigin)
+					if (!backgroundPoints[i * divider + j].onOrigin)
 					{
-						ReturnPointToOrigin(backgroundPoints[i][j], deltaTime);
+						ReturnPointToOrigin(backgroundPoints[i * divider + j], deltaTime);
 					}
 				});
 		});
@@ -114,10 +109,10 @@ void Background::Render(SDL_Renderer* renderer)
 	for (int i = 0; i != divider; i++)
 	{
 		for (int j = 0; j != divider; j++)
-			if (!backgroundPoints[i][j].onOrigin)
+			if (!backgroundPoints[i * divider + j].onOrigin)
 			{
-				Vec2 currentPos = backgroundPoints[i][j].currentPos;
-				Uint8* color = backgroundPoints[i][j].color;
+				Vec2 currentPos = backgroundPoints[i * divider + j].currentPos;
+				Uint8* color = backgroundPoints[i * divider + j].color;
 
 				// Set the point position according to the new surface size
 				Vec2 scaledPos = currentPos / m_pointSizeScale;
@@ -144,32 +139,29 @@ void Background::Render(SDL_Renderer* renderer)
 	// Destroy and Reset
 	SDL_RenderCopy(renderer, backgroundTexture, &textureRect, &backgroundRect);
 	SDL_DestroyTexture(backgroundTexture);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 }
 
 void Background::SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 {
 	Uint32* pixels = (Uint32*)surface->pixels;
-
 	int position = (y * surface->w) + x;
-
 	pixels[position] = pixel;
 }
 
 void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 {
-
 	float distance = Vec2::Distance(point.currentPos, point.originPos);
 	Vec2 direction = point.originPos - point.currentPos;
 	Vec2 normalizedVector = direction / distance;
 
-	// points come back faster with more distance
+	// Points come back faster with more distance
 	float distanceDependentVelocity = m_distanceVelocityFunctionSteepness * distance * distance;
 	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * deltaTime * 60.f;
 
 	Vec2 changeVector = normalizedVector * returnToOriginVelocity;
 
-	// if point would overshoot origin, put it on origin
+	// If point would overshoot origin, put it on origin
 	if (changeVector.SquareLength() > distance * distance)
 	{
 		point.currentPos = point.originPos;
@@ -182,10 +174,10 @@ void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 	}
 }
 
-void Background::MovePointOut(BackgroundPoint& point, GameObject colObject)
+void Background::MovePointOut(BackgroundPoint& point, const GameObject* colObject)
 {
-	float objectColRadius = colObject.GetColRadius();
-	Vec2 objectMidPos = Vec2(colObject.GetMidPos().x, colObject.GetMidPos().y); //TODO: delete when GameObjects got refactored with Vec2
+	float objectColRadius = colObject->GetColRadius();
+	Vec2 objectMidPos = colObject->GetMidPos();
 
 	// AABB collision check
 	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius)

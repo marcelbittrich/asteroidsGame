@@ -67,34 +67,36 @@ void CollisionHandler::HandleShipBombCollision(GameObject* object1, GameObject* 
 
 void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, GameObject* object2)
 {
+	// Elastic collision
 	// source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
-	Vec2 firstObjectMidPos = object1->GetMidPos();
-	Vec2 firstObjectVelocity = object1->GetVelocity();
-	Vec2 secondObjectMidPos = object2->GetMidPos();
-	Vec2 secondObjectVelocity = object2->GetVelocity();
+	Vec2 firstObjectMidPos		= object1->GetMidPos();
+	Vec2 firstObjectVelocity	= object1->GetVelocity();
+	Vec2 secondObjectMidPos		= object2->GetMidPos();
+	Vec2 secondObjectVelocity	= object2->GetVelocity();
 
-	// distance vector
+	// Distance vector
 	Vec2 distance = secondObjectMidPos - firstObjectMidPos;
 	float squareLength = distance.SquareLength();
 
-	// angle between object 1 and normal
+	// Angle between object 1 and normal
 	float f1 = Vec2::Dot(firstObjectVelocity, distance) / squareLength;
 
-	// parallel component for object 1
+	// Parallel component for object 1
 	Vec2 vp1 = distance * f1;
 
-	// vertical component for object 1
+	// Vertical component for object 1
 	Vec2 vv1 = firstObjectVelocity - vp1;
 
-	// angle between object 2 and normal
+	// Angle between object 2 and normal
 	float f2 = Vec2::Dot(secondObjectVelocity, distance) / squareLength;
 
-	// parallel component for object 2
+	// Parallel component for object 2
 	Vec2 vp2 = distance * f2;
 
-	// vertical component for object 2
+	// Vertical component for object 2
 	Vec2 vv2 = secondObjectVelocity - vp2;
 
+	// Estimate weight by the surface area
 	int weightObject1 = M_PI * object1->GetColRadius() * object1->GetColRadius();
 	int weightObject2 = M_PI * object2->GetColRadius() * object2->GetColRadius();
 
@@ -108,7 +110,6 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 	}
 	else
 	{
-
 		Vec2 weightFactor = (vp1 * (float)weightObject1 + vp2 * (float)weightObject2) * 2.f / (weightObject1 + weightObject2);
 
 		vp1 = weightFactor - vp1;
@@ -130,7 +131,6 @@ void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObje
 	if (asteroidPtr->sizeType == Asteroid::SizeType::Medium)
 	{
 		asteroidPtr->HandleDestruction();
-		
 	}
 	else
 	{
@@ -155,7 +155,6 @@ void CollisionHandler::HandleBombAsteroidCollision(GameObject* object1, GameObje
 	{
 		asteroidPtr->SetIsDead(true);
 	}
-
 }
 
 bool CollisionHandler::DoesCollide(const GameObject& object1, const GameObject& object2)
