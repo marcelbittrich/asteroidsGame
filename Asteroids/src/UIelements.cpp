@@ -1,6 +1,58 @@
 #include "UIelements.hpp"
 
-int UIElement::newId = 0;
+UICounter::UICounter(std::string Name, TTF_Font* m_font, SDL_Color color, SDL_Renderer* renderer, 
+	int horizontalPadding, int verticalPadding, UICounterPosition counterPosition, std::function<int()> NumberGetter)
+			: m_name(Name), m_font(m_font), m_color(color), m_renderer(renderer),
+			m_horizontalPadding(horizontalPadding), m_verticalPadding(verticalPadding), 
+			m_counterPosition(counterPosition), numberGetter(NumberGetter)
+{
+	// Set y position of UI: start with the default vertical padding
+	m_messageRect = { 0, m_verticalPadding, 0, 0 };
+
+	// Set y position based on how many elements are on the same side of the window.
+	for (const UICounter& uiCounter : UICounters)
+	{
+		if (m_counterPosition == uiCounter.m_counterPosition)
+			m_messageRect.y += uiCounter.m_verticalPadding * 2 + uiCounter.m_messageRect.h;
+	}
+
+	UICounters.push_back(*this);
+}
+
+void UICounter::Update()
+{
+	int numberToDisplay = numberGetter();
+	std::string renderString = m_name + ": " + std::to_string(numberToDisplay);
+
+	// Recreate texutre since number might have changed.
+	// TODO: Could be refactored to change on events not in update.
+	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(m_font, renderString.c_str(), m_color);
+	m_messageTexture = SDL_CreateTextureFromSurface(m_renderer, surfaceMessage);
+	SDL_FreeSurface(surfaceMessage);
+	SDL_QueryTexture(m_messageTexture, NULL, NULL, &m_messageRect.w, &m_messageRect.h);
+
+
+	// Set x position based on UI Size 
+	// For left alligned objects trivial, for right objects size is evaluated
+	if (m_counterPosition == UICounterPosition::Left)
+		m_messageRect.x = m_horizontalPadding;
+
+	if (m_counterPosition == UICounterPosition::Right)
+	{
+		int windowWidth;
+		SDL_RenderGetLogicalSize(m_renderer, &windowWidth, nullptr);
+		m_messageRect.x = windowWidth - m_messageRect.w - m_horizontalPadding;
+	}
+}
+
+void UICounter::Render()
+{
+	if (!m_renderer)
+		return;
+
+	SDL_RenderCopy(m_renderer, m_messageTexture, NULL, &m_messageRect);
+	SDL_DestroyTexture(m_messageTexture);
+}
 
 ShotMeter::ShotMeter(const Ship& ship, int xOffset, int yOffset, int m_width, int m_height)
 {
@@ -40,65 +92,4 @@ void ShotMeter::Render(SDL_Renderer* renderer, bool m_canShoot)
 	SDL_RenderFillRect(renderer, &background2);
 	m_canShoot ? SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255) : SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &meterBar);
-}
-
-std::list<UICounter> UICounter::UICounters;
-
-UICounter::UICounter(
-	std::string Name,
-	TTF_Font* m_font,
-	SDL_Color color,
-	int windowWidth,
-	int windowHeigt,
-	int horizontalPadding,
-	int verticalPadding,
-	UICounterPosition counterPosition,
-	bool displayName) : Name(Name), m_font(m_font), color(color),
-	windowWidth(windowWidth), windowHeigt(windowHeigt),
-	horizontalPadding(horizontalPadding), verticalPadding(verticalPadding),
-	counterPosition(counterPosition), displayName(displayName)
-{
-	messageRect = { 0, verticalPadding, 0, 0 };
-	numberToDisplay = 0;
-
-	if (!UICounters.empty())
-	{
-		auto it = UICounters.begin();
-		while (it != UICounters.end())
-		{
-			if (counterPosition == it->counterPosition)
-				messageRect.y += it->verticalPadding * 2 + it->messageRect.h;
-			it++;
-		}
-	}
-
-	UICounters.push_back(*this);
-}
-
-void UICounter::Update(int numberToDisplay, SDL_Renderer* renderer)
-{
-	std::string renderString = std::to_string(numberToDisplay);
-	if (displayName)
-		renderString = Name + ": " + renderString;
-
-	const char* pCString = renderString.c_str();
-	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(m_font, pCString, color);
-	messageTexture = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-	SDL_FreeSurface(surfaceMessage);
-	SDL_QueryTexture(messageTexture, NULL, NULL, &messageRect.w, &messageRect.h);
-
-	if (counterPosition == UICounterPosition::Left)
-		messageRect.x = horizontalPadding;
-
-	if (counterPosition == UICounterPosition::Right)
-		messageRect.x = windowWidth - messageRect.w - horizontalPadding;
-}
-
-void UICounter::Render(SDL_Renderer* renderer)
-{
-	if (!renderer)
-		return;
-
-	SDL_RenderCopy(renderer, messageTexture, NULL, &messageRect);
-	SDL_DestroyTexture(messageTexture);
 }

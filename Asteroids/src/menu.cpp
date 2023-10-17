@@ -43,7 +43,7 @@ void GameMenu::AddButton(const std::string& id, const std::string& text, TextSiz
 	buttonObjects.push_back(menuButton);
 }
 
-void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, std::function<void(float)> onChangeCallback, bool isVisible)
+void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, float defaultValue, std::function<void(float)> onChangeCallback, bool isVisible)
 {
 	Slider slider;
 	slider.id = id;
@@ -55,6 +55,7 @@ void GameMenu::AddSlider(const std::string& id, SDL_Rect centeredPositionAndDime
 		centeredPositionAndDimension.w,
 		centeredPositionAndDimension.h
 	};
+	slider.sliderValue = defaultValue;
 	slider.indicatorDim =
 	{
 		slider.dimensions.x + (int)(slider.sliderValue * slider.dimensions.w) - centeredPositionAndDimension.h / 2,
@@ -333,7 +334,8 @@ void PauseMenu::CreateDefaultPauseMenu()
 	AddText("PauseHeadline", "PAUSE", TextSize::Small, position);
 
 	SDL_Rect posAndDim = { m_width / 2, m_height / 2 - 30, 200, 10 };
-	AddSlider("SoundSlider", posAndDim, [&](float newValue) { this->OnVolumeChange(newValue); });
+	float defaultValue = m_owner->GetAudioPlayer().GetMasterVolume();
+	AddSlider("SoundSlider", posAndDim, defaultValue, [&](float newValue) { this->OnVolumeChange(newValue); });
 
 	position = { m_width / 2, m_height / 2 };
 	AddText("SoundText", "Sound", TextSize::Small, position);

@@ -26,7 +26,7 @@ public:
 		: m_id(s_NewId++), m_midPos(midPos), m_velocity(velocity) {}
 
 	static void ResetId() { s_NewId = 1; }
-	virtual void Update() {};
+	virtual void Update(int windowWidth, int windowHeight, float deltaTime) {};
 	virtual void Render() {};
 
 	enum class Type {
@@ -81,7 +81,8 @@ public:
 	Ship() {};
 	Ship(Vec2 midPos, int size, SDL_Texture* texture);
 
-	void Update(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime);
+	void HandleInput(const InputHandler& myInputHandler);
+	void Update(int windowWidth, int windowHeight, float deltaTime) override;
 	void Render() override;
 	void Reset();
 	void Respawn();
@@ -95,6 +96,8 @@ public:
 	int GetCollectedBombsSize() { return (int)m_collectedBombs.size(); };
 
 	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
+
+	// TODO: Let the Game own this
 	inline static std::vector<Ship> ships;
 
 private:
@@ -111,8 +114,11 @@ private:
 	float m_rotation			= 0.f;
 	float m_roatatingSpeed		= 180.f;
 	float m_thrust				= 350.f;
-	void UpdateTransform(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime);
-	void UpdateAnimation(const InputHandler& myInputHandler, float deltaTime);
+	bool m_isThrusting			= false;
+	bool m_isTurningRight		= false;
+	bool m_isTurningLeft		= false;
+	void UpdateTransform(int windowWidth, int windowHeight, float deltaTime);
+	void UpdateAnimation(float deltaTime);
 
 	// Shooting values
 	float m_shotVelocity		= 1000.f;
@@ -159,12 +165,11 @@ public:
 	};
 
 	Asteroid(Vec2 m_midPos, Vec2 m_velocity, Asteroid::SizeType sizeType);
-	void Update(int windowWidth, int windowHeight, float deltaTime);
+	void Update(int windowWidth, int windowHeight, float deltaTime)  override;
 	void Render() override;
 
 	SizeType sizeType;
 
-	inline static std::list<Asteroid> asteroids;
 	static int GetSize(SizeType sizeType);
 	static float GetColRadius(int size);
 
@@ -172,6 +177,9 @@ public:
 	static void SetTextureMedium(SDL_Texture* texture) { s_textureMedium = texture; }
 
 	void HandleDestruction();
+
+	// TODO: Let the Game own this
+	inline static std::list<Asteroid> asteroids;
 
 private:
 	inline static const float m_colRadiusFactor = 0.6f;
@@ -188,11 +196,14 @@ class Shot : public GameObject
 {
 public:
 	Shot(Vec2 midPos, Vec2 velocity, float shotHeadingAngle);
-	void Update(int windowWidth, int windowHeight, float deltaTime);
+	void Update(int windowWidth, int windowHeight, float deltaTime)  override;
 	void Render() override;
 
-	inline static std::list<Shot> shots;
+	
 	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
+
+	// TODO: Let the Game own this
+	inline static std::list<Shot> shots;
 
 private:
 	inline static SDL_Texture* s_texture;
@@ -211,15 +222,17 @@ class Bomb : public GameObject
 {
 public:
 	Bomb(Vec2 midPos, Vec2 velocity);
-	void Update(int windowWidth, int windowHeight, float deltaTime);
+	void Update(int windowWidth, int windowHeight, float deltaTime)  override;
 	void Render() override;
 	void GetCollected(Ship* ownerShip);
 	void Explode();
 
-	inline static std::list<Bomb> bombs;
 	static void SetTexture(SDL_Texture* texture) { s_texture = texture; }
 
 	bool GetIsExploding() const { return isExploding; };
+
+	// TODO: Let the Game own this
+	inline static std::list<Bomb> bombs;
 
 private:
 	int m_size = 50;
@@ -230,9 +243,6 @@ private:
 
 	bool isExploding = false;
 	bool isCollected = false;
-
-	//Uint32 m_creationTime = 0;
-	//Uint32 m_ignitionTime = 0;
 
 	float m_rotation		= 0.0f;
 	float m_rotatingSpeed	= 10.f;

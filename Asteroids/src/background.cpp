@@ -157,12 +157,12 @@ void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 
 	// Points come back faster with more distance
 	float distanceDependentVelocity = m_distanceVelocityFunctionSteepness * distance * distance;
-	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * deltaTime * 60.f;
-
+	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * deltaTime;
+	
 	Vec2 changeVector = normalizedVector * returnToOriginVelocity;
 
-	// If point would overshoot origin, put it on origin
-	if (changeVector.SquareLength() > distance * distance)
+	// If point would overshoot origin or is very far from origin, put it on origin
+	if ((changeVector.SquareLength() > distance * distance) || (distance > m_maxPointDistance))
 	{
 		point.currentPos = point.originPos;
 		point.onOrigin = true;

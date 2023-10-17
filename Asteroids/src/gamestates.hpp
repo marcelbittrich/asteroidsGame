@@ -5,7 +5,7 @@ class GameState
 {
 public:
 	virtual void Enter(class Game* game) {}
-	virtual void HandleEvents(class Game* game, InputHandler& inputHandler) {}
+	virtual void HandleEvents(class Game* game, const InputHandler& inputHandler) {}
 	virtual void Update(class Game* game, float deltaTime) {}
 	virtual void Render(class Game* game, class SDL_Renderer* renderer) {}
 	virtual void Exit(class Game* game) {}
@@ -20,7 +20,7 @@ public:
 	MenuState() {}
 
 	virtual void Enter(class Game* game) override;
-	virtual void HandleEvents(class Game* game, InputHandler& inputHandler) override;
+	virtual void HandleEvents(class Game* game, const InputHandler& inputHandler) override;
 	virtual void Update(class Game* game, float deltaTime) override;
 	virtual void Render(class Game* game, class SDL_Renderer* renderer) override;
 	virtual void Exit(class Game* game) override;
@@ -35,7 +35,7 @@ public:
 	LevelState() {}
 
 	virtual void Enter(class Game* game) override;
-	virtual void HandleEvents(class Game* game, InputHandler& inputHandler) override;
+	virtual void HandleEvents(class Game* game, const InputHandler& inputHandler) override;
 	virtual void Update(class Game* game, float deltaTime) override;
 	virtual void Render(class Game* game, class SDL_Renderer* renderer) override;
 	virtual void Exit(class Game* game) override;
@@ -50,7 +50,7 @@ public:
 	PauseState() {}
 
 	virtual void Enter(class Game* game) override;
-	virtual void HandleEvents(class Game* game, InputHandler& inputHandler) override;
+	virtual void HandleEvents(class Game* game, const InputHandler& inputHandler) override;
 	virtual void Update(class Game* game, float deltaTime) override;
 	virtual void Render(class Game* game, class SDL_Renderer* renderer) override;
 	virtual void Exit(class Game* game) override;

@@ -19,9 +19,11 @@
 
 // Gameplay parameters
 const int STARTING_LIVES = 3;
-// One in ... for dropping a bomb when destroing astroids.
+// Spawn a bomb for every points
 const int BOMB_SPAWN_ON_SCORE = 50;
+// Time between asteroid waves
 const float ASTEROID_SPAWN_DELTATIME = 3.0f;
+// Determines speed of newly spwaned asteroids multiplied by the current score
 const float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
 
 class Game
@@ -38,23 +40,23 @@ public:
 	void PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime);
 	bool GetIsRunning() const { return isRunning; }
 
+	void ResetAllGameObjects();
 	void InitGameplayValues();
 	void SpawnAsteroidWave();
 
 	static void IncreaseScore() { score++; }
-	static int GetScore() { return score; }
+	int GetScore() { return score; }
 	static void DecreseLife() { life--; }
 	int GetLife() const { return life; }
 
-	SDL_Point GetWindowDim() const { return { windowWidth, windowHeight }; }
-
-	GameState* GetState() const { return gameState; }
-	AudioPlayer& GetAudioPlayer() { return myAudioPlayer; }
-	MainMenu& GetMainMenu() { return myMainMenu; }
-	PauseMenu& GetPauseMenu() { return myPauseMenu; }
-	GameSave& GetGameSave() { return myGameSave; }
-	CollisionHandler& GetCollisionHandler() { return myCollisionhandler; }
-	Background& GetBackground() { return gameBackground; }
+	SDL_Point			GetWindowDim() const { return { windowWidth, windowHeight }; }
+	GameState*			GetState() const { return gameState; }
+	AudioPlayer&		GetAudioPlayer() { return myAudioPlayer; }
+	MainMenu&			GetMainMenu() { return myMainMenu; }
+	PauseMenu&			GetPauseMenu() { return myPauseMenu; }
+	GameSave&			GetGameSave() { return myGameSave; }
+	CollisionHandler&	GetCollisionHandler() { return myCollisionhandler; }
+	Background&			GetBackground() { return gameBackground; }
 	std::list<GameObject*>& GetGameObjectPtrs() { return gameObjectPtrs; }
 
 	void SetNewPausePress(bool value) { newPausePress = value; }
@@ -62,9 +64,10 @@ public:
 	void SetTimeLastWave(float newValue) { timeSinceLastAsteroidWave = newValue; }
 	void AddTimeLastWave(float time) { timeSinceLastAsteroidWave += time; }
 	float GetTimeLastWave() const { return timeSinceLastAsteroidWave; }
+	float GetAverageFPS();
 
 	void ChangeState(GameState* newState) { gameState = newState; }
-	static void ExitGame() { isRunning = false; }
+	void ExitGame() { SDL_Delay(200); isRunning = false; }
 
 	friend MenuState;
 	inline static MenuState menuState;
@@ -74,6 +77,7 @@ public:
 	inline static PauseState pauseState;
 
 private:
+	float m_deltaTime = 0.f;
 	GameState* gameState = &menuState;
 
 	inline static bool isRunning = true;
@@ -131,13 +135,6 @@ private:
 	bool newPausePress = true;
 	bool gameIsPaused = false;
 	bool newBombIgnition = true;
-
-	// UI values
-	class UICounter UIScore;
-	class UICounter UILives;
-	class UICounter UIBomb;
-	class UICounter UIFPS;
-	class ShotMeter shotMeter; // Alternative shot meter rendered below ship
 
 	void InitUI();
 

@@ -57,7 +57,7 @@ public:
 		SDL_Point centeredPosition, bool isVisible = true);
 	void AddButton(const std::string& id, const std::string& text, TextSize textSize, 
 		SDL_Rect centeredPositionAndDimension, std::function<void()> onPressCallback, bool isVisible = true);
-	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, std::function<void(float)> onChangeCallback, bool isVisible = true);
+	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, float defaultValue, std::function<void(float)> onChangeCallback, bool isVisible = true);
 
 protected:
 	int m_width = 0;

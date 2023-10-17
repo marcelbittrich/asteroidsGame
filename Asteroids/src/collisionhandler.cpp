@@ -134,12 +134,12 @@ void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObje
 	}
 	else
 	{
-		m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::SmallAsteroidExplode);
-		if (Game::GetScore() % BOMB_SPAWN_ON_SCORE == 0)
+		m_game->GetAudioPlayer().PlaySoundEffect(EffectType::SmallAsteroidExplode);
+		if (m_game->GetScore() % BOMB_SPAWN_ON_SCORE == 0)
 		{
 			Bomb(asteroidPtr->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
 		}
-		Game::IncreaseScore();
+		m_game->IncreaseScore();
 	}
 	
 	asteroidPtr->SetIsDead(true);
@@ -186,8 +186,10 @@ bool CollisionHandler::RecentlyCollide(GameObject firstObject, GameObject second
 
 	for (auto it = recentCollisions.begin(); it != recentCollisions.end(); it++)
 	{
+		// Check if pairing did already collide 
 		if ((it->firstObjectId == firstID && it->secondObjectId == secondID) || (it->firstObjectId == secondID && it->secondObjectId == firstID))
 		{
+			// Check if they recently collide (within 500 ms)
 			if (SDL_GetTicks() > (it->time + 500))
 			{
 				it->time = SDL_GetTicks();
@@ -200,6 +202,8 @@ bool CollisionHandler::RecentlyCollide(GameObject firstObject, GameObject second
 			}
 		}
 	}
+
+	// If collision pairing did not happen yet, create pairing
 	CollisionOccurrence collisionOccurrence;
 	collisionOccurrence.firstObjectId = firstID;
 	collisionOccurrence.secondObjectId = secondID;

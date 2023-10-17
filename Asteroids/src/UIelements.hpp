@@ -7,33 +7,19 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <functional>
+
 
 class UIElement
 {
 protected:
-    static int newId;
+    inline static int newId = 0;
     SDL_Rect position;
     bool m_isVisible = true;
 
 public:
     int m_id;
     UIElement() : m_id(newId++){};
-};
-
-class ShotMeter : public UIElement
-{
-private:
-    SDL_Rect background1;
-    SDL_Rect background2;
-    SDL_Rect meterBar;
-    int xOffset, yOffset;
-    void Reconstruct(SDL_Rect position, const Ship &ship);
-
-public:
-    ShotMeter(){};
-    ShotMeter(const Ship &ship, int xOffset, int yOffset, int m_width, int m_height);
-    void Update(int m_shotCounter, int m_maxShotCounter, const Ship &ship);
-    void Render(SDL_Renderer *renderer, bool m_canShoot);
 };
 
 enum class UICounterPosition
@@ -44,27 +30,50 @@ enum class UICounterPosition
 
 class UICounter : public UIElement
 {
-private:
-    static std::list<UICounter> UICounters;
-
-    std::string Name;
-    TTF_Font *m_font;
-    SDL_Color color;
-    int windowWidth, windowHeigt;
-    int horizontalPadding, verticalPadding;
-    UICounterPosition counterPosition;
-    int numberToDisplay;
-    bool displayName = false;
-
-    SDL_Texture *messageTexture;
-    SDL_Rect messageRect;
 
 public:
-    UICounter(){};
-    UICounter(std::string Name, TTF_Font *m_font, SDL_Color color,
-              int windowWidth, int windowHeigt,
-              int horizontalPadding, int verticalPadding,
-              UICounterPosition counterPosition, bool displayName);
-    void Update(int numberToDisplay, SDL_Renderer *renderer);
-    void Render(SDL_Renderer *renderer);
+    UICounter() {};
+    UICounter(std::string Name, TTF_Font* m_font, SDL_Color color, SDL_Renderer* renderer,
+        int horizontalPadding, int verticalPadding, UICounterPosition counterPosition, std::function<int()> numberGetter);
+    void Update();
+    void Render();
+
+    // TODO: Let the Game own this
+    inline static std::list<UICounter> UICounters = {};
+
+private:
+    std::string m_name      = "Default";
+    TTF_Font *m_font        = nullptr;
+    SDL_Color m_color       = { 255,255,255,255 };
+    int m_verticalPadding   = 0;
+    int m_horizontalPadding = 0;
+
+    UICounterPosition m_counterPosition = UICounterPosition::Left;
+    std::function<int()> numberGetter = nullptr;
+
+    SDL_Texture *m_messageTexture = nullptr; 
+    SDL_Renderer* m_renderer      = nullptr;
+    SDL_Rect m_messageRect        = { 0,0,0,0 };
+
+
+};
+
+
+// ShotMeter UIElement was an early version of the current shot meter.
+// It is a bar floating under the ship, indicating how close the ship is to "overheating".
+// Its currently not used in the game.
+class ShotMeter : public UIElement
+{
+public:
+    ShotMeter() {};
+    ShotMeter(const Ship& ship, int xOffset, int yOffset, int m_width, int m_height);
+    void Update(int m_shotCounter, int m_maxShotCounter, const Ship& ship);
+    void Render(SDL_Renderer* renderer, bool m_canShoot);
+
+private:
+    SDL_Rect background1;
+    SDL_Rect background2;
+    SDL_Rect meterBar;
+    int xOffset, yOffset;
+    void Reconstruct(SDL_Rect position, const Ship& ship);
 };

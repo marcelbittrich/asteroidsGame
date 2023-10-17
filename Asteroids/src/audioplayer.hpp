@@ -45,6 +45,7 @@ public:
 	void PlayMusic(MusicType type);
 	void PlaySoundEffect(EffectType type);
 	void SetMasterVolume(float volume);
+	float GetMasterVolume() { return m_masterVolume; }
 
 private:
 	// master volume within 0.0..1.0

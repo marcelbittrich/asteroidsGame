@@ -31,7 +31,7 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	InitMenu();
 	InitGameplay();
 	InitUI();
-	// priming game time
+	// Priming game time
 	lastUpdateTime = SDL_GetTicks();
 }
 
@@ -64,12 +64,12 @@ void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_
 
 void Game::InitInputDevices()
 {
-	int joystticksCnt = SDL_NumJoysticks();
-	if (joystticksCnt > 0)
+	int joystickCnt = SDL_NumJoysticks();
+	if (joystickCnt > 0)
 	{
-		std::cout << joystticksCnt << " joysticks were found." << std::endl;
+		std::cout << joystickCnt << " joysticks were found." << std::endl;
 	}
-	for (int i = 0; i < joystticksCnt; i++)
+	for (int i = 0; i < joystickCnt; i++)
 	{
 		if (SDL_IsGameController(i))
 		{
@@ -121,16 +121,11 @@ void Game::InitTextures()
 	else
 		std::cout << TTF_GetError() << std::endl;
 
-	shipTex = TextureFromPath("./img/ship_thrustanimation.png");
-	Ship::SetTexture(shipTex);
-	asteroidTexSmall = TextureFromPath("./img/asteroid_small1.png");
-	Asteroid::SetTextureSmall(asteroidTexSmall);
-	asteroidTexMedium = TextureFromPath("./img/asteroid_medium1.png");
-	Asteroid::SetTextureMedium(asteroidTexMedium);
-	shotTex = TextureFromPath("./img/shot.png");
-	Shot::SetTexture(shotTex);
-	bombTex = TextureFromPath("./img/bomb.png");
-	Bomb::SetTexture(bombTex);
+	Ship::SetTexture(TextureFromPath("./img/ship_thrustanimation.png"));
+	Asteroid::SetTextureSmall(TextureFromPath("./img/asteroid_small1.png"));
+	Asteroid::SetTextureMedium(TextureFromPath("./img/asteroid_medium1.png"));
+	Shot::SetTexture(TextureFromPath("./img/shot.png"));
+	Bomb::SetTexture(TextureFromPath("./img/bomb.png"));
 
 	m_font = TTF_OpenFont("./font/joystix_monospace.ttf", 20);
 	m_fontHuge = TTF_OpenFont("./font/joystix_monospace.ttf", 120);
@@ -151,6 +146,7 @@ SDL_Texture* Game::TextureFromPath(const char* path)
 void Game::InitMenu()
 {
 	myGameSave = GameSave();
+	myAudioPlayer.SetMasterVolume(myGameSave.GetMasterVolume());
 
 	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
 	myMainMenu.CreateDefaultMainMenu();
@@ -171,10 +167,10 @@ void Game::InitGameplay()
 void Game::InitUI()
 {
 	SDL_Color white = { 255, 255, 255, 255 };
-	UIScore		= UICounter("Score", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Left, true);
-	UILives		= UICounter("Lives", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-	UIBomb		= UICounter("Bombs", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
-	UIFPS		= UICounter("FPS", m_font, white, windowWidth, windowHeight, 32, 16, UICounterPosition::Right, true);
+	UICounter("Score", m_font, white, renderer, 32, 16, UICounterPosition::Left, [&]() { return this->GetScore(); });
+	UICounter("Lives", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return this->GetLife(); });
+	UICounter("Bombs", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return Ship::ships[0].GetCollectedBombsSize(); });
+	UICounter("FPS", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return (int)this->GetAverageFPS(); });
 }
 
 void Game::HandleEvents()
@@ -192,9 +188,9 @@ void Game::HandleEvents()
 
 void Game::Update()
 {
-	float deltaTime = CalculateDeltaTime();
+	m_deltaTime = CalculateDeltaTime();
 
-	gameState->Update(this, deltaTime);
+	gameState->Update(this, m_deltaTime);
 }
 
 float Game::CalculateDeltaTime()
@@ -252,6 +248,24 @@ void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loo
 		std::cout << std::endl;
 }
 
+void Game::ResetAllGameObjects()
+{
+	GameObject::ResetId();
+	Ship::ships.clear();
+	Asteroid::asteroids.clear();
+	Shot::shots.clear();
+	Bomb::bombs.clear();
+	GetGameObjectPtrs().clear();
+
+	Vec2 midScreenPos = {
+	GetWindowDim().x / 2.f,
+	GetWindowDim().y / 2.f
+	};
+
+	Ship(midScreenPos, 50, shipTex);
+	InitAsteroids(windowWidth, windowHeight);
+}
+
 void Game::InitGameplayValues()
 {
 	life = STARTING_LIVES;
@@ -280,4 +294,31 @@ void Game::SpawnAsteroidWave()
 	}
 	SetTimeLastWave(0);
 	asteroidWave++;
+}
+
+float Game::GetAverageFPS()
+{
+	if (m_deltaTime > 0)
+	{
+		float FPS = 1 / m_deltaTime;
+		if (FPSVector.size() >= 10)
+		{
+			FPSVector.insert(FPSVector.begin(), FPS);
+			FPSVector.pop_back();
+		}
+		else
+		{
+			FPSVector.insert(FPSVector.begin(), FPS);
+		}
+	}
+
+	if (!FPSVector.empty())
+	{
+		int count = (int)(FPSVector.size());
+		return std::reduce(FPSVector.begin(), FPSVector.end()) / (float)count;
+	}
+	else
+	{
+		return 0.f;
+	}
 }

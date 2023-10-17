@@ -23,17 +23,21 @@ Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
 	ships.push_back(*this);
 }
 
-void Ship::Update(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime)
+void Ship::HandleInput(const InputHandler& myInputHandler)
+{
+	m_isThrusting = myInputHandler.GetControlBools().giveThrust;
+	m_isTurningLeft = myInputHandler.GetControlBools().isTurningLeft;
+	m_isTurningRight = myInputHandler.GetControlBools().isTurningRight;
+
+	if ((myInputHandler.GetControlBools()).isShooting) Shoot();
+	if ((myInputHandler.GetControlBools()).isUsingBomb) UseBomb();
+}
+
+void Ship::Update(int windowWidth, int windowHeight, float deltaTime)
 {
 	UpdateVisibility(deltaTime);
-	UpdateTransform(myInputHandler, windowWidth, windowHeight, deltaTime);
-	UpdateAnimation(myInputHandler, deltaTime);
-
-	if ((myInputHandler.GetControlBools()).isShooting)
-		Shoot();
-
-	if ((myInputHandler.GetControlBools()).isUsingBomb)
-		UseBomb();
+	UpdateTransform(windowWidth, windowHeight, deltaTime);
+	UpdateAnimation(deltaTime);
 }
 
 void Ship::UpdateVisibility(float deltaTime)
@@ -62,10 +66,8 @@ void Ship::UpdateVisibility(float deltaTime)
 	}
 }
 
-void Ship::UpdateTransform(const InputHandler& myInputHandler, int windowWidth, int windowHeight, float deltaTime)
+void Ship::UpdateTransform(int windowWidth, int windowHeight, float deltaTime)
 {
-	ControlBools CurrentControlBools = myInputHandler.GetControlBools();
-
 	// Update transaltion
 	float scalarVelocity = m_velocity.Length();
 	float velocityAngle = atan2(m_velocity.x, m_velocity.y);
@@ -74,7 +76,7 @@ void Ship::UpdateTransform(const InputHandler& myInputHandler, int windowWidth, 
 	m_velocity.x = (sin(velocityAngle) * scalarVelocity);
 	m_velocity.y = (cos(velocityAngle) * scalarVelocity);
 
-	if (CurrentControlBools.giveThrust && scalarVelocity < m_velocityMax)
+	if (m_isThrusting && scalarVelocity < m_velocityMax)
 	{
 		// TODO: refactor to Vec(1,1) with rotation
 		float deltaVelocityX = sinf(m_rotation * PI / 180) * m_thrust * deltaTime;
@@ -89,21 +91,20 @@ void Ship::UpdateTransform(const InputHandler& myInputHandler, int windowWidth, 
 	m_midPos = calcPosIfLeaving(m_midPos, 0, windowWidth, windowHeight);
 
 	// Update rotation
-	if (CurrentControlBools.isTurningRight)
+	if (m_isTurningRight)
 	{
 		m_rotation += m_roatatingSpeed * deltaTime;
 	}
 
-	if (CurrentControlBools.isTurningLeft)
+	if (m_isTurningLeft)
 	{
 		m_rotation -= m_roatatingSpeed * deltaTime;
 	}
 }
 
-void Ship::UpdateAnimation(const InputHandler& myInputHandler, float deltaTime)
+void Ship::UpdateAnimation(float deltaTime)
 {
-	ControlBools CurrentControlBools = myInputHandler.GetControlBools();
-	if (CurrentControlBools.giveThrust)
+	if (m_isThrusting)
 	{
 		if (SDL_GetTicks() - m_timeLastUpdated > m_timeBetweenSprites)
 		{
