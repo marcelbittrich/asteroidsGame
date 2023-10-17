@@ -397,7 +397,6 @@ bool Shot::TooOld()
 Bomb::Bomb(Vec2 midPos, Vec2 velocity)
 	: GameObject(midPos, velocity)
 {
-	m_creationTime = SDL_GetTicks();
 	m_isVisible = true;
 
 	m_width = m_size;
@@ -429,11 +428,10 @@ void Bomb::Update(int windowWidth, int windowHeight, float deltaTime)
 	}
 	if (isExploding)
 	{
-		float explosionVelocity = 20.0f;
-		float timeSinceIgnition = (SDL_GetTicks() - m_ignitionTime) / 1000.0f;
-		m_colRadius += timeSinceIgnition * explosionVelocity * deltaTime * 60;
-		if (timeSinceIgnition > 1.0f)
+		m_colRadius += m_explodindVelocity * deltaTime;
+		if (m_colRadius > m_maxExplodingRadius)
 		{
+			m_colRadius = m_maxExplodingRadius;
 			m_isDead = true;
 		}
 	}
@@ -460,7 +458,6 @@ void Bomb::Explode()
 	s_audioPlayer->PlaySoundEffect(EffectType::BombExplode);
 	isExploding = true;
 	m_isVisible = true;
-	m_ignitionTime = SDL_GetTicks();
 	m_ownerShip = nullptr;
 }
 

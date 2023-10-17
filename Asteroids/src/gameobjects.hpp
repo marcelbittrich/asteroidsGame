@@ -225,11 +225,14 @@ private:
 	int m_size = 50;
 	float m_colRadiusFactor = 0.3f;
 
+	float m_explodindVelocity = 600.f;
+	float m_maxExplodingRadius = 600.f;
+
 	bool isExploding = false;
 	bool isCollected = false;
 
-	Uint32 m_creationTime = 0;
-	Uint32 m_ignitionTime = 0;
+	//Uint32 m_creationTime = 0;
+	//Uint32 m_ignitionTime = 0;
 
 	float m_rotation		= 0.0f;
 	float m_rotatingSpeed	= 10.f;
