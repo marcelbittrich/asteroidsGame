@@ -125,7 +125,7 @@ void Ship::Shoot()
 
 	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots && m_shotCounter < m_maxShotCounter)
 	{
-		CreateShot();
+		CreateShot(0.f);
 		s_audioPlayer->PlaySoundEffect(EffectType::ShotSound);
 		m_shotCounter = m_shotCounter + 100;
 
@@ -133,16 +133,17 @@ void Ship::Shoot()
 	}
 }
 
-void Ship::CreateShot()
+void Ship::CreateShot(float additionalRoation)
 {
 	Vec2 shotVelocityVector = { 0, 0 };
 
-	shotVelocityVector.x = sin(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.x;
-	shotVelocityVector.y = -cos(m_rotation / 180 * PI) * m_shotVelocity + m_velocity.y;
+	float rotation = m_rotation + additionalRoation;
+	shotVelocityVector.x = sin(rotation / 180 * PI) * m_shotVelocity + m_velocity.x;
+	shotVelocityVector.y = -cos(rotation / 180 * PI) * m_shotVelocity + m_velocity.y;
 
 	Vec2 direction = shotVelocityVector;
 	Vec2 spawnPoint = m_midPos + direction.Normalize() * m_height / 2.f;
-	Shot(spawnPoint, shotVelocityVector, m_rotation);
+	Shot(spawnPoint, shotVelocityVector, rotation);
 }
 
 void Ship::UseBomb()

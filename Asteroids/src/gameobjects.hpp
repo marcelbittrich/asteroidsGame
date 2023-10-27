@@ -131,7 +131,7 @@ private:
 	Uint32 m_timeLastShot		= 0;
 	Uint32 m_timeBetweenShots	= 250;
 	void Shoot();
-	void CreateShot();
+	void CreateShot(float additionalRoation);
 
 	// Bombing values
 	std::list<class Bomb*> m_collectedBombs;

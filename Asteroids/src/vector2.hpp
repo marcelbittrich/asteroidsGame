@@ -2,6 +2,10 @@
 #include <math.h> 
 #include <iostream> 
 
+#ifndef M_PI
+	#define M_PI 3.14159265358979323846
+#endif
+
 struct Vec2
 {
 	float x, y;
@@ -91,20 +95,24 @@ struct Vec2
 		return sqrt(SquareLength());
 	}
 
-	Vec2& Normalize()
+	// Returnes a normalized Vector.
+	// Does not change the original Vector.
+	// Result has to be anssigned.
+	Vec2 Normalize()
 	{
 		float length = Length();
-		if (length != 0.f) 
-			*this = *this / length;
-		return *this;
+		return (length != 0.f) ? (*this / length) : Vec2(0.f, 0.f);
 	}
 
-	Vec2& Rotate(float degree)
+	// Rotates vector counterclockwise.
+	// Does not change the original Vector.
+	// Result has to be anssigned.
+	Vec2 Rotate(float degree)
 	{
 		float radian = degree * (float)M_PI / 180.f;
-		float x2 = x * cos(radian) - y * sin(radian);
-		float y2 = x * sin(radian) + y * cos(radian);
-		return Vec2(x2,y2);
+		float x2 = this->x * cos(radian) - this->y * sin(radian);
+		float y2 = this->x * sin(radian) + this->y * cos(radian);
+		return Vec2(x2, y2);
 	}
 
 	Vec2& SetLength(float length)
