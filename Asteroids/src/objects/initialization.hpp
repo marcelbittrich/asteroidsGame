@@ -7,7 +7,7 @@
 
 #include "../game.hpp"
 #include "../vector2.hpp"
-#include "../objects/gameobjects.hpp"
+#include "../objects/gameobjects/asteroid.h"
 
 Asteroid InitSingleAsteroid(std::list<GameObject*> &gameObjects, int windowWidth, int windowHeight, Asteroid::SizeType sizeType);
 void InitAsteroids(int windowWidth, int windowHeight);

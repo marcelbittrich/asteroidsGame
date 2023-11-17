@@ -1,5 +1,7 @@
 #include "initialization.hpp"
 
+#include "gameobjects/ship.h"
+
 Vec2 GetRandomPosition(
 	int windowWidth,
 	int windowHeight,

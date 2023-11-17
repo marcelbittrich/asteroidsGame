@@ -5,7 +5,7 @@
 #include <execution>
 #include <iostream>
 
-#include "../objects/gameobjects.hpp"
+#include "../objects/gameobjects/gameobject.hpp"
 
 BackgroundPoint::BackgroundPoint()
 	: currentPos(0.f, 0.f), originPos(0.f, 0.f)

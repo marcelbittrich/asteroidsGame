@@ -8,7 +8,7 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 
-#include "../objects/gameobjects.hpp"
+#include "../objects/gameobjects/ship.h"
 
 class UIElement
 {

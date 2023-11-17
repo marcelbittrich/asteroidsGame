@@ -5,8 +5,11 @@
 #include "SDL.h"
 
 #include "../game.hpp"
-#include "../objects/gameobjects.hpp"
 #include "../objects/initialization.hpp"
+#include "../objects/gameobjects/asteroid.h"
+#include "../objects/gameobjects/bomb.h"
+#include "../objects/gameobjects/ship.h"
+#include "../objects/gameobjects/shot.h"
 #include "../ui/UIelements.hpp"
 #include "../menu/menu.hpp"
 

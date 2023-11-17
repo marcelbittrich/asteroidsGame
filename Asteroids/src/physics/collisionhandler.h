@@ -1,8 +1,11 @@
 #pragma once
 
 #include <list>
+#include <vector>
 
-#include "../objects/gameobjects.hpp"
+#include "SDL_stdinc.h"
+
+#include "../objects/gameobjects/gameobject.hpp"
 
 
 class CollisionHandler

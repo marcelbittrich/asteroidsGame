@@ -6,6 +6,10 @@
 #include "../vector2.hpp"
 #include "../game.hpp"
 #include "../objects/initialization.hpp"
+#include "../objects/gameobjects/asteroid.h"
+#include "../objects/gameobjects/bomb.h"
+#include "../objects/gameobjects/ship.h"
+#include "../objects/gameobjects/shot.h"
 
 void CollisionHandler::CheckCollisions(const std::list<GameObject*>& gameObjectPtrs)
 {
