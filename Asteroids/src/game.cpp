@@ -1,3 +1,5 @@
+#include "game.hpp"
+
 #include <stdexcept>
 #include <numeric>
 #include <iostream>
@@ -8,15 +10,14 @@
 #include "SDL_gamecontroller.h"
 #include "SDL_mixer.h"
 
-#include "shapes.hpp"
-#include "background.hpp"
-#include "initialization.hpp"
-#include "UIelements.hpp"
-#include "gamesave.hpp"
-#include "inputhandler.hpp"
-#include "game.hpp"
-#include "menu.hpp"
-#include "gamestates.hpp"
+#include "objects/shapes.hpp"
+#include "objects/background.hpp"
+#include "objects/initialization.hpp"
+#include "ui/UIelements.hpp"
+#include "saving/gamesave.hpp"
+#include "input/inputhandler.hpp"
+#include "menu/menu.hpp"
+#include "states/gamestates.hpp"
 #include "vector2.hpp"
 
 void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height)
@@ -278,19 +279,19 @@ void Game::InitGameplayValues()
 
 void Game::SpawnAsteroidWave()
 {
-	//std::cout << "Spawn small asteroid" << std::endl;
 	Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
 		Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Small)), gameObjectPtrs);
+
 	Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-	spawnAsteroid(randomPos.x, randomPos.y, randomVelocity, Asteroid::SizeType::Small, gameObjectPtrs);
+
+	spawnAsteroid(randomPos, randomVelocity, Asteroid::SizeType::Small, gameObjectPtrs);
 
 	if (asteroidWave % 3 == 0)
 	{
-		//std::cout << "Spawn large asteroid" << std::endl;
 		Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
 			Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Medium)), gameObjectPtrs);
 		Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-		spawnAsteroid(randomPos.x, randomPos.y, randomVelocity, Asteroid::SizeType::Medium, gameObjectPtrs);
+		spawnAsteroid(randomPos, randomVelocity, Asteroid::SizeType::Medium, gameObjectPtrs);
 	}
 	SetTimeLastWave(0);
 	asteroidWave++;

@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <execution>
 #include <iostream>
-#include "gameobjects.hpp"
+
+#include "../objects/gameobjects.hpp"
 
 BackgroundPoint::BackgroundPoint()
 	: currentPos(0.f, 0.f), originPos(0.f, 0.f)

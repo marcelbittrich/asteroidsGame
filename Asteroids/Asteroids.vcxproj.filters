@@ -15,84 +15,84 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\background.cpp">
+    <ClCompile Include="src\objects\background.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\gameobjects.cpp">
+    <ClCompile Include="src\objects\gameobjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\gamesave.cpp">
+    <ClCompile Include="src\saving\gamesave.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\initialization.cpp">
+    <ClCompile Include="src\objects\initialization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\inputhandler.cpp">
+    <ClCompile Include="src\input\inputhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\menu.cpp">
+    <ClCompile Include="src\menu\menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\shapes.cpp">
+    <ClCompile Include="src\objects\shapes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\UIelements.cpp">
+    <ClCompile Include="src\ui\UIelements.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\collisionhandler.cpp">
+    <ClCompile Include="src\physics\collisionhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\audioplayer.cpp">
+    <ClCompile Include="src\audio\audioplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\gamestates.cpp">
+    <ClCompile Include="src\states\gamestates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\background.hpp">
+    <ClInclude Include="src\objects\background.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gameobjects.hpp">
+    <ClInclude Include="src\objects\gameobjects.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gamesave.hpp">
+    <ClInclude Include="src\saving\gamesave.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gamestates.hpp">
+    <ClInclude Include="src\states\gamestates.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\initialization.hpp">
+    <ClInclude Include="src\objects\initialization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\inputhandler.hpp">
+    <ClInclude Include="src\input\inputhandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\menu.hpp">
+    <ClInclude Include="src\menu\menu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\shapes.hpp">
+    <ClInclude Include="src\objects\shapes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\UIelements.hpp">
+    <ClInclude Include="src\ui\UIelements.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\vector2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\collisionhandler.h">
+    <ClInclude Include="src\physics\collisionhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\audioplayer.hpp">
+    <ClInclude Include="src\audio\audioplayer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

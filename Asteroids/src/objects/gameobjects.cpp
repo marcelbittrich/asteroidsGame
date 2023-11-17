@@ -1,9 +1,9 @@
 #include "gameobjects.hpp"
 
-// uncomment to disable assert()
-// #define NDEBUG
 #include <cassert>
-#include "collisionhandler.h"
+
+#include "../physics/collisionhandler.h"
+#include "../audio/audioplayer.hpp"
 
 #define PI 3.14159265359f
 
@@ -463,10 +463,10 @@ void Bomb::Explode()
 	m_ownerShip = nullptr;
 }
 
-void spawnAsteroid(int xPos, int yPos, Vec2 velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects)
+void spawnAsteroid(Vec2 position, Vec2 velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects)
 {
 	GameObject collisionObject = GameObject();
-	collisionObject.SetMidPos((float)xPos, (float)yPos);
+	collisionObject.SetMidPos(position);
 	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::GetSize(sizeType)));
 
 	bool isSafeToSpawn = true;

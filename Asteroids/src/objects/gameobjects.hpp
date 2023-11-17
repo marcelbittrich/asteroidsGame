@@ -6,16 +6,14 @@
 #include <list>
 #include <stdexcept>
 
-#include "inputhandler.hpp"
-#include "shapes.hpp"
-#include "vector2.hpp"
-#include "audioplayer.hpp"
+#include "../input/inputhandler.hpp"
+#include "../objects/shapes.hpp"
+#include "../vector2.hpp"
 
 struct GameObjectShared
 {
-	SDL_Renderer* renderer;
-	AudioPlayer* audioPlayer;
-
+	struct SDL_Renderer* renderer;
+	class AudioPlayer* audioPlayer;
 };
 
 class GameObject
@@ -49,8 +47,8 @@ public:
 	Vec2 GetVelocity() const { return m_velocity; };
 
 	void SetColRadius(float radius) { m_colRadius = radius; };
-	void SetMidPos(float x, float y) { m_midPos = { x, y }; };
-	void SetVelocity(float x, float y) { m_velocity = { x, y }; };
+	void SetMidPos(Vec2 position) { m_midPos = position; };
+	void SetVelocity(Vec2 velocity) { m_velocity = velocity; };
 	void SetIsDead(bool value) { m_isDead = value; };
 
 	static void SetRenderer(SDL_Renderer* renderer) { s_renderer = renderer; };
@@ -190,7 +188,7 @@ private:
 	inline static SDL_Texture* s_textureMedium;
 };
 
-void spawnAsteroid(int xPos, int yPos, Vec2 m_velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects);
+void spawnAsteroid(Vec2 position, Vec2 velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects);
 
 class Shot : public GameObject
 {

@@ -6,12 +6,13 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "gamestates.hpp"
-#include "inputhandler.hpp"
-#include "audioplayer.hpp"
+
+#include "../states/gamestates.hpp"
+#include "../input/inputhandler.hpp"
+#include "../audio/audioplayer.hpp"
 
 
-static struct MenuText
+struct MenuText
 {
 	std::string id			= "Default";
 	SDL_Rect textDim		= { 0,0,0,0 };
@@ -19,13 +20,13 @@ static struct MenuText
 	bool isVisible			= true;
 };
 
-static struct MenuButton : MenuText
+struct MenuButton : MenuText
 {
 	SDL_Rect buttonDim		= { 0,0,0,0 };
 	std::function<void()> onPressCallback;
 };
 
-static struct Slider
+struct Slider
 {
 	std::string id			= "DefaultSlider";
 	SDL_Rect dimensions		= { 0,0,0,0 };
@@ -57,7 +58,8 @@ public:
 		SDL_Point centeredPosition, bool isVisible = true);
 	void AddButton(const std::string& id, const std::string& text, TextSize textSize, 
 		SDL_Rect centeredPositionAndDimension, std::function<void()> onPressCallback, bool isVisible = true);
-	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, float defaultValue, std::function<void(float)> onChangeCallback, bool isVisible = true);
+	void AddSlider(const std::string& id, SDL_Rect centeredPositionAndDimension, 
+		float defaultValue, std::function<void(float)> onChangeCallback, bool isVisible = true);
 
 protected:
 	int m_width = 0;

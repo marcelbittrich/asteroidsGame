@@ -1,10 +1,12 @@
 #include "menu.hpp"
-#include "inputhandler.hpp"
-#include "game.hpp"
-#include "gamestates.hpp"
-#include "audioplayer.hpp"
 
 #include <algorithm>
+
+#include "../game.hpp"
+#include "../input/inputhandler.hpp"
+#include "../states/gamestates.hpp"
+#include "../audio/audioplayer.hpp"
+
 
 GameMenu::GameMenu(TTF_Font* font, TTF_Font* fontHuge, SDL_Renderer* renderer, int windowWidth, int windowHeight, Game* owner)
 	: m_width(windowWidth), m_height(windowHeight), m_font(font), m_fontHuge(fontHuge), m_renderer(renderer), m_owner(owner)

@@ -104,7 +104,7 @@ struct Vec2
 		return (length != 0.f) ? (*this / length) : Vec2(0.f, 0.f);
 	}
 
-	// Rotates vector counterclockwise.
+	// Rotates vector clockwise.
 	// Does not change the original Vector.
 	// Result has to be anssigned.
 	Vec2 Rotate(float degree)

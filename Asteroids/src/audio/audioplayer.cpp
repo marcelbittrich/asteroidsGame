@@ -1,6 +1,7 @@
+#include "audioplayer.hpp"
+
 #include <iostream>
 #include <algorithm>
-#include "audioplayer.hpp"
 
 
 AudioPlayer::AudioPlayer()

@@ -1,7 +1,9 @@
 #pragma once
-#include "SDL_mixer.h"
+
 #include <vector>
 #include <string>
+
+#include "SDL_mixer.h"
 
 enum class MusicType
 {

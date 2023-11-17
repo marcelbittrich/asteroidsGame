@@ -1,12 +1,14 @@
+#include "gamestates.hpp"
+
 #include <numeric>
 
 #include "SDL.h"
 
-#include "gamestates.hpp"
-#include "game.hpp"
-#include "gameobjects.hpp"
-#include "initialization.hpp"
-#include "UIelements.hpp"
+#include "../game.hpp"
+#include "../objects/gameobjects.hpp"
+#include "../objects/initialization.hpp"
+#include "../ui/UIelements.hpp"
+#include "../menu/menu.hpp"
 
 void MenuState::Enter(Game* game)
 {

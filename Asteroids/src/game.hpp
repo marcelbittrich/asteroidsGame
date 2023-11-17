@@ -6,14 +6,14 @@
 #include "SDL_ttf.h"
 #include "SDL_stdinc.h"
 
-#include "gameobjects.hpp"
-#include "menu.hpp"
-#include "gamesave.hpp"
-#include "gamestates.hpp"
-#include "background.hpp"
-#include "collisionhandler.h"
-#include "audioplayer.hpp"
-#include "UIelements.hpp"
+//#include "gameobjects.hpp"
+#include "menu/menu.hpp"
+#include "saving/gamesave.hpp"
+#include "states/gamestates.hpp"
+#include "objects/background.hpp"
+#include "physics/collisionhandler.h"
+#include "audio/audioplayer.hpp"
+//#include "UIelements.hpp"
 
 #define PI 3.14159265359
 
@@ -50,14 +50,14 @@ public:
 	int GetLife() const { return life; }
 
 	SDL_Point			GetWindowDim() const { return { windowWidth, windowHeight }; }
-	GameState*			GetState() const { return gameState; }
+	class GameState*    GetState() const { return gameState; }
 	AudioPlayer&		GetAudioPlayer() { return myAudioPlayer; }
 	MainMenu&			GetMainMenu() { return myMainMenu; }
 	PauseMenu&			GetPauseMenu() { return myPauseMenu; }
 	GameSave&			GetGameSave() { return myGameSave; }
 	CollisionHandler&	GetCollisionHandler() { return myCollisionhandler; }
 	Background&			GetBackground() { return gameBackground; }
-	std::list<GameObject*>& GetGameObjectPtrs() { return gameObjectPtrs; }
+	std::list<class GameObject*>& GetGameObjectPtrs() { return gameObjectPtrs; }
 
 	void SetNewPausePress(bool value) { newPausePress = value; }
 	bool GetNewPausePress() { return newPausePress; }

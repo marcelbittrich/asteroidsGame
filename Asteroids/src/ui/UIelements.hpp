@@ -1,14 +1,14 @@
 #pragma once
 
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "gameobjects.hpp"
-
 #include <iostream>
 #include <string>
 #include <list>
 #include <functional>
 
+#include "SDL.h"
+#include "SDL_ttf.h"
+
+#include "../objects/gameobjects.hpp"
 
 class UIElement
 {

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "SDL.h"
 #include <list>
 #include <vector>
 
-#include "vector2.hpp"
+#include "SDL.h"
+
+#include "../vector2.hpp"
 
 
 struct BackgroundPoint

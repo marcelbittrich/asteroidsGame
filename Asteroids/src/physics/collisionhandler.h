@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "gameobjects.hpp"
+#include "../objects/gameobjects.hpp"
 
 
 class CollisionHandler

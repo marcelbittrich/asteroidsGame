@@ -1,9 +1,11 @@
 #include "collisionhandler.h"
+
 #include <iostream>
-#include "vector2.hpp"
 #include "math.h"
-#include "game.hpp"
-#include "initialization.hpp"
+
+#include "../vector2.hpp"
+#include "../game.hpp"
+#include "../objects/initialization.hpp"
 
 void CollisionHandler::CheckCollisions(const std::list<GameObject*>& gameObjectPtrs)
 {
@@ -103,10 +105,10 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 	if (weightObject1 == weightObject2)
 	{
 		Vec2 velocity1 = vv1 + vp2;
-		object1->SetVelocity(velocity1.x , velocity1.y);
+		object1->SetVelocity(velocity1);
 
 		Vec2 velocity2 = vv2 + vp1;
-		object2->SetVelocity(velocity2.x, velocity2.y);
+		object2->SetVelocity(velocity2);
 	}
 	else
 	{
@@ -116,10 +118,10 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 		vp2 = weightFactor - vp2;
 
 		Vec2 velocity1 = vv1 + vp1;
-		object1->SetVelocity(velocity1.x, velocity1.y);
+		object1->SetVelocity(velocity1);
 
 		Vec2 velocity2 = vv2 + vp2;
-		object2->SetVelocity(velocity2.x, velocity2.y);
+		object2->SetVelocity(velocity2);
 	}
 }
 

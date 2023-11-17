@@ -1,4 +1,5 @@
 #include "inputhandler.hpp"
+
 #include "SDL.h"
 
 InputHandler::InputHandler()

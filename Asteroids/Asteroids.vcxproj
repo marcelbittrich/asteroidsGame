@@ -142,33 +142,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\audioplayer.cpp" />
-    <ClCompile Include="src\background.cpp" />
-    <ClCompile Include="src\collisionhandler.cpp" />
+    <ClCompile Include="src\audio\audioplayer.cpp" />
+    <ClCompile Include="src\objects\background.cpp" />
+    <ClCompile Include="src\physics\collisionhandler.cpp" />
     <ClCompile Include="src\game.cpp" />
-    <ClCompile Include="src\gameobjects.cpp" />
-    <ClCompile Include="src\gamesave.cpp" />
-    <ClCompile Include="src\gamestates.cpp" />
-    <ClCompile Include="src\initialization.cpp" />
-    <ClCompile Include="src\inputhandler.cpp" />
+    <ClCompile Include="src\objects\gameobjects.cpp" />
+    <ClCompile Include="src\saving\gamesave.cpp" />
+    <ClCompile Include="src\states\gamestates.cpp" />
+    <ClCompile Include="src\objects\initialization.cpp" />
+    <ClCompile Include="src\input\inputhandler.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\menu.cpp" />
-    <ClCompile Include="src\shapes.cpp" />
-    <ClCompile Include="src\UIelements.cpp" />
+    <ClCompile Include="src\menu\menu.cpp" />
+    <ClCompile Include="src\objects\shapes.cpp" />
+    <ClCompile Include="src\ui\UIelements.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\audioplayer.hpp" />
-    <ClInclude Include="src\background.hpp" />
-    <ClInclude Include="src\collisionhandler.h" />
+    <ClInclude Include="src\audio\audioplayer.hpp" />
+    <ClInclude Include="src\objects\background.hpp" />
+    <ClInclude Include="src\physics\collisionhandler.h" />
     <ClInclude Include="src\game.hpp" />
-    <ClInclude Include="src\gameobjects.hpp" />
-    <ClInclude Include="src\gamesave.hpp" />
-    <ClInclude Include="src\gamestates.hpp" />
-    <ClInclude Include="src\initialization.hpp" />
-    <ClInclude Include="src\inputhandler.hpp" />
-    <ClInclude Include="src\menu.hpp" />
-    <ClInclude Include="src\shapes.hpp" />
-    <ClInclude Include="src\UIelements.hpp" />
+    <ClInclude Include="src\objects\gameobjects.hpp" />
+    <ClInclude Include="src\saving\gamesave.hpp" />
+    <ClInclude Include="src\states\gamestates.hpp" />
+    <ClInclude Include="src\objects\initialization.hpp" />
+    <ClInclude Include="src\input\inputhandler.hpp" />
+    <ClInclude Include="src\menu\menu.hpp" />
+    <ClInclude Include="src\objects\shapes.hpp" />
+    <ClInclude Include="src\ui\UIelements.hpp" />
     <ClInclude Include="src\vector2.hpp" />
   </ItemGroup>
   <ItemGroup>
