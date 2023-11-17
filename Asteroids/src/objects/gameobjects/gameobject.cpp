@@ -1,10 +1,15 @@
 #include "gameobject.hpp"
 
 #include "SDL_rect.h"
+#include "SDL_render.h"
 
-Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHeight)
+Vec2 GameObject::calcPosIfLeavingScreen(Vec2 m_midPos, float radius)
 {
 	Vec2 newMidPos = m_midPos;
+
+	int windowWidth = -1;
+	int windowHeight = -1;
+	SDL_RenderGetLogicalSize(s_renderer, &windowWidth, &windowHeight);
 
 	if (m_midPos.x < 0 - radius) // leave to left.
 	{

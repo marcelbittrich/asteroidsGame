@@ -13,16 +13,20 @@
 #include "objects/shapes.hpp"
 #include "objects/background.hpp"
 #include "objects/initialization.hpp"
-#include "objects/gameobjects/asteroid.h"
-#include "objects/gameobjects/bomb.h"
-#include "objects/gameobjects/ship.h"
-#include "objects/gameobjects/shot.h"
 #include "ui/UIelements.hpp"
 #include "saving/gamesave.hpp"
 #include "input/inputhandler.hpp"
 #include "menu/menu.hpp"
-#include "states/gamestates.hpp"
+#include "states/gamestate.hpp"
 #include "vector2.hpp"
+
+Game::Game()
+{
+	ships.reserve(1);
+	asteroids.reserve(200);
+	shots.reserve(30);
+	bombs.reserve(10);
+}
 
 void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height)
 {
@@ -164,7 +168,9 @@ void Game::InitMenu()
 void Game::InitGameplay()
 {
 	myCollisionhandler = CollisionHandler(this);
+
 	gameBackground = Background(windowWidth, windowHeight, 2.0f);
+
 	GameObject::SetRenderer(renderer);
 	gameState->Enter(this);
 }
@@ -174,7 +180,7 @@ void Game::InitUI()
 	SDL_Color white = { 255, 255, 255, 255 };
 	UICounter("Score", m_font, white, renderer, 32, 16, UICounterPosition::Left, [&]() { return this->GetScore(); });
 	UICounter("Lives", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return this->GetLife(); });
-	UICounter("Bombs", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return Ship::ships[0].GetCollectedBombsSize(); });
+	UICounter("Bombs", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return ships[0].GetCollectedBombsSize(); });
 	UICounter("FPS", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return (int)this->GetAverageFPS(); });
 }
 
@@ -183,10 +189,10 @@ void Game::HandleEvents()
 	myInputHandler.HandleInput(isRunning);
 
 	GameState* prevGameState = gameState;
-	gameState->HandleEvents(this, myInputHandler);
+	gameState->HandleEvents(myInputHandler);
 	if (prevGameState != gameState)
 	{
-		prevGameState->Exit(this);
+		prevGameState->Exit();
 		gameState->Enter(this);
 	}
 }
@@ -195,7 +201,35 @@ void Game::Update()
 {
 	m_deltaTime = CalculateDeltaTime();
 
-	gameState->Update(this, m_deltaTime);
+	gameState->Update(m_deltaTime);
+}
+
+void Game::HandlePhysics()
+{
+	std::vector<class GameObject*>& allGameObjectPtrs = GetGameObjectPtrs();
+	myCollisionhandler.CheckCollisions(allGameObjectPtrs);
+}
+
+std::vector<class GameObject*> Game::GetGameObjectPtrs()
+{
+	std::vector<GameObject*> allGameObjects;
+	for (Ship& ship : ships)
+	{
+		allGameObjects.push_back(&ship);
+	}
+	for (Asteroid& asteroid : asteroids)
+	{
+		allGameObjects.push_back(&asteroid);
+	}
+	for (Shot& shot : shots)
+	{
+		allGameObjects.push_back(&shot);
+	}
+	for (Bomb& bomb : bombs)
+	{
+		allGameObjects.push_back(&bomb);
+	}
+	return allGameObjects;
 }
 
 float Game::CalculateDeltaTime()
@@ -218,7 +252,7 @@ void Game::Render()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &playArea);
 
-	gameState->Render(this, renderer);
+	gameState->Render(renderer);
 
 	SDL_RenderPresent(renderer);
 }
@@ -256,22 +290,22 @@ void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loo
 void Game::ResetAllGameObjects()
 {
 	GameObject::ResetId();
-	Ship::ships.clear();
-	Asteroid::asteroids.clear();
-	Shot::shots.clear();
-	Bomb::bombs.clear();
-	GetGameObjectPtrs().clear();
+	ships.clear();
+	asteroids.clear();
+	shots.clear();
+	bombs.clear();
 
-	Vec2 midScreenPos = {
-	GetWindowDim().x / 2.f,
-	GetWindowDim().y / 2.f
-	};
+	Vec2 midScreenPos = GetWindowDim() / 2.f;
+	Ship ship = Ship(midScreenPos, 50, shipTex);
+	ships.push_back(ship);
 
-	Ship(midScreenPos, 50, shipTex);
-	InitAsteroids(windowWidth, windowHeight);
+	int asteroidAmountSmall = 5;
+	int asteroidAmountMedium = 5;
+	std::vector<Asteroid> newAsteroids = InitAsteroids(asteroidAmountSmall, asteroidAmountMedium, GetWindowDim());
+	asteroids.insert(asteroids.end(), newAsteroids.begin(), newAsteroids.end());
 }
 
-void Game::InitGameplayValues()
+void Game::SetGameplayStartValues()
 {
 	life = STARTING_LIVES;
 
@@ -283,21 +317,25 @@ void Game::InitGameplayValues()
 
 void Game::SpawnAsteroidWave()
 {
-	Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
-		Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Small)), gameObjectPtrs);
-
+	float size = Asteroid::GetSize(Asteroid::SizeType::Small);
+	float colRadius = Asteroid::GetColRadius(size);
+	Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
 	Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
 
-	spawnAsteroid(randomPos, randomVelocity, Asteroid::SizeType::Small, gameObjectPtrs);
+	Asteroid newAsteroid = Asteroid(randomPos, randomVelocity, Asteroid::SizeType::Small);
+	asteroids.push_back(newAsteroid);
 
 	if (asteroidWave % 3 == 0)
 	{
-		Vec2 randomPos = GetRandomPosition(windowWidth, windowHeight,
-			Asteroid::GetColRadius(Asteroid::GetSize(Asteroid::SizeType::Medium)), gameObjectPtrs);
+		float size = Asteroid::GetSize(Asteroid::SizeType::Medium);
+		float colRadius = Asteroid::GetColRadius(size);
+		Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
 		Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
-		spawnAsteroid(randomPos, randomVelocity, Asteroid::SizeType::Medium, gameObjectPtrs);
+		Asteroid newAsteroid = Asteroid(randomPos, randomVelocity, Asteroid::SizeType::Medium);
+		asteroids.push_back(newAsteroid);
 	}
-	SetTimeLastWave(0);
+
+	SetTimeLastWave(0.f);
 	asteroidWave++;
 }
 

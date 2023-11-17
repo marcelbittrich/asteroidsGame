@@ -3,6 +3,8 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 
+#include "../initialization.hpp"
+#include "../../game.hpp"
 #include "../../audio/audioplayer.hpp"
 #include "../../physics/collisionhandler.h"
 
@@ -15,8 +17,6 @@ Asteroid::Asteroid(Vec2 midPos, Vec2 velocity, Asteroid::SizeType sizeType)
 	m_height = size;
 
 	objectType = Type::Asteroid;
-
-	asteroids.push_back(*this);
 }
 
 int Asteroid::GetSize(Asteroid::SizeType sizeType)
@@ -34,7 +34,7 @@ float Asteroid::GetColRadius(int size)
 	return size / 2.f * m_colRadiusFactor;
 }
 
-void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
+void Asteroid::Update(float deltaTime)
 {
 	if (m_isVisible)
 	{
@@ -42,7 +42,7 @@ void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
 		m_midPos.y += m_velocity.y * deltaTime * 60;
 	}
 
-	Vec2 newMidPosistion = calcPosIfLeaving(m_midPos, m_colRadius, windowWidth, windowHeight);
+	Vec2 newMidPosistion = calcPosIfLeavingScreen(m_midPos, m_colRadius);
 
 	if ((m_midPos.x != newMidPosistion.x) || (m_midPos.y != newMidPosistion.y))
 	{
@@ -53,7 +53,7 @@ void Asteroid::Update(int windowWidth, int windowHeight, float deltaTime)
 	{
 		m_isVisible = true;
 		bool canStayVisible = true;
-		for (const Asteroid& otherAsteroid : Asteroid::asteroids)
+		for (const Asteroid& otherAsteroid : Game::asteroids)
 		{
 			if (m_id == otherAsteroid.m_id)
 				continue;
@@ -81,15 +81,19 @@ void Asteroid::HandleDestruction()
 	Vec2 spawnDirection = m_velocity.Rotate(90);
 	spawnDirection.SetLength(newAsteroidSize / 2.f);
 
-	Asteroid(
+	Asteroid newAsteroid = Asteroid(
 		m_midPos + spawnDirection,
 		m_velocity.Rotate(45) * m_DestAstroidVelFactor,
 		Asteroid::SizeType::Small);
+	
+	Game::asteroids.push_back(newAsteroid);
 
-	Asteroid(
+	newAsteroid = Asteroid(
 		m_midPos - spawnDirection,
 		m_velocity.Rotate(-45) * m_DestAstroidVelFactor,
 		Asteroid::SizeType::Small);
+
+	Game::asteroids.push_back(newAsteroid);
 }
 
 void Asteroid::Render()
@@ -114,26 +118,44 @@ void Asteroid::Render()
 	}
 }
 
-void spawnAsteroid(Vec2 position, Vec2 velocity, Asteroid::SizeType sizeType, const std::list<GameObject*>& gameobjects)
-{
-	GameObject collisionObject = GameObject();
-	collisionObject.SetMidPos(position);
-	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::GetSize(sizeType)));
+//Asteroid spawnAsteroid(Vec2 position, Vec2 velocity, Asteroid::SizeType sizeType)
+//{
+//	GameObject collisionObject = GameObject();
+//	collisionObject.SetMidPos(position);
+//	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::GetSize(sizeType)));
+//
+//	return Asteroid(collisionObject.GetMidPos(),velocity,sizeType);
+//}
 
-	bool isSafeToSpawn = true;
-	for (auto it = gameobjects.begin(); it != gameobjects.end(); it++)
+
+std::vector<Asteroid> InitAsteroids(int amnountSmall, int amountBig, Vec2 windowDimensions)
+{
+	std::vector<Asteroid> asteroids;
+	asteroids.reserve(amountBig + amnountSmall);
+
+	std::vector<GameObject*> currentGameObjects = { &Game::ships[0] };
+	for (int i = 0; i < amnountSmall; i++)
 	{
-		if (CollisionHandler::DoesCollide(collisionObject, **it))
-		{
-			isSafeToSpawn = false;
-			break;
-		}
+		Asteroid newAsteroid = InitSingleAsteroid(Asteroid::SizeType::Small, windowDimensions, currentGameObjects);
+		asteroids.push_back(newAsteroid);
+		currentGameObjects.push_back(&asteroids.back());
 	}
-	if (isSafeToSpawn)
+	for (int i = 0; i < amountBig; i++)
 	{
-		Asteroid(
-			collisionObject.GetMidPos(),
-			velocity,
-			sizeType);
+		Asteroid newAsteroid = InitSingleAsteroid(Asteroid::SizeType::Medium, windowDimensions, currentGameObjects);
+		asteroids.push_back(newAsteroid);
+		currentGameObjects.push_back(&asteroids.back());
 	}
+
+	return asteroids;
+}
+
+Asteroid InitSingleAsteroid(Asteroid::SizeType sizeType, Vec2 windowDimensions, std::vector<GameObject*>& gameObjects)
+{
+	float asteroidMinVel = 0;
+	float asteroidMaxVel = 1;
+	int size = Asteroid::GetSize(sizeType);
+	float m_colRadius = Asteroid::GetColRadius(size);
+	Vec2 randomPosition = GetFreeRandomPosition(windowDimensions, m_colRadius, gameObjects);
+	return Asteroid(randomPosition, GetRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);
 }

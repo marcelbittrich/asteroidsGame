@@ -11,7 +11,7 @@
 #include "../objects/gameobjects/ship.h"
 #include "../objects/gameobjects/shot.h"
 
-void CollisionHandler::CheckCollisions(const std::list<GameObject*>& gameObjectPtrs)
+void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjectPtrs)
 {
 	// Offset to not check the same pairings again or object with itself
 	int offset = 1;
@@ -57,7 +57,7 @@ void CollisionHandler::HandleShipAsteroidCollision(GameObject* object1, GameObje
 	Ship* shipPtr = (object1->objectType == Type::Ship) ? (Ship*)object1 : (Ship*)object2;
 
 	shipPtr->Respawn();
-	Game::DecreseLife();
+	Game::DecreaseLife();
 }
 
 void CollisionHandler::HandleShipBombCollision(GameObject* object1, GameObject* object2)
@@ -143,7 +143,8 @@ void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObje
 		m_game->GetAudioPlayer().PlaySoundEffect(EffectType::SmallAsteroidExplode);
 		if (m_game->GetScore() % BOMB_SPAWN_ON_SCORE == 0)
 		{
-			Bomb(asteroidPtr->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
+			Bomb newBomb = Bomb(asteroidPtr->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
+			Game::bombs.push_back(newBomb);
 		}
 		m_game->IncreaseScore();
 	}

@@ -6,7 +6,9 @@
 #include "shot.h"
 #include "bomb.h"
 #include "../shapes.hpp"
+#include "../../game.hpp"
 #include "../../audio/audioplayer.hpp"
+
 
 
 #define PI 3.14159265359f
@@ -23,8 +25,6 @@ Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
 	m_timeLastBomb = SDL_GetTicks();
 
 	objectType = Type::Ship;
-
-	ships.push_back(*this);
 }
 
 void Ship::HandleInput(const InputHandler& myInputHandler)
@@ -37,10 +37,10 @@ void Ship::HandleInput(const InputHandler& myInputHandler)
 	if ((myInputHandler.GetControlBools()).isUsingBomb) UseBomb();
 }
 
-void Ship::Update(int windowWidth, int windowHeight, float deltaTime)
+void Ship::Update(float deltaTime)
 {
 	UpdateVisibility(deltaTime);
-	UpdateTransform(windowWidth, windowHeight, deltaTime);
+	UpdateTransform(deltaTime);
 	UpdateAnimation(deltaTime);
 }
 
@@ -70,7 +70,7 @@ void Ship::UpdateVisibility(float deltaTime)
 	}
 }
 
-void Ship::UpdateTransform(int windowWidth, int windowHeight, float deltaTime)
+void Ship::UpdateTransform(float deltaTime)
 {
 	// Update transaltion
 	float scalarVelocity = m_velocity.Length();
@@ -92,7 +92,7 @@ void Ship::UpdateTransform(int windowWidth, int windowHeight, float deltaTime)
 	m_midPos += m_velocity * deltaTime;
 
 	// If ship leaves the screen, re-enter at opposite site
-	m_midPos = calcPosIfLeaving(m_midPos, 0, windowWidth, windowHeight);
+	m_midPos = calcPosIfLeavingScreen(m_midPos, 0);
 
 	// Update rotation
 	if (m_isTurningRight)
@@ -147,7 +147,8 @@ void Ship::CreateShot(float additionalRoation)
 
 	Vec2 direction = shotVelocityVector;
 	Vec2 spawnPoint = m_midPos + direction.Normalize() * m_height / 2.f;
-	Shot(spawnPoint, shotVelocityVector, rotation);
+	Shot newShot = Shot(spawnPoint, shotVelocityVector, rotation);
+	Game::shots.push_back(newShot);
 }
 
 void Ship::UseBomb()

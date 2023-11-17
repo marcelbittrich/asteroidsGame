@@ -16,7 +16,7 @@ public:
 		: m_id(s_NewId++), m_midPos(midPos), m_velocity(velocity) {}
 
 	static void ResetId() { s_NewId = 1; }
-	virtual void Update(int windowWidth, int windowHeight, float deltaTime) {};
+	virtual void Update(float deltaTime) {};
 	virtual void Render() {};
 
 	enum class Type {
@@ -61,8 +61,10 @@ protected:
 	inline static struct SDL_Renderer* s_renderer = nullptr;
 	inline static class AudioPlayer* s_audioPlayer = nullptr;
 
+protected:
+	Vec2 calcPosIfLeavingScreen(Vec2 m_midPos, float radius);
+
 private:
 	inline static int s_NewId = 0;
 };
 
-Vec2 calcPosIfLeaving(Vec2 m_midPos, float radius, int windowWidth, int windowHeight);

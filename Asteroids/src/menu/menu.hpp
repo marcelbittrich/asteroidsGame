@@ -7,7 +7,6 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 
-#include "../states/gamestates.hpp"
 #include "../input/inputhandler.hpp"
 #include "../audio/audioplayer.hpp"
 

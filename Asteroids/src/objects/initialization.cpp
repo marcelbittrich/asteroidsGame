@@ -1,18 +1,14 @@
 #include "initialization.hpp"
 
-#include "gameobjects/ship.h"
+#include "../game.hpp"
 
-Vec2 GetRandomPosition(
-	int windowWidth,
-	int windowHeight,
-	float m_colRadius,
-	const std::list<GameObject*>& gameObjects)
+Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::vector<GameObject*>& gameObjects)
 {
 	int maxTries = 10000;
 	for (int i = 0; i < maxTries; i++)
 	{
-		float x = rand() % windowWidth;
-		float y = rand() % windowHeight;
+		float x = rand() % (int)windowDimensions.x;
+		float y = rand() % (int)windowDimensions.y;
 		bool success = true;
 		for (const GameObject* gameObject : gameObjects)
 		{
@@ -37,6 +33,14 @@ Vec2 GetRandomPosition(
 	//throw std::runtime_error("Max tries for getRandomPosition exceeded!");
 }
 
+Vec2 GetRandomVelocity(float minVelocity, float maxVelocity)
+{
+	Vec2 m_velocity = { 0, 0 };
+	m_velocity.x = randomSign() * getRandomValue(minVelocity, maxVelocity);
+	m_velocity.y = randomSign() * getRandomValue(minVelocity, maxVelocity);
+	return m_velocity;
+}
+
 float randomSign()
 {
 	if (rand() % 100 <= 49)
@@ -48,40 +52,4 @@ float getRandomValue(float min, float max)
 {
 	float randomValue = (rand() % 1001) / 1000.0f * (max - min);
 	return randomValue;
-}
-
-Vec2 GetRandomVelocity(float minVelocity, float maxVelocity)
-{
-	Vec2 m_velocity = { 0, 0 };
-	m_velocity.x = randomSign() * getRandomValue(minVelocity, maxVelocity);
-	m_velocity.y = randomSign() * getRandomValue(minVelocity, maxVelocity);
-	return m_velocity;
-}
-
-Asteroid InitSingleAsteroid(std::list<GameObject*>& gameObjects, int windowWidth, int windowHeight, Asteroid::SizeType sizeType)
-{
-	float asteroidMinVel = 0;
-	float asteroidMaxVel = 1;
-	int size = Asteroid::GetSize(sizeType);
-	float m_colRadius = Asteroid::GetColRadius(size);
-	Vec2 randomPosition = GetRandomPosition(
-		windowWidth, windowHeight, m_colRadius, gameObjects);
-
-	return Asteroid(randomPosition, GetRandomVelocity(asteroidMinVel, asteroidMaxVel), sizeType);
-}
-
-void InitAsteroids(int windowWidth, int windowHeight)
-{
-	int asteroidAmountSmall = 5;
-	int asteroidAmountMedium = 5;
-	Ship ship;
-	std::list<GameObject*> gameObjects = { &Ship::ships[0] }; // TODO: refactor with all gameObjects
-	for (int i = 0; i < asteroidAmountSmall; i++)
-	{
-		Asteroid newAsteroid = InitSingleAsteroid(gameObjects, windowWidth, windowHeight, Asteroid::SizeType::Small);
-	}
-	for (int i = 0; i < asteroidAmountMedium; i++)
-	{
-		Asteroid newAsteroid = InitSingleAsteroid(gameObjects, windowWidth, windowHeight, Asteroid::SizeType::Medium);
-	}
 }

@@ -142,6 +142,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\states\pausestate.cpp" />
+    <ClCompile Include="src\states\levelstate.cpp" />
+    <ClCompile Include="src\states\menustate.cpp" />
     <ClCompile Include="src\objects\gameobjects\bomb.cpp" />
     <ClCompile Include="src\objects\gameobjects\shot.cpp" />
     <ClCompile Include="src\objects\gameobjects\asteroid.cpp" />
@@ -152,7 +155,6 @@
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\objects\gameobjects\gameobject.cpp" />
     <ClCompile Include="src\saving\gamesave.cpp" />
-    <ClCompile Include="src\states\gamestates.cpp" />
     <ClCompile Include="src\objects\initialization.cpp" />
     <ClCompile Include="src\input\inputhandler.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -161,6 +163,9 @@
     <ClCompile Include="src\ui\UIelements.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\states\pausestate.h" />
+    <ClInclude Include="src\states\levelstate.h" />
+    <ClInclude Include="src\states\menustate.h" />
     <ClInclude Include="src\objects\gameobjects\bomb.h" />
     <ClInclude Include="src\objects\gameobjects\shot.h" />
     <ClInclude Include="src\objects\gameobjects\asteroid.h" />
@@ -171,7 +176,7 @@
     <ClInclude Include="src\game.hpp" />
     <ClInclude Include="src\objects\gameobjects\gameobject.hpp" />
     <ClInclude Include="src\saving\gamesave.hpp" />
-    <ClInclude Include="src\states\gamestates.hpp" />
+    <ClInclude Include="src\states\gamestate.hpp" />
     <ClInclude Include="src\objects\initialization.hpp" />
     <ClInclude Include="src\input\inputhandler.hpp" />
     <ClInclude Include="src\menu\menu.hpp" />

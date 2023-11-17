@@ -1,16 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <list>
 
-#include "SDL.h"
-
-#include "../game.hpp"
 #include "../vector2.hpp"
-#include "../objects/gameobjects/asteroid.h"
 
-Asteroid InitSingleAsteroid(std::list<GameObject*> &gameObjects, int windowWidth, int windowHeight, Asteroid::SizeType sizeType);
-void InitAsteroids(int windowWidth, int windowHeight);
-
+Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::vector<class GameObject*> &gameObjects);
 Vec2 GetRandomVelocity(float minVelocity, float maxVelocity);
-Vec2 GetRandomPosition(int windowWidth, int windowHeight, float m_colRadius, const std::list<GameObject*> &gameObjects);
+
+float randomSign();
+float getRandomValue(float min, float max);
+

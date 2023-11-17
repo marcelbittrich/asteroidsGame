@@ -60,7 +60,7 @@ Background::Background(int windowWidth, int windowHeight, float pointScale)
 	}
 }
 
-void Background::Update(const std::list<GameObject*>& gameObjects, float deltaTime)
+void Background::Update(const std::vector<GameObject*>& gameObjects, float deltaTime)
 {
 	for (const GameObject* object : gameObjects)
 	{

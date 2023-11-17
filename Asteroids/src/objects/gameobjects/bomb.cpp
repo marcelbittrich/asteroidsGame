@@ -20,17 +20,15 @@ Bomb::Bomb(Vec2 midPos, Vec2 velocity)
 	m_colRadius = m_size * m_colRadiusFactor;
 
 	objectType = Type::Bomb;
-
-	bombs.push_back(*this);
 }
 
-void Bomb::Update(int windowWidth, int windowHeight, float deltaTime)
+void Bomb::Update(float deltaTime)
 {
 	if (!isCollected && !isExploding)
 	{
 		m_midPos.x += m_velocity.x * deltaTime * 60;
 		m_midPos.y += m_velocity.y * deltaTime * 60;
-		m_midPos = calcPosIfLeaving(m_midPos, m_colRadius, windowWidth, windowHeight);
+		m_midPos = calcPosIfLeavingScreen(m_midPos, m_colRadius);
 
 		m_rotation += m_rotatingSpeed * deltaTime;
 	}

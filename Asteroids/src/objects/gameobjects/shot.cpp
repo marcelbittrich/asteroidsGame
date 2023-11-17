@@ -13,14 +13,12 @@ Shot::Shot(Vec2 midPos, Vec2 velocity, float rotation)
 	m_height = m_size;
 
 	objectType = Type::Shot;
-
-	shots.push_back(*this);
 }
 
-void Shot::Update(int windowWidth, int windowHeight, float deltaTime)
+void Shot::Update(float deltaTime)
 {
 	m_midPos += m_velocity * deltaTime;
-	// midPos = calcPosIfLeaving(midPos, colRadius, windowWidth, windowHeight);
+	// midPos = calcPosIfLeaving(midPos, colRadius);
 
 	if (IsTooOld(deltaTime))
 	{

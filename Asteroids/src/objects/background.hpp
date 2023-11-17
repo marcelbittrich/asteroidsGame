@@ -1,6 +1,5 @@
 #pragma once
 
-#include <list>
 #include <vector>
 
 #include "SDL.h"
@@ -23,7 +22,7 @@ class Background
 public:
 	Background() {};
 	Background(int windowWidth, int windowHeight, float pointScale);
-	void Update(const std::list<class GameObject*>& gameObjects, float deltaTime);
+	void Update(const std::vector<class GameObject*>& gameObjects, float deltaTime);
 	void Render(SDL_Renderer* renderer);
 
 private:

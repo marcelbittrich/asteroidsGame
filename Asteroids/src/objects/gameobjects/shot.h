@@ -8,15 +8,10 @@ class Shot : public GameObject
 {
 public:
 	Shot(Vec2 midPos, Vec2 velocity, float rotation);
-	void Update(int windowWidth, int windowHeight, float deltaTime)  override;
+	void Update(float deltaTime)  override;
 	void Render() override;
 
-
 	static void SetTexture(struct SDL_Texture* texture) { s_texture = texture; }
-
-	// TODO: Let the Game own this
-	inline static std::list<Shot> shots;
-
 private:
 	float m_rotation = 0.f;
 

@@ -15,7 +15,7 @@ public:
 	Ship(Vec2 midPos, int size, struct SDL_Texture* texture);
 
 	void HandleInput(const InputHandler& myInputHandler);
-	void Update(int windowWidth, int windowHeight, float deltaTime) override;
+	void Update(float deltaTime) override;
 	void Render() override;
 	void Reset();
 	void Respawn();
@@ -29,9 +29,6 @@ public:
 	int GetCollectedBombsSize() { return (int)m_collectedBombs.size(); };
 
 	static void SetTexture(struct SDL_Texture* texture) { s_texture = texture; }
-
-	// TODO: Let the Game own this
-	inline static std::vector<Ship> ships;
 
 private:
 	inline static struct SDL_Texture* s_texture;
@@ -50,7 +47,7 @@ private:
 	bool m_isThrusting = false;
 	bool m_isTurningRight = false;
 	bool m_isTurningLeft = false;
-	void UpdateTransform(int windowWidth, int windowHeight, float deltaTime);
+	void UpdateTransform(float deltaTime);
 	void UpdateAnimation(float deltaTime);
 
 	// Shooting values

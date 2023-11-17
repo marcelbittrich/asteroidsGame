@@ -13,7 +13,7 @@ class CollisionHandler
 public:
 	CollisionHandler() {};
 	CollisionHandler(class Game* owner) : m_game(owner) {};
-	void CheckCollisions(const std::list<GameObject*>& gameObjectPtrs);
+	void CheckCollisions(const std::vector<GameObject*>& gameObjectPtrs);
 
 	static bool DoesCollide(const GameObject& object1, const GameObject& object2);
 private:

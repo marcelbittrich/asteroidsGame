@@ -8,7 +8,7 @@ class Bomb : public GameObject
 {
 public:
 	Bomb(Vec2 midPos, Vec2 velocity);
-	void Update(int windowWidth, int windowHeight, float deltaTime)  override;
+	void Update(float deltaTime)  override;
 	void Render() override;
 	void GetCollected(class Ship* ownerShip);
 	void Explode();
@@ -16,9 +16,6 @@ public:
 	static void SetTexture(struct SDL_Texture* texture) { s_texture = texture; }
 
 	bool GetIsExploding() const { return isExploding; };
-
-	// TODO: Let the Game own this
-	inline static std::list<Bomb> bombs;
 
 private:
 	int m_size = 50;
