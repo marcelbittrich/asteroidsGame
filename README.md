@@ -1,4 +1,7 @@
 # asteroidsGame
+
+![Asteroids](https://github.com/marcelbittrich/asteroidsGame/assets/113523293/b29f295e-d5d9-49a0-9755-3568b1908ec6)
+
 :joystick::rocket: An "Asteroids" like game written in C++ with SDL2
 
 ## Description
