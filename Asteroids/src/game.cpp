@@ -135,6 +135,7 @@ void Game::InitTextures()
 	Asteroid::SetTextureMedium(TextureFromPath("./img/asteroid_medium1.png"));
 	Shot::SetTexture(TextureFromPath("./img/shot.png"));
 	Bomb::SetTexture(TextureFromPath("./img/bomb.png"));
+	Follower::SetTexture(TextureFromPath("./img/follower.png"));
 
 	m_font = TTF_OpenFont("./font/joystix_monospace.ttf", 20);
 	m_fontHuge = TTF_OpenFont("./font/joystix_monospace.ttf", 120);
@@ -172,7 +173,8 @@ void Game::InitGameplay()
 	gameBackground = Background(windowWidth, windowHeight, 2.0f);
 
 	GameObject::SetRenderer(renderer);
-	gameState->Enter(this);
+	ChangeState(&menuState);
+	gameState.top()->Enter(this);
 }
 
 void Game::InitUI()
@@ -188,12 +190,12 @@ void Game::HandleEvents()
 {
 	myInputHandler.HandleInput(isRunning);
 
-	GameState* prevGameState = gameState;
-	gameState->HandleEvents(myInputHandler);
-	if (prevGameState != gameState)
+	GameState* prevGameState = gameState.top();
+	gameState.top()->HandleEvents(myInputHandler);
+	if (prevGameState != gameState.top())
 	{
 		prevGameState->Exit();
-		gameState->Enter(this);
+		gameState.top()->Enter(this);
 	}
 }
 
@@ -201,7 +203,7 @@ void Game::Update()
 {
 	m_deltaTime = CalculateDeltaTime();
 
-	gameState->Update(m_deltaTime);
+	gameState.top()->Update(m_deltaTime);
 }
 
 void Game::HandlePhysics()
@@ -229,6 +231,10 @@ std::vector<class GameObject*> Game::GetGameObjectPtrs()
 	{
 		allGameObjects.push_back(&bomb);
 	}
+	for (Follower& follower : followers)
+	{
+		allGameObjects.push_back(&follower);
+	}
 	return allGameObjects;
 }
 
@@ -252,7 +258,7 @@ void Game::Render()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &playArea);
 
-	gameState->Render(renderer);
+	gameState.top()->Render(renderer);
 
 	SDL_RenderPresent(renderer);
 }
@@ -294,6 +300,7 @@ void Game::ResetAllGameObjects()
 	asteroids.clear();
 	shots.clear();
 	bombs.clear();
+	followers.clear();
 
 	Vec2 midScreenPos = GetWindowDim() / 2.f;
 	Ship ship = Ship(midScreenPos, 50, shipTex);
@@ -317,7 +324,7 @@ void Game::SetGameplayStartValues()
 
 void Game::SpawnAsteroidWave()
 {
-	float size = Asteroid::GetSize(Asteroid::SizeType::Small);
+	int size = Asteroid::GetSize(Asteroid::SizeType::Small);
 	float colRadius = Asteroid::GetColRadius(size);
 	Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
 	Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
@@ -325,9 +332,13 @@ void Game::SpawnAsteroidWave()
 	Asteroid newAsteroid = Asteroid(randomPos, randomVelocity, Asteroid::SizeType::Small);
 	asteroids.push_back(newAsteroid);
 
+	Vec2 randomPos2 = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
+	Follower follower = Follower(randomPos2, 30);
+	followers.push_back(follower);
+
 	if (asteroidWave % 3 == 0)
 	{
-		float size = Asteroid::GetSize(Asteroid::SizeType::Medium);
+		int size = Asteroid::GetSize(Asteroid::SizeType::Medium);
 		float colRadius = Asteroid::GetColRadius(size);
 		Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
 		Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);

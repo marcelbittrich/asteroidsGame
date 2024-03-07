@@ -142,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\objects\gameobjects\follower.cpp" />
     <ClCompile Include="src\states\pausestate.cpp" />
     <ClCompile Include="src\states\levelstate.cpp" />
     <ClCompile Include="src\states\menustate.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\ui\UIelements.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\objects\gameobjects\follower.h" />
     <ClInclude Include="src\states\pausestate.h" />
     <ClInclude Include="src\states\levelstate.h" />
     <ClInclude Include="src\states\menustate.h" />

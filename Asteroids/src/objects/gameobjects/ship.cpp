@@ -9,9 +9,9 @@
 #include "../../game.hpp"
 #include "../../audio/audioplayer.hpp"
 
-
-
-#define PI 3.14159265359f
+#ifndef PI
+	#define PI 3.14159265359f
+#endif
 
 Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
 	: GameObject(midPos, 0.f)
@@ -39,17 +39,20 @@ void Ship::HandleInput(const InputHandler& myInputHandler)
 
 void Ship::Update(float deltaTime)
 {
-	UpdateVisibility(deltaTime);
+	UpdateGameplay(deltaTime);
 	UpdateTransform(deltaTime);
 	UpdateAnimation(deltaTime);
 }
 
-void Ship::UpdateVisibility(float deltaTime)
+void Ship::UpdateGameplay(float deltaTime)
 {
 	if (m_isVisible)
 	{
 		m_canBomb = true;
-		m_shotCounter = std::max((m_shotCounter - m_shotCounterDecay * deltaTime), 0.0f);
+
+		float coolDownFactor = m_canShoot ? 1.0f : 2.0f;
+		m_shotCounter = std::max((m_shotCounter - m_shotCounterDecay * coolDownFactor * deltaTime), 0.0f);
+		
 		if (m_shotCounter >= m_maxShotCounter)
 			m_canShoot = false;
 		if (!m_canShoot && m_shotCounter <= m_shipCooldownThreshold)
@@ -83,8 +86,8 @@ void Ship::UpdateTransform(float deltaTime)
 	if (m_isThrusting && scalarVelocity < m_velocityMax)
 	{
 		// TODO: refactor to Vec(1,1) with rotation
-		float deltaVelocityX = sinf(m_rotation * PI / 180) * m_thrust * deltaTime;
-		float deltaVelocityY = -(cosf(m_rotation * PI / 180)) * m_thrust * deltaTime;
+		float deltaVelocityX = sinf(m_rotation * (float)PI / 180) * m_thrust * deltaTime;
+		float deltaVelocityY = -(cosf(m_rotation * (float)PI / 180)) * m_thrust * deltaTime;
 		m_velocity.x += deltaVelocityX;
 		m_velocity.y += deltaVelocityY;
 	}
@@ -142,11 +145,11 @@ void Ship::CreateShot(float additionalRoation)
 	Vec2 shotVelocityVector = { 0, 0 };
 
 	float rotation = m_rotation + additionalRoation;
-	shotVelocityVector.x = sin(rotation / 180 * PI) * m_shotVelocity + m_velocity.x;
-	shotVelocityVector.y = -cos(rotation / 180 * PI) * m_shotVelocity + m_velocity.y;
+	shotVelocityVector.x = sin(rotation / 180 * (float)PI) * m_shotVelocity + m_velocity.x;
+	shotVelocityVector.y = -cos(rotation / 180 * (float)PI) * m_shotVelocity + m_velocity.y;
 
 	Vec2 direction = shotVelocityVector;
-	Vec2 spawnPoint = m_midPos + direction.Normalize() * m_height / 2.f;
+	Vec2 spawnPoint = m_midPos + direction.Normalize() * (float)m_height / 2.f;
 	Shot newShot = Shot(spawnPoint, shotVelocityVector, rotation);
 	Game::shots.push_back(newShot);
 }
@@ -184,8 +187,8 @@ void Ship::RenderShotMeter()
 	/// Meter grows starting from the ships nose.
 	Vec2 shipNose;
 	float noseDistanceToShipMid = m_height * 0.42f;
-	shipNose.x = m_midPos.x + SDL_sinf(m_rotation / 180 * PI) * noseDistanceToShipMid;
-	shipNose.y = m_midPos.y - SDL_cosf(m_rotation / 180 * PI) * noseDistanceToShipMid;
+	shipNose.x = m_midPos.x + SDL_sinf(m_rotation / 180 * (float)PI) * noseDistanceToShipMid;
+	shipNose.y = m_midPos.y - SDL_cosf(m_rotation / 180 * (float)PI) * noseDistanceToShipMid;
 
 	/// Render black base layer.
 	SDL_Color triangleBaseColor = { 0, 0, 0, 255 };
@@ -207,7 +210,7 @@ void Ship::RenderShip()
 	if (!m_isVisible)
 	{
 		float timeStepSize = 0.25f;
-		int stepValue = floor(m_timeNotVisible / timeStepSize);
+		int stepValue = (int)(m_timeNotVisible / timeStepSize);
 		if (stepValue % 2 == 0)
 			SDL_SetTextureColorMod(s_texture, 100, 100, 100);
 		else

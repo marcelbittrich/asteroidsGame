@@ -2,11 +2,11 @@
 
 #include <vector>
 #include <list>
+#include <stack>
 
 #include "SDL_ttf.h"
 #include "SDL_stdinc.h"
 
-//#include "gameobjects.hpp"
 #include "menu/menu.hpp"
 #include "saving/gamesave.hpp"
 #include "states/gamestate.hpp"
@@ -21,15 +21,14 @@
 #include "objects/gameobjects/bomb.h"
 #include "objects/gameobjects/ship.h"
 #include "objects/gameobjects/shot.h"
-
-//#include "UIelements.hpp"
+#include "objects/gameobjects/follower.h"
 
 #define PI 3.14159265359
 
 // Gameplay parameters
-constexpr int STARTING_LIVES = 3;
+constexpr int   STARTING_LIVES = 3;
 // Spawn a bomb for every points
-constexpr int BOMB_SPAWN_ON_SCORE = 50;
+constexpr int   BOMB_SPAWN_ON_SCORE = 50;
 // Time between asteroid waves
 constexpr float ASTEROID_SPAWN_DELTATIME = 3.0f;
 // Determines speed of newly spwaned asteroids multiplied by the current score
@@ -49,6 +48,7 @@ public:
 	inline static std::vector<Asteroid> asteroids;
 	inline static std::vector<Shot> shots;
 	inline static std::vector<Bomb> bombs;
+	inline static std::vector<Follower> followers;
 
 	Game();
 	~Game() {};
@@ -72,7 +72,7 @@ public:
 	static void DecreaseLife() { life--; }
 	int GetLife() const { return life; }
 
-	Vec2				GetWindowDim() const { return Vec2(windowWidth, windowHeight); }
+	Vec2				GetWindowDim() const { return Vec2((float)windowWidth, (float)windowHeight); }
 	AudioPlayer&		GetAudioPlayer() { return myAudioPlayer; }
 	MainMenu&			GetMainMenu() { return myMainMenu; }
 	PauseMenu&			GetPauseMenu() { return myPauseMenu; }
@@ -88,12 +88,14 @@ public:
 	void AddTimeSinceLastWave(float time) { timeSinceLastAsteroidWave += time; }
 	float GetTimeLastWave() const { return timeSinceLastAsteroidWave; }
 
-	void ChangeState(GameState* newState) { gameState = newState; }
+	void ChangeState(GameState* newState) { gameState.emplace(newState); }
+	void PushState(GameState* newTemporaryState) { gameState.push(newTemporaryState); }
+	void PopState() { gameState.pop(); }
 	void ExitGame() { SDL_Delay(200); isRunning = false; }
 
 private:
 	float m_deltaTime = 0.f;
-	GameState* gameState = &menuState;
+	std::stack<GameState*, std::vector<GameState*>> gameState;
 
 	inline static bool isRunning = true;
 	// Game window values
@@ -133,7 +135,6 @@ private:
 	// Gameplay values
 	CollisionHandler myCollisionhandler;
 	Background gameBackground;
-	std::list<GameObject*> gameObjectPtrs;
 
 	void InitGameplay();
 	void SetTimeLastWave(float newValue) { timeSinceLastAsteroidWave = newValue; }

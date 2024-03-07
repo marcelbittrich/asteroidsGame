@@ -36,7 +36,7 @@ private:
 	// Ship is not visible during respawn.
 	float m_respawnTime = 3.f;
 	float m_timeNotVisible = 0.f;
-	void UpdateVisibility(float deltaTime);
+	void UpdateGameplay(float deltaTime);
 
 	// movement values
 	float m_velocityMax = 1000.f;

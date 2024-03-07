@@ -1,5 +1,7 @@
 #include "levelstate.h"
 
+#include <iostream>
+
 #include "../game.hpp"
 #include "../ui/UIelements.hpp"
 #include "../objects/gameobjects/asteroid.h"
@@ -33,7 +35,7 @@ void LevelState::HandlePausePressed(const InputHandler& inputHandler)
 
 	if (pausePressed && m_game->GetNewPausePress())
 	{
-		m_game->ChangeState(&Game::pauseState);
+		m_game->PushState(&Game::pauseState);
 		m_game->SetNewPausePress(false);
 	}
 	else if (!pausePressed)
@@ -70,6 +72,13 @@ void LevelState::DestroyDeadObjects()
 		bombIt->GetIsDead() ?
 			bombIt = Game::bombs.erase(bombIt) :
 			bombIt++;
+	}
+
+	for (auto followerIt = Game::followers.begin(); followerIt != Game::followers.end(); )
+	{
+		followerIt->GetIsDead() ?
+			followerIt = Game::followers.erase(followerIt) :
+			followerIt++;
 	}
 }
 
@@ -118,6 +127,10 @@ void LevelState::UpdateGameObjects(float deltaTime)
 	{
 		bomb.Update(deltaTime);
 	}
+	for (Follower& follower : Game::followers)
+	{
+		follower.Update(deltaTime);
+	}
 }
 
 void LevelState::UpdateUI(float deltaTime)
@@ -158,6 +171,10 @@ void LevelState::RenderGameObjects()
 	{
 		bomb.Render();
 	}
+	for (Follower& follower : Game::followers)
+	{
+		follower.Render();
+	}
 }
 
 void LevelState::RenderUI()
@@ -173,6 +190,8 @@ void LevelState::Exit()
 	HandleHighscore();
 
 	m_game = nullptr;
+
+	//std::cout << "Exit" << std::endl;
 }
 
 

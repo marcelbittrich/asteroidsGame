@@ -8,7 +8,7 @@ AudioPlayer::AudioPlayer()
 {
 	m_music.push_back(createMusic(MusicType::GameMusic, "./sfx/music/newbattle.wav"));
 	m_music.push_back(createMusic(MusicType::MenuMusic, "./sfx/music/spiteful_fight.mp3"));
-	Mix_VolumeMusic(m_masterVolume * MIX_MAX_VOLUME);
+	Mix_VolumeMusic((int)(m_masterVolume * MIX_MAX_VOLUME));
 
 	m_effects.push_back(createEffect(EffectType::ShotSound, "./sfx/effects/smallLaser_01.ogg", MIX_MAX_VOLUME));
 	m_effects.push_back(createEffect(EffectType::SmallAsteroidExplode, "./sfx/effects/smallAsteroidExplode_01.ogg", MIX_MAX_VOLUME / 4));
@@ -56,8 +56,8 @@ void AudioPlayer::PlaySoundEffect(EffectType type)
 void AudioPlayer::SetMasterVolume(float volume)
 {
 	m_masterVolume = std::clamp(volume, 0.f, 1.f);
-	Mix_MasterVolume(m_masterVolume * MIX_MAX_VOLUME);
-	Mix_VolumeMusic(m_masterVolume * MIX_MAX_VOLUME);
+	Mix_MasterVolume((int)(m_masterVolume * MIX_MAX_VOLUME));
+	Mix_VolumeMusic((int)(m_masterVolume * MIX_MAX_VOLUME));
 }
 
 Music AudioPlayer::createMusic(MusicType type, const std::string& path)

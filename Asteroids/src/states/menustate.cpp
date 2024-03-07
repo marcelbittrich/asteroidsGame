@@ -14,6 +14,18 @@ void MenuState::Enter(Game* game)
 void MenuState::HandleEvents(const InputHandler& inputHandler)
 {
 	m_game->GetMainMenu().HandleEvents(inputHandler);
+
+	bool pausePressed = inputHandler.GetControlBools().pausePressed;
+
+	if (pausePressed && m_game->GetNewPausePress())
+	{
+		m_game->PushState(&Game::pauseState);
+		m_game->SetNewPausePress(false);
+	}
+	else if (!pausePressed)
+	{
+		m_game->SetNewPausePress(true);
+	}
 }
 
 void MenuState::Update(float deltaTime)

@@ -35,6 +35,10 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 				{
 					HandleShipBombCollision(object1, object2);
 				}
+				else if (ShipAndFollower(type1, type2))
+				{
+					HandleShipFollowerCollision(object1, object2);
+				}
 				else if (AsteroidAndAsteroid(type1, type2))
 				{
 					HandleAsteroidAsteroidCollision(object1, object2);
@@ -46,6 +50,10 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 				else if (BombAndAsteroid(type1, type2))
 				{
 					HandleBombAsteroidCollision(object1, object2);
+				}
+				else if (FollowerAndShot(type1, type2))
+				{
+					HandleFollowerShotCollision(object1, object2);
 				}
 			}
 		}
@@ -69,6 +77,14 @@ void CollisionHandler::HandleShipBombCollision(GameObject* object1, GameObject* 
 	{
 		shipPtr->CollectBomb(bombPtr);
 	}
+}
+
+void CollisionHandler::HandleShipFollowerCollision(GameObject* object1, GameObject* object2)
+{
+	Ship* shipPtr = (object1->objectType == Type::Ship) ? (Ship*)object1 : (Ship*)object2;
+
+	shipPtr->Respawn();
+	Game::DecreaseLife();
 }
 
 void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, GameObject* object2)
@@ -103,8 +119,8 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 	Vec2 vv2 = secondObjectVelocity - vp2;
 
 	// Estimate weight by the surface area
-	int weightObject1 = M_PI * object1->GetColRadius() * object1->GetColRadius();
-	int weightObject2 = M_PI * object2->GetColRadius() * object2->GetColRadius();
+	float weightObject1 = (float)M_PI * object1->GetColRadius() * object1->GetColRadius();
+	float weightObject2 = (float)M_PI * object2->GetColRadius() * object2->GetColRadius();
 
 	if (weightObject1 == weightObject2)
 	{
@@ -116,7 +132,7 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 	}
 	else
 	{
-		Vec2 weightFactor = (vp1 * (float)weightObject1 + vp2 * (float)weightObject2) * 2.f / (weightObject1 + weightObject2);
+		Vec2 weightFactor = (vp1 * weightObject1 + vp2 * weightObject2) * 2.f / (weightObject1 + weightObject2);
 
 		vp1 = weightFactor - vp1;
 		vp2 = weightFactor - vp2;
@@ -131,7 +147,7 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 
 void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObject* object2)
 {
-	Shot*		shotPtr = (object1->objectType == Type::Shot) ? (Shot*)object1 : (Shot*)object2;
+	Shot*		shotPtr     = (object1->objectType == Type::Shot) ? (Shot*)object1 : (Shot*)object2;
 	Asteroid*	asteroidPtr = (object1->objectType == Type::Shot) ? (Asteroid*)object2 : (Asteroid*)object1;
 	 
 	if (asteroidPtr->sizeType == Asteroid::SizeType::Medium)
@@ -162,6 +178,17 @@ void CollisionHandler::HandleBombAsteroidCollision(GameObject* object1, GameObje
 	{
 		asteroidPtr->SetIsDead(true);
 	}
+}
+
+void CollisionHandler::HandleFollowerShotCollision(GameObject* object1, GameObject* object2)
+{
+	Shot*     shotPtr     = (object1->objectType == Type::Shot) ? (Shot*)object1 : (Shot*)object2;
+	Follower* followerPtr = (object1->objectType == Type::Shot) ? (Follower*)object2 : (Follower*)object1;
+
+	Game::IncreaseScore();
+
+	shotPtr->SetIsDead(true);
+	followerPtr->SetIsDead(true);
 }
 
 bool CollisionHandler::DoesCollide(const GameObject& object1, const GameObject& object2)
@@ -225,6 +252,12 @@ bool CollisionHandler::ShipAndBomb(const Type& type1, const Type& type2)
 		(type2 == Type::Ship && type1 == Type::Bomb));
 }
 
+bool CollisionHandler::ShipAndFollower(const Type& type1, const Type& type2)
+{
+	return ((type1 == Type::Ship && type2 == Type::Follower) ||
+		(type2 == Type::Ship && type1 == Type::Follower));
+}
+
 bool CollisionHandler::AsteroidAndAsteroid(const Type& type1, const Type& type2)
 {
 	return (type1 == Type::Asteroid && type2 == Type::Asteroid);
@@ -240,4 +273,10 @@ bool CollisionHandler::BombAndAsteroid(const Type& type1, const Type& type2)
 {
 	return (type1 == Type::Asteroid && type2 == Type::Bomb) ||
 		(type2 == Type::Asteroid) && (type1 == Type::Bomb);
+}
+
+bool CollisionHandler::FollowerAndShot(const Type& type1, const Type& type2)
+{
+	return (type1 == Type::Follower && type2 == Type::Shot) ||
+		(type2 == Type::Follower && type1 == Type::Shot);
 }

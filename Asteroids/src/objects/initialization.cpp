@@ -7,12 +7,12 @@ Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::
 	int maxTries = 10000;
 	for (int i = 0; i < maxTries; i++)
 	{
-		float x = rand() % (int)windowDimensions.x;
-		float y = rand() % (int)windowDimensions.y;
+		float x = (rand() / (float)RAND_MAX) * windowDimensions.x;
+		float y = (rand() / (float)RAND_MAX) * windowDimensions.y;
 		bool success = true;
 		for (const GameObject* gameObject : gameObjects)
 		{
-			float distance = sqrtf(std::pow(gameObject->GetMidPos().x - x, 2) + std::pow(gameObject->GetMidPos().y - y, 2));
+			float distance = sqrtf(std::powf(gameObject->GetMidPos().x - x, 2) + std::powf(gameObject->GetMidPos().y - y, 2));
 
 			float objectColRadius;
 			(gameObject->GetID() == 1) ? objectColRadius = 200 : objectColRadius = gameObject->GetColRadius();
@@ -31,6 +31,7 @@ Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::
 		}
 	}
 	//throw std::runtime_error("Max tries for getRandomPosition exceeded!");
+	return Vec2(windowDimensions / 2.f);
 }
 
 Vec2 GetRandomVelocity(float minVelocity, float maxVelocity)

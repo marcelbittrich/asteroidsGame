@@ -1,5 +1,10 @@
 #include "shapes.hpp"
 
+#ifndef PI
+	#define PI 3.14159265359f
+#endif
+
+
 //mid point circle algorithm based on https://en.wikipedia.org/w/index.php?title=Midpoint_circle_algorithm&oldid=889172082#C_example
 void DrawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 {
@@ -43,8 +48,8 @@ void DrawTriangle(SDL_Renderer* renderer, float x0, float y0, float width, float
 	float anglePoint = SDL_acosf(height / borderLine);
 
 	SDL_FPoint peakPoint = { x0, y0 };
-	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.0 * 3.1415 + anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.0 * 3.1415 + anglePoint) };
-	SDL_FPoint bottomRightPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.0 * 3.1415 - anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.0 * 3.1415 - anglePoint) };
+	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.f * (float)PI + anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.f * (float)PI + anglePoint) };
+	SDL_FPoint bottomRightPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.f * (float)PI - anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.f * (float)PI - anglePoint) };
 
 	std::vector< SDL_Vertex > verts =
 	{
@@ -53,5 +58,5 @@ void DrawTriangle(SDL_Renderer* renderer, float x0, float y0, float width, float
 		{ bottomRightPoint, color, SDL_FPoint{ 0 }, },
 	};
 
-	SDL_RenderGeometry(renderer, nullptr, verts.data(), verts.size(), nullptr, 0);
+	SDL_RenderGeometry(renderer, nullptr, verts.data(), (int)verts.size(), nullptr, 0);
 }

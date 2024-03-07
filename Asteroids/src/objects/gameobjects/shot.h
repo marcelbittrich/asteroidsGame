@@ -17,7 +17,7 @@ private:
 
 	inline static SDL_Texture* s_texture;
 
-	int m_size = 20;
+	int m_size = 40;
 	float m_colRadiusFactor = 0.3f;
 
 	float m_lifeTimeInSeconds = 0.f;

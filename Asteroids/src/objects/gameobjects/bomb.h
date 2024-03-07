@@ -31,5 +31,5 @@ private:
 	float m_rotatingSpeed = 10.f;
 	inline static struct SDL_Texture* s_texture;
 
-	class Ship* m_ownerShip = { nullptr };
+	class Ship* m_ownerShip = nullptr;
 };

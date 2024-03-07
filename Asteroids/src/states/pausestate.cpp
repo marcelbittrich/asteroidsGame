@@ -15,7 +15,7 @@ void PauseState::HandleEvents(const InputHandler& inputHandler)
 	bool pausePressed = inputHandler.GetControlBools().pausePressed;
 	if (pausePressed && m_game->GetNewPausePress())
 	{
-		m_game->ChangeState(&Game::levelState);
+		m_game->PopState();
 		m_game->SetNewPausePress(false);
 	}
 	else if (!pausePressed)

@@ -194,8 +194,8 @@ void GameMenu::RelocateMouse(SDL_Point& mousePos)
 	int logicalWidth, logicalHeight;
 	SDL_RenderGetLogicalSize(m_renderer, &logicalWidth, &logicalHeight);
 
-	mousePos.x = ((float)mousePos.x / (float)currentWidth) * logicalWidth;
-	mousePos.y = ((float)mousePos.y / (float)currentHeight) * logicalHeight;
+	mousePos.x = (int)(((float)mousePos.x / (float)currentWidth) * logicalWidth);
+	mousePos.y = (int)(((float)mousePos.y / (float)currentHeight) * logicalHeight);
 }
 
 void GameMenu::Render()
@@ -360,5 +360,6 @@ void PauseMenu::OnVolumeChange(float newValue)
 
 void PauseMenu::OnBackPressed()
 {
-	m_owner->ChangeState(&Game::levelState);
+	//m_owner->ChangeState(&Game::levelState);
+	m_owner->PopState();
 }

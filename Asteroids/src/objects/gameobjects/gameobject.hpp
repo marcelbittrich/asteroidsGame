@@ -24,7 +24,8 @@ public:
 		Ship,
 		Asteroid,
 		Bomb,
-		Shot
+		Shot,
+		Follower
 	};
 
 	Type objectType = Type::Default;
