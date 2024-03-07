@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "SDL.h"
+#include "../vector2.hpp"
 
-void DrawCircle(SDL_Renderer *renderer, int x0, int y0, int radius);
-void DrawTriangle(SDL_Renderer *renderer, float x0, float y0, float width, float height, float rotation, SDL_Color color);
+void DrawCircle(SDL_Renderer *renderer,const Vec2& position, const SDL_Color& color, int radius);
+void DrawTriangle(SDL_Renderer *renderer, const Vec2& position, float width, float height, float rotation, SDL_Color color);

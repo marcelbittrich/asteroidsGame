@@ -6,8 +6,12 @@
 
 
 //mid point circle algorithm based on https://en.wikipedia.org/w/index.php?title=Midpoint_circle_algorithm&oldid=889172082#C_example
-void DrawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
+void DrawCircle(SDL_Renderer* renderer, const Vec2& position, const SDL_Color& color, int radius)
 {
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+	int x0 = (int)position.x;
+	int y0 = (int)position.y;
 	int x = radius - 1;
 	int y = 0;
 	int dx = 1;
@@ -16,14 +20,18 @@ void DrawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 
 	while (x >= y)
 	{
-		SDL_RenderDrawPoint(renderer, x0 + x, y0 + y);
-		SDL_RenderDrawPoint(renderer, x0 + y, y0 + x);
-		SDL_RenderDrawPoint(renderer, x0 - y, y0 + x);
-		SDL_RenderDrawPoint(renderer, x0 - x, y0 + y);
-		SDL_RenderDrawPoint(renderer, x0 - x, y0 - y);
-		SDL_RenderDrawPoint(renderer, x0 - y, y0 - x);
-		SDL_RenderDrawPoint(renderer, x0 + y, y0 - x);
-		SDL_RenderDrawPoint(renderer, x0 + x, y0 - y);
+		SDL_Point points[8] = {};
+
+		points[0] = {x0 + x, y0 + y};
+		points[1] = { x0 + y, y0 + x };
+		points[2] = { x0 - y, y0 + x };
+		points[3] = { x0 - x, y0 + y };
+		points[4] = { x0 - x, y0 - y };
+		points[5] = { x0 - y, y0 - x };
+		points[6] = { x0 + y, y0 - x };
+		points[7] = { x0 + x, y0 - y };
+
+		SDL_RenderDrawPoints(renderer, points, 8);
 
 		if (err <= 0)
 		{
@@ -41,15 +49,14 @@ void DrawCircle(SDL_Renderer* renderer, int x0, int y0, int radius)
 	}
 }
 
-void DrawTriangle(SDL_Renderer* renderer, float x0, float y0, float width, float height, float rotation, SDL_Color color)
+void DrawTriangle(SDL_Renderer* renderer, const Vec2& position, float width, float height, float rotation, SDL_Color color)
 {
-
 	float borderLine = SDL_sqrtf((width / 2) * (width / 2) + height * height);
 	float anglePoint = SDL_acosf(height / borderLine);
 
-	SDL_FPoint peakPoint = { x0, y0 };
-	SDL_FPoint bottomLeftPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.f * (float)PI + anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.f * (float)PI + anglePoint) };
-	SDL_FPoint bottomRightPoint = { x0 + borderLine * SDL_sinf(-rotation / 180.f * (float)PI - anglePoint), y0 + borderLine * SDL_cosf(-rotation / 180.f * (float)PI - anglePoint) };
+	SDL_FPoint peakPoint = { position.x, position.y };
+	SDL_FPoint bottomLeftPoint = { position.x + borderLine * SDL_sinf(-rotation / 180.f * (float)PI + anglePoint), position.y + borderLine * SDL_cosf(-rotation / 180.f * (float)PI + anglePoint) };
+	SDL_FPoint bottomRightPoint = { position.x + borderLine * SDL_sinf(-rotation / 180.f * (float)PI - anglePoint), position.y + borderLine * SDL_cosf(-rotation / 180.f * (float)PI - anglePoint) };
 
 	std::vector< SDL_Vertex > verts =
 	{

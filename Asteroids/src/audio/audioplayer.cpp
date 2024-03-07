@@ -11,8 +11,8 @@ AudioPlayer::AudioPlayer()
 	Mix_VolumeMusic((int)(m_masterVolume * MIX_MAX_VOLUME));
 
 	m_effects.push_back(createEffect(EffectType::ShotSound, "./sfx/effects/smallLaser_01.ogg", MIX_MAX_VOLUME));
-	m_effects.push_back(createEffect(EffectType::SmallAsteroidExplode, "./sfx/effects/smallAsteroidExplode_01.ogg", MIX_MAX_VOLUME / 4));
-	m_effects.push_back(createEffect(EffectType::BigAsteroidExplode, "./sfx/effects/bigAsteroidExplode_01.ogg", MIX_MAX_VOLUME / 2));
+	m_effects.push_back(createEffect(EffectType::SmallAsteroidExplode, "./sfx/effects/smallAsteroidExplode_01.ogg", MIX_MAX_VOLUME / 1.5));
+	m_effects.push_back(createEffect(EffectType::BigAsteroidExplode, "./sfx/effects/bigAsteroidExplode_01.ogg", MIX_MAX_VOLUME ));
 	m_effects.push_back(createEffect(EffectType::StartSound, "./sfx/effects/start_01.ogg", MIX_MAX_VOLUME / 2));
 	m_effects.push_back(createEffect(EffectType::EndSound, "./sfx/effects/end_01.ogg", MIX_MAX_VOLUME / 2));
 	m_effects.push_back(createEffect(EffectType::PauseOpen, "./sfx/effects/pauseOpen_01.ogg", MIX_MAX_VOLUME / 4));

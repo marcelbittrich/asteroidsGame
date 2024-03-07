@@ -132,7 +132,17 @@ void Ship::Shoot()
 
 	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots && m_shotCounter < m_maxShotCounter)
 	{
-		CreateShot(0.f);
+		if (m_hasShotPowerUp)
+		{
+			CreateShot(-5.f);
+			CreateShot(0.f);
+			CreateShot(5.f);
+		}
+		else
+		{
+			CreateShot(0.f);
+		}
+
 		s_audioPlayer->PlaySoundEffect(EffectType::ShotSound);
 		m_shotCounter = m_shotCounter + 100;
 
@@ -194,13 +204,13 @@ void Ship::RenderShotMeter()
 	SDL_Color triangleBaseColor = { 0, 0, 0, 255 };
 	float tringleWidth = m_width * 0.5f;
 	float trinagleHeight = m_height * 0.625f;
-	DrawTriangle(s_renderer, shipNose.x, shipNose.y, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
+	DrawTriangle(s_renderer, shipNose, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
 
 	/// Overlay actual shot meter triangle
 	float shotMeterValue = std::min(m_shotCounter / m_maxShotCounter, 1.0f); // from 0 to 1
 	if (shotMeterValue > 0.1f)
 	{
-		DrawTriangle(s_renderer, shipNose.x, shipNose.y, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, m_rotation, meterColor);
+		DrawTriangle(s_renderer, shipNose, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, m_rotation, meterColor);
 	}
 }
 

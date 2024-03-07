@@ -159,6 +159,10 @@ void LevelState::RenderGameObjects()
 	{
 		ship.Render();
 	}
+	for (Follower& follower : Game::followers)
+	{
+		follower.Render();
+	}
 	for (Asteroid& astereroid : Game::asteroids)
 	{
 		astereroid.Render();
@@ -170,10 +174,6 @@ void LevelState::RenderGameObjects()
 	for (Bomb& bomb : Game::bombs)
 	{
 		bomb.Render();
-	}
-	for (Follower& follower : Game::followers)
-	{
-		follower.Render();
 	}
 }
 
@@ -190,8 +190,6 @@ void LevelState::Exit()
 	HandleHighscore();
 
 	m_game = nullptr;
-
-	//std::cout << "Exit" << std::endl;
 }
 
 

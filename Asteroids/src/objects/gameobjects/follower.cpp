@@ -2,13 +2,14 @@
 
 #include "../../game.hpp"
 #include <vector>
+#include "../shapes.hpp"
 
 Follower::Follower(Vec2 midPos, int size)
 	: GameObject(midPos, 0.f)
 {
 	m_width = size;
 	m_height = size;
-
+	m_colRadius = size / 2.f;
 	objectType = Type::Follower;
 }
 
