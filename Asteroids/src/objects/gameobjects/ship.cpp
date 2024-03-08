@@ -30,8 +30,22 @@ Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
 void Ship::HandleInput(const InputHandler& myInputHandler)
 {
 	m_isThrusting = myInputHandler.GetControlBools().giveThrust;
+
 	m_isTurningLeft = myInputHandler.GetControlBools().isTurningLeft;
 	m_isTurningRight = myInputHandler.GetControlBools().isTurningRight;
+
+	float digitalInput = 0.f;
+	if (m_isTurningLeft)
+	{
+		digitalInput += -1.f;
+	}
+	if (m_isTurningRight)
+	{
+		digitalInput += 1.f;
+	}
+	
+	float analogInput = myInputHandler.GetControllerAnlogInput().LeftStick.x;
+	m_turnInput = std::abs(analogInput) > 0.f ? analogInput : digitalInput;
 
 	if ((myInputHandler.GetControlBools()).isShooting) Shoot();
 	if ((myInputHandler.GetControlBools()).isUsingBomb) UseBomb();
@@ -98,15 +112,18 @@ void Ship::UpdateTransform(float deltaTime)
 	m_midPos = calcPosIfLeavingScreen(m_midPos, 0);
 
 	// Update rotation
-	if (m_isTurningRight)
-	{
-		m_rotation += m_roatatingSpeed * deltaTime;
-	}
+	//if (m_isTurningRight)
+	//{
+	//	m_rotation += m_roatatingSpeed * deltaTime;
+	//}
 
-	if (m_isTurningLeft)
-	{
-		m_rotation -= m_roatatingSpeed * deltaTime;
-	}
+	//if (m_isTurningLeft)
+	//{
+	//	m_rotation -= m_roatatingSpeed * deltaTime;
+	//}
+
+	m_rotation += m_roatatingSpeed * m_turnInput * deltaTime;
+
 }
 
 void Ship::UpdateAnimation(float deltaTime)

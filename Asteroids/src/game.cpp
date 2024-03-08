@@ -34,6 +34,7 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	InitInputDevices();
 
 	myInputHandler = InputHandler();
+	myInputHandler.SetGameControllers(gameControllers);
 
 	InitSound();
 	InitTextures();
@@ -97,6 +98,7 @@ void Game::InitInputDevices()
 			if (gamepad)
 			{
 				std::cout << "Gamecontroller opened!" << std::endl;
+				gameControllers.push_back(gamepad);
 				break;
 			}
 			else

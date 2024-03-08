@@ -9,6 +9,17 @@ InputHandler::InputHandler()
 
 void InputHandler::HandleInput(bool& isRunning)
 {
+	for (SDL_GameController* controller : m_gameControllers)
+	{
+		m_controllerAnalogInput.LeftStick.x = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
+		m_controllerAnalogInput.LeftStick.y = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
+		m_controllerAnalogInput.RightStick.x = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX));
+		m_controllerAnalogInput.RightStick.y = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY));
+		
+		m_controllerAnalogInput.LeftTrigger = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+		m_controllerAnalogInput.RightTrigger = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+	}
+
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event))
@@ -153,4 +164,19 @@ void InputHandler::HandleInput(bool& isRunning)
 			break;
 		}
 	}
+}
+
+float InputHandler::MapControllerInput(int16_t input) const
+{
+	// out in the range of 0.0 to 1.0
+	float out = input / (float)std::numeric_limits<int16_t>::max();
+
+	if (std::abs(out) <= m_stickDeadZone)
+		return 0.0f;
+	else if (out >= 1.0)
+		return 1.0f;
+	else if (out <= -1.0)
+		return - 1.0f;
+
+	return out;
 }

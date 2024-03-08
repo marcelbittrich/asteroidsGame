@@ -107,6 +107,7 @@ private:
 
 	// Control values
 	void InitInputDevices();
+	std::vector<SDL_GameController*> gameControllers;
 	InputHandler myInputHandler;
 
 	// Sound values

@@ -48,6 +48,7 @@ private:
 	bool m_isThrusting = false;
 	bool m_isTurningRight = false;
 	bool m_isTurningLeft = false;
+	float m_turnInput = 0.f;
 
 	// Shooting values
 	float m_shotVelocity = 1000.f;

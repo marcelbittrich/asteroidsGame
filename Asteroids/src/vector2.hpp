@@ -143,5 +143,6 @@ struct Vec2
 		stream << other.x << ", " << other.y;
 		return stream;
 	}
+
 };
 

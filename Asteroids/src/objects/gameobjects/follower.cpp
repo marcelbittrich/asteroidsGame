@@ -1,8 +1,8 @@
 #include "follower.h"
 
 #include "../../game.hpp"
+#include "ship.h"
 #include <vector>
-#include "../shapes.hpp"
 
 Follower::Follower(Vec2 midPos, int size)
 	: GameObject(midPos, 0.f)
@@ -22,10 +22,18 @@ void Follower::Update(float deltaTime)
 void Follower::UpdateTransform(float deltaTime)
 {
 	// Get ship, move to ship
-	Vec2 shipPosition = Game::ships.back().GetMidPos();
-
+	Ship& ship = Game::ships.back();
+	Vec2 shipPosition = ship.GetMidPos();
 	Vec2 distance = shipPosition - m_midPos;
-	m_velocity = distance.Normalize() * 50.f;
+
+	if (ship.GetVisibility())
+	{
+		m_velocity = distance.Normalize() * 50.f;
+	}
+	else
+	{
+		m_velocity = distance.Normalize() * -50.f;
+	}
 
 	m_midPos += m_velocity * deltaTime;
 	m_midPos = calcPosIfLeavingScreen(m_midPos, 0);
