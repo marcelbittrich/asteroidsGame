@@ -101,8 +101,8 @@ private:
 	// Game window values
 	int windowWidth;
 	int windowHeight;
-	SDL_Window* window;
-	SDL_Renderer* renderer;
+	SDL_Window* window = nullptr;
+	SDL_Renderer* renderer = nullptr;
 	void InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height);
 
 	// Control values

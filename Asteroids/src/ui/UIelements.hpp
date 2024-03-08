@@ -39,7 +39,7 @@ public:
     void Render();
 
     // TODO: Let the Game own this
-    inline static std::list<UICounter> UICounters = {};
+    inline static std::vector<UICounter> UICounters = {};
 
 private:
     std::string m_name      = "Default";
@@ -54,8 +54,6 @@ private:
     SDL_Texture *m_messageTexture = nullptr; 
     SDL_Renderer* m_renderer      = nullptr;
     SDL_Rect m_messageRect        = { 0,0,0,0 };
-
-
 };
 
 

@@ -170,7 +170,7 @@ void Game::InitGameplay()
 {
 	myCollisionhandler = CollisionHandler(this);
 
-	gameBackground = Background(windowWidth, windowHeight, 2.0f);
+	gameBackground = Background(windowWidth, windowHeight, 2.0f, renderer);
 
 	GameObject::SetRenderer(renderer);
 	ChangeState(&menuState);
@@ -355,7 +355,7 @@ float Game::GetAverageFPS()
 	if (m_deltaTime > 0)
 	{
 		float FPS = 1 / m_deltaTime;
-		if (FPSVector.size() >= 10)
+		if (FPSVector.size() >= 1000)
 		{
 			FPSVector.insert(FPSVector.begin(), FPS);
 			FPSVector.pop_back();
@@ -368,8 +368,8 @@ float Game::GetAverageFPS()
 
 	if (!FPSVector.empty())
 	{
-		int count = (int)(FPSVector.size());
-		return std::reduce(FPSVector.begin(), FPSVector.end()) / (float)count;
+		float count = (float)(FPSVector.size());
+		return std::accumulate(FPSVector.begin(), FPSVector.end(), 0.f) / count;
 	}
 	else
 	{

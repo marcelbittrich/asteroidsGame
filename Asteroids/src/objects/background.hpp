@@ -21,18 +21,27 @@ class Background
 {
 public:
 	Background() {};
-	Background(int windowWidth, int windowHeight, float pointScale);
+	Background(int windowWidth, int windowHeight, float pointScale, SDL_Renderer* renderer);
 	void Update(const std::vector<class GameObject*>& gameObjects, float deltaTime);
-	void Render(SDL_Renderer* renderer);
+	void Render();
 
 private:
 	static const int divider = 100;
-	BackgroundPoint backgroundPoints[divider * divider];
+	BackgroundPoint* backgroundPoints = nullptr;
 	float m_pointSizeScale = 2.f;
 
 	std::vector<uint32_t> horizontalIter, verticalIter;
-	void ReturnPointToOrigin(BackgroundPoint& point, float deltaTime);
-	void MovePointOut(BackgroundPoint& point, const class GameObject* colObject);
+	const std::vector<class GameObject*>* m_gameObjects = nullptr;
+	float m_deltaTime = 0.f;
+	void ReturnPointToOrigin(BackgroundPoint& point) const;
+	void MovePointOut(BackgroundPoint& point);
+
+	SDL_Renderer* m_renderer = nullptr;
+	SDL_Surface* m_backgroundSurface = nullptr;
+	int m_logicWidth = 0;
+	int m_logicHeight = 0;
+	int m_surfaceWidth = 0;
+	int m_surfaceHeight = 0;
 
 	// How fast the trailing points will return to origin.
 	// Default: 30

@@ -31,7 +31,7 @@ void PauseState::Update(float deltaTime)
 
 void PauseState::Render(SDL_Renderer* renderer)
 {
-	m_game->GetBackground().Render(renderer);
+	m_game->GetBackground().Render();
 
 	for (GameObject* gameObject : m_game->GetGameObjectPtrs())
 	{

@@ -24,7 +24,7 @@ private:
 	void UpdateGameObjects(float deltaTime);
 	void UpdateUI(float deltaTime);
 
-	void RenderBackground(struct SDL_Renderer* renderer);
+	void RenderBackground();
 	void RenderGameObjects();
 	void RenderUI();
 

@@ -29,22 +29,21 @@ BackgroundPoint::BackgroundPoint(float xPos, float yPos)
 	onOrigin = true;
 }
 
-Background::Background(int windowWidth, int windowHeight, float pointScale)
-	: m_pointSizeScale(pointScale)
+Background::Background(int windowWidth, int windowHeight, float pointScale, SDL_Renderer* renderer)
+	: m_pointSizeScale(pointScale), m_renderer(renderer)
 {
 	// Devide the screen in areas, each occupied by one point.
 	float pointAreaWidth = windowWidth / (float)(divider);
 	float pointAreaHeight = windowHeight / (float)(divider);
 
 	// Iterators of for_each loops, for parallel execution.
-	horizontalIter.resize(divider);
-	verticalIter.resize(divider);
-
 	for (uint32_t i = 0; i < divider; i++)
 	{
-		horizontalIter[i] = i;
-		verticalIter[i] = i;
+		horizontalIter.push_back(i);
+		verticalIter.push_back(i);
 	}
+
+	backgroundPoints = new BackgroundPoint[divider * divider];
 
 	// Create background points in the middle of each area.
 	for (int i = 0; i < divider; i++)
@@ -54,57 +53,42 @@ Background::Background(int windowWidth, int windowHeight, float pointScale)
 		for (int j = 0; j < divider; j++)
 		{
 			float newPointYPos = pointAreaHeight * j + pointAreaHeight / 2.0f;
-			BackgroundPoint newPoint = BackgroundPoint(newPointXPos, newPointYPos);
-			backgroundPoints[i * divider + j] = newPoint;
+			backgroundPoints[i * divider + j] = BackgroundPoint(newPointXPos, newPointYPos);
 		}
 	}
+
+	// Get bigger background points by lowering the surface size
+	SDL_RenderGetLogicalSize(m_renderer, &m_logicWidth, &m_logicHeight);
+	m_surfaceWidth = (int)round(m_logicWidth / m_pointSizeScale);
+	m_surfaceHeight = (int)round(m_logicHeight / m_pointSizeScale);
+	m_backgroundSurface = SDL_CreateRGBSurface(0, m_surfaceWidth, m_surfaceHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 }
 
 void Background::Update(const std::vector<GameObject*>& gameObjects, float deltaTime)
 {
-	for (const GameObject* object : gameObjects)
-	{
-		if (object->GetVisibility())
-		{
-			std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
-				[this, object](uint32_t i)
-				{
-					std::for_each(horizontalIter.begin(), horizontalIter.end(),
-					[this, i, object](uint32_t j)
-						{
-							MovePointOut(backgroundPoints[i * divider + j], object);
-						});
-				});
-		}
-	}
+	m_gameObjects = &gameObjects;
+	m_deltaTime = deltaTime;
 
 	std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
-		[this, deltaTime](uint32_t i)
+		[this](uint32_t i)
 		{
 			std::for_each(horizontalIter.begin(), horizontalIter.end(),
-			[this, i, deltaTime](uint32_t j)
+			[this, i](uint32_t j)
 				{
-					if (!backgroundPoints[i * divider + j].onOrigin)
+					BackgroundPoint& point = backgroundPoints[i * divider + j];
+					MovePointOut(point);
+					if (!point.onOrigin)
 					{
-						ReturnPointToOrigin(backgroundPoints[i * divider + j], deltaTime);
+						ReturnPointToOrigin(point);
 					}
 				});
 		});
 }
 
-void Background::Render(SDL_Renderer* renderer)
+void Background::Render()
 {
-	// Get current logic render size from renderer
-	int logicWidth, logicHeight;
-	SDL_RenderGetLogicalSize(renderer, &logicWidth, &logicHeight);
-
-	// Get bigger background points by lowering the surface size
-	int surfaceWidth = (int)round(logicWidth / m_pointSizeScale);
-	int surfaceHeight = (int)round(logicHeight / m_pointSizeScale);
-
-	SDL_Surface* backgroundSurface = SDL_CreateRGBSurface(0, surfaceWidth, surfaceHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-
-	SDL_memset(backgroundSurface->pixels, 0, backgroundSurface->h * backgroundSurface->pitch);
+	//Set background to black
+	SDL_FillRect(m_backgroundSurface, NULL, 0x000000ff);
 
 	// Only render points not on origin
 	for (int i = 0; i != divider; i++)
@@ -118,27 +102,24 @@ void Background::Render(SDL_Renderer* renderer)
 				// Set the point position according to the new surface size
 				Vec2 scaledPos = currentPos / m_pointSizeScale;
 
-				Uint32 pixel = SDL_MapRGBA(backgroundSurface->format, color[0], color[1], color[2], color[3]);
+				Uint32 pixel = SDL_MapRGBA(m_backgroundSurface->format, color[0], color[1], color[2], color[3]);
 
-				if (scaledPos.x < backgroundSurface->w && scaledPos.x > 0
-					&& scaledPos.y < backgroundSurface->h && scaledPos.y > 0)
+				if (scaledPos.x < m_backgroundSurface->w && scaledPos.x > 0
+					&& scaledPos.y < m_backgroundSurface->h && scaledPos.y > 0)
 				{
-					SetPixel(backgroundSurface, (int)scaledPos.x, (int)scaledPos.y, pixel);
+					SetPixel(m_backgroundSurface, (int)scaledPos.x, (int)scaledPos.y, pixel);
 				}
 			}
 	}
 
 	// Set sampling to nearest pixel
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
-	SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
-	SDL_FreeSurface(backgroundSurface);
+	SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(m_renderer, m_backgroundSurface);
+	SDL_Rect textureRect = { 0, 0, m_surfaceWidth, m_surfaceHeight };
+	SDL_Rect backgroundRect = { 0, 0, m_logicWidth, m_logicHeight };
 
-	// Render the texture full screen
-	SDL_Rect textureRect = { 0, 0, surfaceWidth, surfaceHeight };
-	SDL_Rect backgroundRect = { 0, 0, logicWidth, logicHeight };
-
-	// Destroy and Reset
-	SDL_RenderCopy(renderer, backgroundTexture, &textureRect, &backgroundRect);
+	// Destroy texture and reset sampling method
+	SDL_RenderCopy(m_renderer, backgroundTexture, &textureRect, &backgroundRect);
 	SDL_DestroyTexture(backgroundTexture);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 }
@@ -150,7 +131,7 @@ void Background::SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 	pixels[position] = pixel;
 }
 
-void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
+void Background::ReturnPointToOrigin(BackgroundPoint& point) const
 {
 	float distance = Vec2::Distance(point.currentPos, point.originPos);
 	Vec2 direction = point.originPos - point.currentPos;
@@ -158,7 +139,7 @@ void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 
 	// Points come back faster with more distance
 	float distanceDependentVelocity = m_distanceVelocityFunctionSteepness * distance * distance;
-	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * deltaTime;
+	float returnToOriginVelocity = std::max(m_minReturnVelocity, distanceDependentVelocity) * m_deltaTime;
 	
 	Vec2 changeVector = normalizedVector * returnToOriginVelocity;
 
@@ -175,32 +156,38 @@ void Background::ReturnPointToOrigin(BackgroundPoint& point, float deltaTime)
 	}
 }
 
-void Background::MovePointOut(BackgroundPoint& point, const GameObject* colObject)
+void Background::MovePointOut(BackgroundPoint& point)
 {
-	float objectColRadius = colObject->GetColRadius();
-	Vec2 objectMidPos = colObject->GetMidPos();
-
-	// AABB collision check
-	bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius)
-		&& point.currentPos.x < (objectMidPos.x + objectColRadius);
-	bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius)
-		&& point.currentPos.y < (objectMidPos.y + objectColRadius);
-
-	if (bOverlapHorizontally && bOverlapVertically)
+	for (const GameObject* colObject : *m_gameObjects) 
 	{
-		// Distance based collision check
-		bool bCollide = Vec2::SquareDistance(objectMidPos, point.currentPos) <= (objectColRadius * objectColRadius);
-		// Push points out to the edge of the colliding object
-		if (bCollide)
+		if (!colObject->GetVisibility())
+			continue;
+
+		float objectColRadius = colObject->GetColRadius();
+		Vec2 objectMidPos = colObject->GetMidPos();
+
+		// AABB collision check
+		bool bOverlapHorizontally = point.currentPos.x > (objectMidPos.x - objectColRadius)
+			&& point.currentPos.x < (objectMidPos.x + objectColRadius);
+		bool bOverlapVertically = point.currentPos.y > (objectMidPos.y - objectColRadius)
+			&& point.currentPos.y < (objectMidPos.y + objectColRadius);
+
+		if (bOverlapHorizontally && bOverlapVertically)
 		{
-			Vec2 direction = point.currentPos - objectMidPos;
-			float distance = Vec2::Distance(objectMidPos, point.currentPos);
+			// Distance based collision check
+			bool bCollide = Vec2::SquareDistance(objectMidPos, point.currentPos) <= (objectColRadius * objectColRadius);
+			// Push points out to the edge of the colliding object
+			if (bCollide)
+			{
+				Vec2 direction = point.currentPos - objectMidPos;
+				float distance = Vec2::Distance(objectMidPos, point.currentPos);
 
-			Vec2 normalizedVector = direction / distance;
+				Vec2 normalizedVector = direction / distance;
 
-			// Push point to edge of colRadius
-			point.currentPos = objectMidPos + normalizedVector * objectColRadius;
-			point.onOrigin = false;
+				// Push point to edge of colRadius
+				point.currentPos = objectMidPos + normalizedVector * objectColRadius;
+				point.onOrigin = false;
+			}
 		}
 	}
 }

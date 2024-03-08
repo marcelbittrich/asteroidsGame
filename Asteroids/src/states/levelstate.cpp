@@ -141,16 +141,16 @@ void LevelState::UpdateUI(float deltaTime)
 
 void LevelState::Render(SDL_Renderer* renderer)
 {
-	RenderBackground(renderer);
+	RenderBackground();
 
 	RenderGameObjects();
 
 	RenderUI();
 }
 
-void LevelState::RenderBackground(SDL_Renderer* renderer)
+void LevelState::RenderBackground()
 {
-	m_game->GetBackground().Render(renderer);
+	m_game->GetBackground().Render();
 }
 
 void LevelState::RenderGameObjects()
