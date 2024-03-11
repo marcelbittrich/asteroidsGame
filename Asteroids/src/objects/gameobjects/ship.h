@@ -57,6 +57,8 @@ private:
 	float m_maxShotCounter = 1000.0f;
 	float m_shipCooldownThreshold = m_maxShotCounter / 2.f;
 	bool m_hasShotPowerUp = false;
+	float m_currentPowerUpTime = 0.f;
+	float m_maxPowerUpTime = 2.f;
 
 	bool m_canShoot = true;	            // Indicator, false during respawn.
 	Uint32 m_timeLastShot = 0;

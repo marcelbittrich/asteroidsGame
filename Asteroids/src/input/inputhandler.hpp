@@ -40,7 +40,7 @@ private:
     ControllerAnalogInput m_controllerAnalogInput;
     std::vector<SDL_GameController*> m_gameControllers;
 
-    float m_stickDeadZone = 0.05f;
+    float m_stickDeadZone = 0.10f;
 
     float MapControllerInput(int16_t input) const;
 };

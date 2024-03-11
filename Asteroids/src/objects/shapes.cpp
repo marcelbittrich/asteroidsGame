@@ -10,28 +10,26 @@ void DrawCircle(SDL_Renderer* renderer, const Vec2& position, const SDL_Color& c
 {
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-	int x0 = (int)position.x;
-	int y0 = (int)position.y;
-	int x = radius - 1;
-	int y = 0;
-	int dx = 1;
-	int dy = 1;
-	int err = dx - (radius << 1);
+	float x0 = position.x;
+	float y0 = position.y;
+	float x = (float)radius - 1;
+	float y = 0;
+	float dx = 1;
+	float dy = 1;
+	float err = dx - (radius << 1);
+
+	std::vector<SDL_FPoint> points;
 
 	while (x >= y)
 	{
-		SDL_Point points[8] = {};
-
-		points[0] = {x0 + x, y0 + y};
-		points[1] = { x0 + y, y0 + x };
-		points[2] = { x0 - y, y0 + x };
-		points[3] = { x0 - x, y0 + y };
-		points[4] = { x0 - x, y0 - y };
-		points[5] = { x0 - y, y0 - x };
-		points[6] = { x0 + y, y0 - x };
-		points[7] = { x0 + x, y0 - y };
-
-		SDL_RenderDrawPoints(renderer, points, 8);
+		points.push_back(SDL_FPoint{ x0 + x, y0 + y });
+		points.push_back(SDL_FPoint{ x0 + y, y0 + x });
+		points.push_back(SDL_FPoint{ x0 - y, y0 + x });
+		points.push_back(SDL_FPoint{ x0 - x, y0 + y });
+		points.push_back(SDL_FPoint{ x0 - x, y0 - y });
+		points.push_back(SDL_FPoint{ x0 - y, y0 - x });
+		points.push_back(SDL_FPoint{ x0 + y, y0 - x });
+		points.push_back(SDL_FPoint{ x0 + x, y0 - y });
 
 		if (err <= 0)
 		{
@@ -47,6 +45,8 @@ void DrawCircle(SDL_Renderer* renderer, const Vec2& position, const SDL_Color& c
 			err += dx - (radius << 1);
 		}
 	}
+
+	SDL_RenderDrawPointsF(renderer, &points[0], (int)points.size());
 }
 
 void DrawTriangle(SDL_Renderer* renderer, const Vec2& position, float width, float height, float rotation, SDL_Color color)

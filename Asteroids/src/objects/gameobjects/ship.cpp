@@ -204,6 +204,8 @@ void Ship::Render()
 {
 	RenderShotMeter();
 	RenderShip();
+
+	DrawCircle(s_renderer, m_midPos, SDL_Color{ 255,255,255,255 }, 34.f);
 }
 
 void Ship::RenderShotMeter()
