@@ -4,7 +4,7 @@
 
 #include "gameobject.hpp"
 
-class Shot : public GameObject
+class Shot : public Weapon
 {
 public:
 	Shot(Vec2 midPos, Vec2 velocity, float rotation);

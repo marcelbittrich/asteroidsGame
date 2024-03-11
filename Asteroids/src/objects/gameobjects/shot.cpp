@@ -4,7 +4,7 @@
 #include "SDL_render.h"
 
 Shot::Shot(Vec2 midPos, Vec2 velocity, float rotation)
-	: GameObject(midPos, velocity)
+	: Weapon(midPos, velocity)
 {
 	m_rotation = rotation;
 	m_colRadius = m_size * m_colRadiusFactor;

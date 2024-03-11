@@ -7,7 +7,7 @@
 #include "../../audio/audioplayer.hpp"
 
 Bomb::Bomb(Vec2 midPos, Vec2 velocity)
-	: GameObject(midPos, velocity)
+	: Collectable(midPos, velocity)
 {
 	m_isVisible = true;
 
@@ -58,13 +58,15 @@ void Bomb::Render()
 
 void Bomb::GetCollected(Ship* ownerShip)
 {
+	m_ownerShip = ownerShip;
+	ownerShip->CollectBomb(this);
 	isCollected = true;
 	m_isVisible = false;
-	m_ownerShip = ownerShip;
 }
 
 void Bomb::Explode()
 {
+	colType = CollisionType::Weapon;
 	s_audioPlayer->PlaySoundEffect(EffectType::BombExplode);
 	isExploding = true;
 	m_isVisible = true;

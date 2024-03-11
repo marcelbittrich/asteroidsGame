@@ -9,7 +9,7 @@
 #include "../../physics/collisionhandler.h"
 
 Asteroid::Asteroid(Vec2 midPos, Vec2 velocity, Asteroid::SizeType sizeType)
-	: GameObject(midPos, velocity), sizeType(sizeType)
+	: Enemy(midPos, velocity), sizeType(sizeType)
 {
 	int size = GetSize(sizeType);
 	m_colRadius = GetColRadius(size);
@@ -38,8 +38,7 @@ void Asteroid::Update(float deltaTime)
 {
 	if (m_isVisible)
 	{
-		m_midPos.x += m_velocity.x * deltaTime * 60;
-		m_midPos.y += m_velocity.y * deltaTime * 60;
+		m_midPos += m_velocity * deltaTime;
 	}
 
 	Vec2 newMidPosistion = calcPosIfLeavingScreen(m_midPos, m_colRadius);
@@ -74,26 +73,33 @@ void Asteroid::Update(float deltaTime)
 
 void Asteroid::HandleDestruction()
 {
-	s_audioPlayer->PlaySoundEffect(EffectType::BigAsteroidExplode);
+	if (sizeType == Asteroid::SizeType::Medium)
+	{
+		s_audioPlayer->PlaySoundEffect(EffectType::BigAsteroidExplode);
 
-	int newAsteroidSize = Asteroid::GetSize(Asteroid::SizeType::Small);
+		int newAsteroidSize = Asteroid::GetSize(Asteroid::SizeType::Small);
 
-	Vec2 spawnDirection = m_velocity.Rotate(90);
-	spawnDirection.SetLength(newAsteroidSize / 2.f);
+		Vec2 spawnDirection = m_velocity.Rotate(90);
+		spawnDirection.SetLength(newAsteroidSize / 2.f);
 
-	Asteroid newAsteroid = Asteroid(
-		m_midPos + spawnDirection,
-		m_velocity.Rotate(45) * m_DestAstroidVelFactor,
-		Asteroid::SizeType::Small);
-	
-	Game::asteroids.push_back(newAsteroid);
+		Asteroid newAsteroid = Asteroid(
+			m_midPos + spawnDirection,
+			m_velocity.Rotate(45) * m_DestAstroidVelFactor,
+			Asteroid::SizeType::Small);
 
-	newAsteroid = Asteroid(
-		m_midPos - spawnDirection,
-		m_velocity.Rotate(-45) * m_DestAstroidVelFactor,
-		Asteroid::SizeType::Small);
+		Game::asteroids.push_back(newAsteroid);
 
-	Game::asteroids.push_back(newAsteroid);
+		newAsteroid = Asteroid(
+			m_midPos - spawnDirection,
+			m_velocity.Rotate(-45) * m_DestAstroidVelFactor,
+			Asteroid::SizeType::Small);
+
+		Game::asteroids.push_back(newAsteroid);
+	}
+	else
+	{
+		s_audioPlayer->PlaySoundEffect(EffectType::SmallAsteroidExplode);
+	}
 }
 
 void Asteroid::Render()
@@ -153,7 +159,7 @@ std::vector<Asteroid> InitAsteroids(int amnountSmall, int amountBig, Vec2 window
 Asteroid InitSingleAsteroid(Asteroid::SizeType sizeType, Vec2 windowDimensions, std::vector<GameObject*>& gameObjects)
 {
 	float asteroidMinVel = 0;
-	float asteroidMaxVel = 1;
+	float asteroidMaxVel = 60;
 	int size = Asteroid::GetSize(sizeType);
 	float m_colRadius = Asteroid::GetColRadius(size);
 	Vec2 randomPosition = GetFreeRandomPosition(windowDimensions, m_colRadius, gameObjects);

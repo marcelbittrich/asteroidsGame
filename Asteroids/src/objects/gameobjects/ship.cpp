@@ -25,6 +25,7 @@ Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
 	m_timeLastBomb = SDL_GetTicks();
 
 	objectType = Type::Ship;
+	colType = CollisionType::Ship;
 }
 
 void Ship::HandleInput(const InputHandler& myInputHandler)
@@ -111,19 +112,7 @@ void Ship::UpdateTransform(float deltaTime)
 	// If ship leaves the screen, re-enter at opposite site
 	m_midPos = calcPosIfLeavingScreen(m_midPos, 0);
 
-	// Update rotation
-	//if (m_isTurningRight)
-	//{
-	//	m_rotation += m_roatatingSpeed * deltaTime;
-	//}
-
-	//if (m_isTurningLeft)
-	//{
-	//	m_rotation -= m_roatatingSpeed * deltaTime;
-	//}
-
 	m_rotation += m_roatatingSpeed * m_turnInput * deltaTime;
-
 }
 
 void Ship::UpdateAnimation(float deltaTime)
@@ -205,7 +194,7 @@ void Ship::Render()
 	RenderShotMeter();
 	RenderShip();
 
-	DrawCircle(s_renderer, m_midPos, SDL_Color{ 255,255,255,255 }, 34.f);
+	DrawCircle(s_renderer, m_midPos, SDL_Color{ 255,255,255,255 }, 34);
 }
 
 void Ship::RenderShotMeter()
@@ -264,7 +253,6 @@ void Ship::CollectBomb(Bomb* bomb)
 {
 	s_audioPlayer->PlaySoundEffect(EffectType::BombCollectedSound);
 	m_collectedBombs.push_back(bomb);
-	bomb->GetCollected(this);
 }
 
 void Ship::Reset()

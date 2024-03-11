@@ -11,13 +11,20 @@ struct GameObjectShared
 class GameObject
 {
 public:
+
 	GameObject() : m_id(s_NewId++) {}
 	GameObject(Vec2 midPos, Vec2 velocity) 
 		: m_id(s_NewId++), m_midPos(midPos), m_velocity(velocity) {}
+	virtual ~GameObject() {};
 
-	static void ResetId() { s_NewId = 1; }
-	virtual void Update(float deltaTime) {};
-	virtual void Render() {};
+	enum class CollisionType {
+		Default,
+		Ship,
+		Weapon,
+		Collectable,
+		Enemy
+	};
+	CollisionType colType = CollisionType::Default;
 
 	enum class Type {
 		Default,
@@ -27,8 +34,11 @@ public:
 		Shot,
 		Follower
 	};
-
 	Type objectType = Type::Default;
+
+	static void ResetId() { s_NewId = 1; }
+	virtual void Update(float deltaTime) {};
+	virtual void Render() {};
 
 	int GetID() const { return m_id; };
 	int GetWidth() const { return m_width; };
@@ -69,3 +79,34 @@ private:
 	inline static int s_NewId = 0;
 };
 
+class Weapon : public GameObject
+{
+public:
+	Weapon(Vec2 midPos, Vec2 velocity) : GameObject(midPos, velocity)
+	{
+		colType = CollisionType::Weapon;
+	}
+	virtual ~Weapon() {};
+};
+
+class Collectable : public GameObject
+{
+public:
+	Collectable(Vec2 midPos, Vec2 velocity) : GameObject(midPos, velocity)
+	{
+		colType = CollisionType::Collectable;
+	}
+	virtual ~Collectable() {};
+	virtual void GetCollected(class Ship* ownerShip) = 0;
+};
+
+class Enemy : public GameObject
+{
+public:
+	Enemy(Vec2 midPos, Vec2 velocity) : GameObject(midPos, velocity)
+	{
+		colType = CollisionType::Enemy;
+	}
+	virtual ~Enemy() {};
+	virtual void HandleDestruction() = 0;
+};

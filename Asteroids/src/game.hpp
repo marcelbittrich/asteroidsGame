@@ -32,7 +32,7 @@ constexpr int   BOMB_SPAWN_ON_SCORE = 50;
 // Time between asteroid waves
 constexpr float ASTEROID_SPAWN_DELTATIME = 3.0f;
 // Determines speed of newly spwaned asteroids multiplied by the current score
-constexpr float ASTEROID_SPAWN_SPEED_MULTI = 0.03f;
+constexpr float ASTEROID_SPAWN_SPEED_MULTI = 1.8f;
 
 class Game
 {

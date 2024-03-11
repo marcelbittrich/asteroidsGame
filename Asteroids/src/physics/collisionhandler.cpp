@@ -24,70 +24,76 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 
 			if (DoesCollide(*object1, *object2) && !RecentlyCollide(*object1, *object2))
 			{
- 				const Type type1 = object1->objectType;
-				const Type type2 = object2->objectType;
+				const CollisionType type1 = object1->colType;
+				const CollisionType type2 = object2->colType;
 
-				if (ShipAndAnsteroid(type1, type2))
+				Ship* ship = nullptr;
+				Enemy* enemy = nullptr;
+				Collectable* collectable = nullptr;
+				Weapon* weapon = nullptr;
+
+				// Check who is who
+
+				if (type1 == CollisionType::Ship)
+					ship = (Ship*)object1;
+				else if (type2 == CollisionType::Ship)
+					ship = (Ship*)object2;
+
+				if (type1 == CollisionType::Enemy && type1 == type2)
 				{
-					HandleShipAsteroidCollision(object1, object2);
+					HandleElasticCollision(object1, object2);
 				}
-				else if (ShipAndBomb(type1, type2))
+
+				if (type1 == CollisionType::Enemy)
+					enemy = (Enemy*)object1;
+				if (type2 == CollisionType::Enemy)
+					enemy = (Enemy*)object2;
+
+				if (type1 == CollisionType::Collectable)
+					collectable = (Collectable*)object1;
+				if (type2 == CollisionType::Collectable)
+					collectable = (Collectable*)object2;
+
+				if (type1 == CollisionType::Weapon)
+					weapon = (Weapon*)object1;
+				if (type2 == CollisionType::Weapon)
+					weapon = (Weapon*)object2;
+
+				// React on collision type
+
+				if (ship && enemy)
 				{
-					HandleShipBombCollision(object1, object2);
+					ship->Respawn();
+					Game::DecreaseLife();
+				} 
+				else if (ship && collectable)
+				{
+					collectable->GetCollected(ship);
 				}
-				else if (ShipAndFollower(type1, type2))
+
+				if (weapon && enemy)
 				{
-					HandleShipFollowerCollision(object1, object2);
-				}
-				else if (AsteroidAndAsteroid(type1, type2))
-				{
-					HandleAsteroidAsteroidCollision(object1, object2);
-				}
-				else if (AsteroidAndShot(type1, type2))
-				{
-					HandleAsteroidShotCollision(object1, object2);
-				}
-				else if (BombAndAsteroid(type1, type2))
-				{
-					HandleBombAsteroidCollision(object1, object2);
-				}
-				else if (FollowerAndShot(type1, type2))
-				{
-					HandleFollowerShotCollision(object1, object2);
+					enemy->HandleDestruction();
+
+					if (m_game->GetScore() % BOMB_SPAWN_ON_SCORE == 0)
+					{
+						Bomb newBomb = Bomb(enemy->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
+						Game::bombs.push_back(newBomb);
+					}
+					m_game->IncreaseScore();
+
+					enemy->SetIsDead(true);
+					if (weapon->objectType != Type::Bomb)
+					{
+						weapon->SetIsDead(true);
+					}
 				}
 			}
 		}
 	}
 }
 
-void CollisionHandler::HandleShipAsteroidCollision(GameObject* object1, GameObject* object2)
-{
-	Ship* shipPtr = (object1->objectType == Type::Ship) ? (Ship*)object1 : (Ship*)object2;
-
-	shipPtr->Respawn();
-	Game::DecreaseLife();
-}
-
-void CollisionHandler::HandleShipBombCollision(GameObject* object1, GameObject* object2)
-{
-	Ship* shipPtr = (object1->objectType == Type::Ship) ? (Ship*)object1 : (Ship*)object2;
-	Bomb* bombPtr = (object1->objectType == Type::Bomb) ? (Bomb*)object1 : (Bomb*)object2;
-
-	if (!bombPtr->GetIsExploding())
-	{
-		shipPtr->CollectBomb(bombPtr);
-	}
-}
-
-void CollisionHandler::HandleShipFollowerCollision(GameObject* object1, GameObject* object2)
-{
-	Ship* shipPtr = (object1->objectType == Type::Ship) ? (Ship*)object1 : (Ship*)object2;
-
-	shipPtr->Respawn();
-	Game::DecreaseLife();
-}
-
-void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, GameObject* object2)
+void CollisionHandler::HandleElasticCollision(GameObject* object1, GameObject* object2)
 {
 	// Elastic collision
 	// source: https://docplayer.org/39258364-Ein-und-zweidimensionale-stoesse-mit-computersimulation.html
@@ -145,52 +151,6 @@ void CollisionHandler::HandleAsteroidAsteroidCollision(GameObject* object1, Game
 	}
 }
 
-void CollisionHandler::HandleAsteroidShotCollision(GameObject* object1, GameObject* object2)
-{
-	Shot*		shotPtr     = (object1->objectType == Type::Shot) ? (Shot*)object1 : (Shot*)object2;
-	Asteroid*	asteroidPtr = (object1->objectType == Type::Shot) ? (Asteroid*)object2 : (Asteroid*)object1;
-	 
-	if (asteroidPtr->sizeType == Asteroid::SizeType::Medium)
-	{
-		asteroidPtr->HandleDestruction();
-	}
-	else
-	{
-		m_game->GetAudioPlayer().PlaySoundEffect(EffectType::SmallAsteroidExplode);
-		if (m_game->GetScore() % BOMB_SPAWN_ON_SCORE == 0)
-		{
-			Bomb newBomb = Bomb(asteroidPtr->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
-			Game::bombs.push_back(newBomb);
-		}
-		m_game->IncreaseScore();
-	}
-	
-	asteroidPtr->SetIsDead(true);
-	shotPtr->SetIsDead(true);
-}
-
-void CollisionHandler::HandleBombAsteroidCollision(GameObject* object1, GameObject* object2)
-{
-	Bomb*		bombPtr		= (object1->objectType == Type::Bomb) ? (Bomb*)object1 : (Bomb*)object2;
-	Asteroid*	asteroidPtr	= (object1->objectType == Type::Bomb) ? (Asteroid*)object2 : (Asteroid*)object1;
-
-	if (bombPtr->GetIsExploding())
-	{
-		asteroidPtr->SetIsDead(true);
-	}
-}
-
-void CollisionHandler::HandleFollowerShotCollision(GameObject* object1, GameObject* object2)
-{
-	Shot*     shotPtr     = (object1->objectType == Type::Shot) ? (Shot*)object1 : (Shot*)object2;
-	Follower* followerPtr = (object1->objectType == Type::Shot) ? (Follower*)object2 : (Follower*)object1;
-
-	Game::IncreaseScore();
-
-	shotPtr->SetIsDead(true);
-	followerPtr->SetIsDead(true);
-}
-
 bool CollisionHandler::DoesCollide(const GameObject& object1, const GameObject& object2)
 {
 	if (!object1.GetVisibility() || !object2.GetVisibility())
@@ -205,12 +165,6 @@ bool CollisionHandler::DoesCollide(const GameObject& object1, const GameObject& 
 	float squareColDistance = (firstColRadius + secondColRadius) * (firstColRadius + secondColRadius);
 
 	return squareDistance <= squareColDistance;
-}
-
-bool CollisionHandler::ShipAndAnsteroid(const Type& type1, const Type& type2)
-{
-	return (type1 == Type::Ship && type2 == Type::Asteroid) ||
-		(type2 == Type::Ship && type1 == Type::Asteroid);
 }
 
 bool CollisionHandler::RecentlyCollide(GameObject firstObject, GameObject secondObject)
@@ -244,39 +198,4 @@ bool CollisionHandler::RecentlyCollide(GameObject firstObject, GameObject second
 	collisionOccurrence.time = SDL_GetTicks();
 	recentCollisions.push_back(collisionOccurrence);
 	return false;
-}
-
-bool CollisionHandler::ShipAndBomb(const Type& type1, const Type& type2)
-{
-	return ((type1 == Type::Ship && type2 == Type::Bomb) ||
-		(type2 == Type::Ship && type1 == Type::Bomb));
-}
-
-bool CollisionHandler::ShipAndFollower(const Type& type1, const Type& type2)
-{
-	return ((type1 == Type::Ship && type2 == Type::Follower) ||
-		(type2 == Type::Ship && type1 == Type::Follower));
-}
-
-bool CollisionHandler::AsteroidAndAsteroid(const Type& type1, const Type& type2)
-{
-	return (type1 == Type::Asteroid && type2 == Type::Asteroid);
-}
-
-bool CollisionHandler::AsteroidAndShot(const Type& type1, const Type& type2)
-{
-	return (type1 == Type::Asteroid && type2 == Type::Shot) || 
-		(type2 == Type::Asteroid && type1 == Type::Shot);
-}
-
-bool CollisionHandler::BombAndAsteroid(const Type& type1, const Type& type2)
-{
-	return (type1 == Type::Asteroid && type2 == Type::Bomb) ||
-		(type2 == Type::Asteroid) && (type1 == Type::Bomb);
-}
-
-bool CollisionHandler::FollowerAndShot(const Type& type1, const Type& type2)
-{
-	return (type1 == Type::Follower && type2 == Type::Shot) ||
-		(type2 == Type::Follower && type1 == Type::Shot);
 }

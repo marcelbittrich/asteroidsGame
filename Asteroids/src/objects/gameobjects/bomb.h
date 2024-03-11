@@ -4,13 +4,13 @@
 
 #include "gameobject.hpp"
 
-class Bomb : public GameObject
+class Bomb : public Collectable
 {
 public:
 	Bomb(Vec2 midPos, Vec2 velocity);
-	void Update(float deltaTime)  override;
+	void Update(float deltaTime) override;
 	void Render() override;
-	void GetCollected(class Ship* ownerShip);
+	void GetCollected(class Ship* ownerShip) override;
 	void Explode();
 
 	static void SetTexture(struct SDL_Texture* texture) { s_texture = texture; }

@@ -4,7 +4,7 @@
 
 #include "gameobject.hpp"
 
-class Asteroid : public GameObject
+class Asteroid : public Enemy
 {
 public:
 	enum class SizeType
@@ -25,7 +25,7 @@ public:
 	static void SetTextureSmall(struct SDL_Texture* texture) { s_textureSmall = texture; }
 	static void SetTextureMedium(struct SDL_Texture* texture) { s_textureMedium = texture; }
 
-	void HandleDestruction();
+	void HandleDestruction() override;
 
 private:
 	inline static const float m_colRadiusFactor = 0.6f;

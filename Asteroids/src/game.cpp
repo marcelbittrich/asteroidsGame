@@ -335,7 +335,8 @@ void Game::SpawnAsteroidWave()
 	asteroids.push_back(newAsteroid);
 
 	Vec2 randomPos2 = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
-	Follower follower = Follower(randomPos2, 30);
+
+	Follower follower(randomPos2, 30);
 	followers.push_back(follower);
 
 	if (asteroidWave % 3 == 0)

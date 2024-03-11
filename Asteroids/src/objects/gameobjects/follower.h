@@ -4,14 +4,15 @@
 
 #include "gameobject.hpp"
 
-class Follower : public GameObject
+class Follower : public Enemy
 {
 public:
-	Follower() {}
 	Follower(Vec2 midPos, int size);
 		
 	void Update(float deltaTime) override;
 	void Render() override;
+
+	void HandleDestruction() override {};
 
 	static void SetTexture(struct SDL_Texture* texture) {
 		s_texture = texture;
@@ -26,6 +27,12 @@ private:
 	int m_animationCounter = 0;	// Used to select sprite
 	Uint32 m_timeBetweenSprites = 300;
 	Uint32 m_timeLastUpdated = 0;
+
+	// Gameplay Values
+	float m_velocityMax = 50.f;
+	float m_velocityDecay = 0.8f;
+	float m_followSpeed = 50.f;
+	float m_backOfSpeed = 150.f;
 
 	void UpdateTransform(float deltaTime);
 	void UpdateAnimation(float deltaTime);
