@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <thread>
 
 #include "SDL.h"
 
@@ -51,7 +52,13 @@ private:
 	float m_distanceVelocityFunctionSteepness = 0.3f;
 	// Mainly used for adjusting the look of the bomb explosion.
 	// Default: 380
-	float m_maxPointDistance = 380.0f; 
+	float m_maxPointDistance = 380.0f;
 
 	void SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel);
+
+	bool m_customMultithread = false;
+	uint16_t m_threadCount = std::thread::hardware_concurrency();
+	std::vector<std::vector<int>> m_threadRanges;
+	std::vector<std::thread> m_threads;
+	void UpdatePointRange(const std::vector<int>& range);
 };

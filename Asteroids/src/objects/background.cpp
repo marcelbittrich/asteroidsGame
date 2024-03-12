@@ -1,6 +1,5 @@
 #include "background.hpp"
 
-#include <vector>
 #include <algorithm>
 #include <execution>
 #include <iostream>
@@ -62,6 +61,28 @@ Background::Background(int windowWidth, int windowHeight, float pointScale, SDL_
 	m_surfaceWidth = (int)round(m_logicWidth / m_pointSizeScale);
 	m_surfaceHeight = (int)round(m_logicHeight / m_pointSizeScale);
 	m_backgroundSurface = SDL_CreateRGBSurface(0, m_surfaceWidth, m_surfaceHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+
+	int singleRange = divider * divider / m_threadCount;
+	for (int i = 0; i < m_threadCount; i++)
+	{
+		std::vector<int> range;
+		for (int j = i * singleRange; j < i * singleRange + singleRange; j++)
+		{
+			range.push_back(j);
+		}
+		m_threadRanges.push_back(range);
+	}
+
+	int lastNumber = m_threadRanges.back().back();
+
+	if (lastNumber < divider * divider - 1)
+	{
+		int rangeToFill = divider * divider - lastNumber - 1;
+		for (int i = 0; i < rangeToFill; i++)
+		{
+			m_threadRanges.back().push_back(lastNumber + i + 1);
+		}
+	}
 }
 
 void Background::Update(const std::vector<GameObject*>& gameObjects, float deltaTime)
@@ -69,20 +90,50 @@ void Background::Update(const std::vector<GameObject*>& gameObjects, float delta
 	m_gameObjects = &gameObjects;
 	m_deltaTime = deltaTime;
 
-	std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
-		[this](uint32_t i)
+	if (m_customMultithread)
+	{
+		for (size_t i = 0; i < m_threadCount; i++)
 		{
-			std::for_each(horizontalIter.begin(), horizontalIter.end(),
-			[this, i](uint32_t j)
-				{
-					BackgroundPoint& point = backgroundPoints[i * divider + j];
-					MovePointOut(point);
-					if (!point.onOrigin)
+			const auto& range = m_threadRanges.at(i);
+			std::thread worker = std::thread(&Background::UpdatePointRange, this, range);
+			m_threads.push_back(move(worker));
+		}
+
+		for (auto& thread : m_threads)
+			thread.join();
+
+		m_threads.clear();
+	}
+	else
+	{
+		std::for_each(std::execution::par, verticalIter.begin(), verticalIter.end(),
+			[this](uint32_t i)
+			{
+				std::for_each(horizontalIter.begin(), horizontalIter.end(),
+				[this, i](uint32_t j)
 					{
-						ReturnPointToOrigin(point);
-					}
-				});
-		});
+						BackgroundPoint& point = backgroundPoints[i * divider + j];
+						MovePointOut(point);
+						if (!point.onOrigin)
+						{
+							ReturnPointToOrigin(point);
+						}
+					});
+			});
+	}
+}
+
+void Background::UpdatePointRange(const std::vector<int>& range)
+{
+	for (const int& pointIndex : range)
+	{
+		BackgroundPoint& point = backgroundPoints[pointIndex];
+		MovePointOut(point);
+		if (!point.onOrigin)
+		{
+			ReturnPointToOrigin(point);
+		}
+	}
 }
 
 void Background::Render()
@@ -130,6 +181,7 @@ void Background::SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 	int position = (y * surface->w) + x;
 	pixels[position] = pixel;
 }
+
 
 void Background::ReturnPointToOrigin(BackgroundPoint& point) const
 {

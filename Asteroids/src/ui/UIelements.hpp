@@ -14,7 +14,7 @@ class UIElement
 {
 protected:
     inline static int newId = 0;
-    SDL_Rect position;
+    SDL_Rect position = {0,0};
     bool m_isVisible = true;
 
 public:
@@ -69,9 +69,9 @@ public:
     void Render(SDL_Renderer* renderer, bool m_canShoot);
 
 private:
-    SDL_Rect background1;
-    SDL_Rect background2;
-    SDL_Rect meterBar;
-    int xOffset, yOffset;
+    SDL_Rect background1 = { 0,0 };
+    SDL_Rect background2 = { 0,0 };
+    SDL_Rect meterBar = { 0,0 };
+    int xOffset = 0, yOffset = 0;
     void Reconstruct(SDL_Rect position, const Ship& ship);
 };
