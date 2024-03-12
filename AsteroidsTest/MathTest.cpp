@@ -10,20 +10,9 @@ namespace MathTest
 	TEST_CLASS(Vector2Test)
 	{
 	public:
-		
-		// The correct tolerance would be different for each
-		// opperation since we calculate with the errror of 
-		// EPSILON in each number and step so the tolerance
-		// depends on the actual function.
-		// Since it is not critical to have the correct 
-		// tolerance a value which is high enough but still 
-		// catches big errors is chosen.
-		float FLT_TOLERANCE = 0.0001f;
-
 		TEST_METHOD(Plus)
 		{
-			Vec2 result			= Vec2(1.4f, 1.6f) + Vec2(3.2f, 0.6f);
-
+			Vec2 result = Vec2(1.4f, 1.6f) + Vec2(3.2f, 0.6f);
 			Vec2 expectedResult = Vec2(4.6f, 2.2f);
 
 			Assert::AreEqual(expectedResult.x, result.x, FLT_TOLERANCE);
@@ -102,6 +91,7 @@ namespace MathTest
 		TEST_METHOD(Normalize)
 		{
 			Vec2 vector = Vec2(1.f, 1.0f);
+			Vec2 vectorBeforeNormalize = vector;
 			Vec2 result = vector.Normalize();
 
 			// Vector component devided by length of vector.
@@ -110,6 +100,9 @@ namespace MathTest
 
 			Assert::AreEqual(expectedResult.x, result.x, FLT_TOLERANCE);
 			Assert::AreEqual(expectedResult.y, result.y, FLT_TOLERANCE);
+
+			Assert::AreEqual(vectorBeforeNormalize.x, vector.x, FLT_TOLERANCE);
+			Assert::AreEqual(vectorBeforeNormalize.y, vector.y, FLT_TOLERANCE);
 		}
 
 		TEST_METHOD(Rotate)

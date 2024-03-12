@@ -312,7 +312,6 @@ void MainMenu::UpdateScore(int newScore)
 				text.textDim.y + text.textDim.h / 2
 			};
 
-			//TODO: refactor into chanfe text function and text property
 			MenuText newText = CreateText(centerPosition, scoreMessage.c_str(), m_font, m_textColor, m_renderer);
 			SDL_DestroyTexture(text.texture);
 			text.texture = newText.texture;

@@ -12,7 +12,7 @@
 
 #include "objects/shapes.hpp"
 #include "objects/background.hpp"
-#include "objects/initialization.hpp"
+#include "objects/helper.hpp"
 #include "ui/UIelements.hpp"
 #include "saving/gamesave.hpp"
 #include "input/inputhandler.hpp"

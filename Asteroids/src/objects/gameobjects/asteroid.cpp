@@ -3,7 +3,7 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 
-#include "../initialization.hpp"
+#include "../helper.hpp"
 #include "../../game.hpp"
 #include "../../audio/audioplayer.hpp"
 #include "../../physics/collisionhandler.h"

@@ -154,7 +154,7 @@
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\objects\gameobjects\gameobject.cpp" />
     <ClCompile Include="src\saving\gamesave.cpp" />
-    <ClCompile Include="src\objects\initialization.cpp" />
+    <ClCompile Include="src\objects\helper.cpp" />
     <ClCompile Include="src\input\inputhandler.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\menu\menu.cpp" />
@@ -177,7 +177,7 @@
     <ClInclude Include="src\objects\gameobjects\gameobject.hpp" />
     <ClInclude Include="src\saving\gamesave.hpp" />
     <ClInclude Include="src\states\gamestate.hpp" />
-    <ClInclude Include="src\objects\initialization.hpp" />
+    <ClInclude Include="src\objects\helper.hpp" />
     <ClInclude Include="src\input\inputhandler.hpp" />
     <ClInclude Include="src\menu\menu.hpp" />
     <ClInclude Include="src\objects\shapes.hpp" />

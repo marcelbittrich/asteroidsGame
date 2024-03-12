@@ -5,7 +5,7 @@
 
 #include "../vector2.hpp"
 #include "../game.hpp"
-#include "../objects/initialization.hpp"
+#include "../objects/helper.hpp"
 #include "../objects/gameobjects/asteroid.h"
 #include "../objects/gameobjects/bomb.h"
 #include "../objects/gameobjects/ship.h"
@@ -42,6 +42,7 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 				if (type1 == CollisionType::Enemy && type1 == type2)
 				{
 					HandleElasticCollision(object1, object2);
+					MoveApart(*object1, *object2);
 				}
 
 				if (type1 == CollisionType::Enemy)
@@ -91,6 +92,23 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 			}
 		}
 	}
+}
+
+void CollisionHandler::MoveApart(GameObject& object1, GameObject& object2)
+{
+	Vec2 distance = object2.GetMidPos() - object1.GetMidPos();
+
+	if (object2.GetColRadius() == 0)
+		return;
+
+	float intrusionDepth = object1.GetColRadius() + object2.GetColRadius() - distance.Length();
+	Vec2 hitPosition = object1.GetMidPos() + distance.Normalize() * (object1.GetColRadius() - intrusionDepth / 2.f);
+
+	Vec2 newPositionOb1 = hitPosition - distance.Normalize() * object1.GetColRadius();
+	Vec2 newPositionOb2 = hitPosition + distance.Normalize() * object2.GetColRadius();
+
+	object1.SetMidPos(newPositionOb1);
+	object2.SetMidPos(newPositionOb2);
 }
 
 void CollisionHandler::HandleElasticCollision(GameObject* object1, GameObject* object2)

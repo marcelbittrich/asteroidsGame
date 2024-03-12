@@ -100,11 +100,9 @@ void Ship::UpdateTransform(float deltaTime)
 
 	if (m_isThrusting && scalarVelocity < m_velocityMax)
 	{
-		// TODO: refactor to Vec(1,1) with rotation
-		float deltaVelocityX = sinf(m_rotation * (float)PI / 180) * m_thrust * deltaTime;
-		float deltaVelocityY = -(cosf(m_rotation * (float)PI / 180)) * m_thrust * deltaTime;
-		m_velocity.x += deltaVelocityX;
-		m_velocity.y += deltaVelocityY;
+		Vec2 thrustVector(0, -1);
+		thrustVector = thrustVector.Rotate(m_rotation) * m_thrust * deltaTime;
+		m_velocity += thrustVector;
 	}
 
 	m_midPos += m_velocity * deltaTime;
@@ -193,8 +191,6 @@ void Ship::Render()
 {
 	RenderShotMeter();
 	RenderShip();
-
-	DrawCircle(s_renderer, m_midPos, SDL_Color{ 255,255,255,255 }, 34);
 }
 
 void Ship::RenderShotMeter()

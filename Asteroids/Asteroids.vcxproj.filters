@@ -27,7 +27,7 @@
     <ClCompile Include="src\saving\gamesave.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\initialization.cpp">
+    <ClCompile Include="src\objects\helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\input\inputhandler.cpp">
@@ -92,7 +92,7 @@
     <ClInclude Include="src\states\gamestate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\initialization.hpp">
+    <ClInclude Include="src\objects\helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\input\inputhandler.hpp">

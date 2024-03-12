@@ -38,7 +38,7 @@ void Follower::UpdateTransform(float deltaTime)
 	{
 		newVelocity += distance.Normalize() * -m_backOfSpeed;
 	}
-
+ 
 	if (newVelocity.SquareLength() > m_velocityMax * m_velocityMax)
 	{
 		m_velocity = newVelocity.Normalize() * m_velocityMax;

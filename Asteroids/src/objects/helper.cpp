@@ -1,4 +1,4 @@
-#include "initialization.hpp"
+#include "helper.hpp"
 
 #include "../game.hpp"
 
@@ -19,7 +19,6 @@ Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::
 
 			if (distance < objectColRadius + m_colRadius)
 			{
-				// std::cout << "RandomPosTry: " << i + 1 << std::endl;
 				success = false;
 				break;
 			}
@@ -30,7 +29,7 @@ Vec2 GetFreeRandomPosition(Vec2 windowDimensions, float m_colRadius, const std::
 			return point;
 		}
 	}
-	//throw std::runtime_error("Max tries for getRandomPosition exceeded!");
+	std::cout << "GetFreeRandomPosition - max tries exceeded" << std::endl;
 	return Vec2(windowDimensions / 2.f);
 }
 

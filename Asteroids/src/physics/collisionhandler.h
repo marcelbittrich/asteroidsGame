@@ -14,7 +14,7 @@ public:
 	CollisionHandler() {};
 	CollisionHandler(class Game* owner) : m_game(owner) {};
 	void CheckCollisions(const std::vector<GameObject*>& gameObjectPtrs);
-
+	void MoveApart(GameObject& object1, GameObject& object2);
 	static bool DoesCollide(const GameObject& object1, const GameObject& object2);
 private:
 	void HandleElasticCollision(GameObject* object1, GameObject* object2);
