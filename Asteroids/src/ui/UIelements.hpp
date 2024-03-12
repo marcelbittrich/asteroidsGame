@@ -39,7 +39,7 @@ public:
     void Render();
 
     // TODO: Let the Game own this
-    inline static std::vector<UICounter> UICounters = {};
+    
 
 private:
     std::string m_name      = "Default";

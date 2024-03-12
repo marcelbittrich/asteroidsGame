@@ -27,7 +27,7 @@ class InputHandler
 {
 public:
     InputHandler();
-    void HandleInput(bool& isRunning);
+    void HandleInput(bool& m_isRunning);
 
     void SetGameControllers(std::vector<SDL_GameController*> gameControllers) {
         m_gameControllers = gameControllers;

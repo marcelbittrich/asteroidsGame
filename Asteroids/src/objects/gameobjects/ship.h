@@ -12,7 +12,7 @@ class Ship : public GameObject
 {
 public:
 	Ship() {};
-	Ship(Vec2 midPos, int size, struct SDL_Texture* texture);
+	Ship(Vec2 midPos, int size);
 
 	void HandleInput(const InputHandler& myInputHandler);
 	void Update(float deltaTime) override;

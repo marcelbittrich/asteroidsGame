@@ -13,7 +13,6 @@
 #include "objects/shapes.hpp"
 #include "objects/background.hpp"
 #include "objects/helper.hpp"
-#include "ui/UIelements.hpp"
 #include "saving/gamesave.hpp"
 #include "input/inputhandler.hpp"
 #include "menu/menu.hpp"
@@ -33,8 +32,8 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	InitWindow(title, xpos, ypos, m_width, m_height);
 	InitInputDevices();
 
-	myInputHandler = InputHandler();
-	myInputHandler.SetGameControllers(gameControllers);
+	m_inputHandler = InputHandler();
+	m_inputHandler.SetGameControllers(m_gameControllers);
 
 	InitSound();
 	InitTextures();
@@ -42,33 +41,31 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	InitGameplay();
 	InitUI();
 	// Priming game time
-	lastUpdateTime = SDL_GetTicks();
+	m_lastUpdateTime = SDL_GetTicks();
 }
 
 void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
-		window = SDL_CreateWindow(title, xpos, ypos, m_width, m_height, SDL_WINDOW_RESIZABLE); // SDL_WINDOW_FULLSCREEN
-		if (window)
+		m_window = SDL_CreateWindow(title, xpos, ypos, m_width, m_height, SDL_WINDOW_RESIZABLE); // SDL_WINDOW_FULLSCREEN
+		if (m_window)
 		{
 			std::cout << "Window created" << std::endl;
-			windowWidth = 1280;
-			windowHeight = 720;
 		}
 
-		renderer = SDL_CreateRenderer(window, -1, 0); // For vsync -> SDL_RENDERER_PRESENTVSYNC
-		if (renderer)
+		m_renderer = SDL_CreateRenderer(m_window, -1, 0); // For vsync -> SDL_RENDERER_PRESENTVSYNC
+		if (m_renderer)
 		{
 			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-			SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
+			SDL_RenderSetLogicalSize(m_renderer, m_logicWidth, m_logicHeight);
 			std::cout << "Renderer created!" << std::endl;
 		}
-		isRunning = true;
+		m_isRunning = true;
 	}
 	else
 	{
-		isRunning = false;
+		m_isRunning = false;
 	}
 }
 
@@ -98,7 +95,7 @@ void Game::InitInputDevices()
 			if (gamepad)
 			{
 				std::cout << "Gamecontroller opened!" << std::endl;
-				gameControllers.push_back(gamepad);
+				m_gameControllers.push_back(gamepad);
 				break;
 			}
 			else
@@ -117,8 +114,8 @@ void Game::InitSound()
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == 0)
 		std::cout << "SoundMixer opened!..." << std::endl;
 
-	myAudioPlayer = AudioPlayer();
-	GameObject::SetAudioPlayer(&myAudioPlayer);
+	m_audioPlayer = AudioPlayer();
+	GameObject::SetAudioPlayer(&m_audioPlayer);
 }
 
 void Game::InitTextures()
@@ -150,54 +147,63 @@ SDL_Texture* Game::TextureFromPath(const char* path)
 	{
 		std::cout << IMG_GetError() << std::endl;
 	}
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(m_renderer, image);
 	SDL_FreeSurface(image);
 	return texture;
 }
 
 void Game::InitMenu()
 {
-	myGameSave = GameSave();
-	myAudioPlayer.SetMasterVolume(myGameSave.GetMasterVolume());
+	m_gameSave = GameSave();
+	m_audioPlayer.SetMasterVolume(m_gameSave.GetMasterVolume());
 
-	myMainMenu = MainMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
-	myMainMenu.CreateDefaultMainMenu();
-	myMainMenu.UpdateScore(myGameSave.GetHighscore());
+	m_mainMenu = MainMenu(m_font, m_fontHuge, m_renderer, m_logicWidth, m_logicHeight, this);
+	m_mainMenu.CreateDefaultMainMenu();
+	m_mainMenu.UpdateScore(m_gameSave.GetHighscore());
 
-	myPauseMenu = PauseMenu(m_font, m_fontHuge, renderer, windowWidth, windowHeight, this);
-	myPauseMenu.CreateDefaultPauseMenu();
+	m_pauseMenu = PauseMenu(m_font, m_fontHuge, m_renderer, m_logicWidth, m_logicHeight, this);
+	m_pauseMenu.CreateDefaultPauseMenu();
 }
 
 void Game::InitGameplay()
 {
-	myCollisionhandler = CollisionHandler(this);
+	m_collisionhandler = CollisionHandler(this);
 
-	gameBackground = Background(windowWidth, windowHeight, 2.0f, renderer);
+	m_background = Background(m_logicWidth, m_logicHeight, 2.0f, m_renderer);
 
-	GameObject::SetRenderer(renderer);
+	GameObject::SetRenderer(m_renderer);
 	ChangeState(&menuState);
-	gameState.top()->Enter(this);
+	m_gameState.top()->Enter(this);
 }
 
 void Game::InitUI()
 {
 	SDL_Color white = { 255, 255, 255, 255 };
-	UICounter("Score", m_font, white, renderer, 32, 16, UICounterPosition::Left, [&]() { return this->GetScore(); });
-	UICounter("Lives", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return this->GetLife(); });
-	UICounter("Bombs", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return ships[0].GetCollectedBombsSize(); });
-	UICounter("FPS", m_font, white, renderer, 32, 16, UICounterPosition::Right, [&]() { return (int)this->GetAverageFPS(); });
+
+	UICounters.push_back(
+		UICounter("Score", m_font, white, m_renderer, 32, 16, 
+			UICounterPosition::Left, [&]() { return this->GetScore(); }));
+	UICounters.push_back(
+		UICounter("Lives", m_font, white, m_renderer, 32, 16, 
+			UICounterPosition::Right, [&]() { return this->GetLife(); }));
+	UICounters.push_back(
+		UICounter("Bombs", m_font, white, m_renderer, 32, 16, 
+			UICounterPosition::Right, [&]() { return ships[0].GetCollectedBombsSize(); }));
+	UICounters.push_back(
+		UICounter("FPS", m_font, white, m_renderer, 32, 16,
+			UICounterPosition::Right, [&]() { return (int)this->GetAverageFPS(); }));
 }
 
 void Game::HandleEvents()
 {
-	myInputHandler.HandleInput(isRunning);
+	m_inputHandler.HandleInput(m_isRunning);
 
-	GameState* prevGameState = gameState.top();
-	gameState.top()->HandleEvents(myInputHandler);
-	if (prevGameState != gameState.top())
+	GameState* prevGameState = m_gameState.top();
+	m_gameState.top()->HandleEvents(m_inputHandler);
+	if (prevGameState != m_gameState.top())
 	{
 		prevGameState->Exit();
-		gameState.top()->Enter(this);
+		m_gameState.top()->Enter(this);
 	}
 }
 
@@ -205,13 +211,13 @@ void Game::Update()
 {
 	m_deltaTime = CalculateDeltaTime();
 
-	gameState.top()->Update(m_deltaTime);
+	m_gameState.top()->Update(m_deltaTime);
 }
 
 void Game::HandlePhysics()
 {
 	std::vector<class GameObject*>& allGameObjectPtrs = GetGameObjectPtrs();
-	myCollisionhandler.CheckCollisions(allGameObjectPtrs);
+	m_collisionhandler.CheckCollisions(allGameObjectPtrs);
 }
 
 std::vector<class GameObject*> Game::GetGameObjectPtrs()
@@ -243,8 +249,8 @@ std::vector<class GameObject*> Game::GetGameObjectPtrs()
 float Game::CalculateDeltaTime()
 {
 	Uint32 currentTime = SDL_GetTicks();
-	float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
-	lastUpdateTime = currentTime;
+	float deltaTime = (currentTime - m_lastUpdateTime) / 1000.0f;
+	m_lastUpdateTime = currentTime;
 	return deltaTime;
 }
 
@@ -252,23 +258,23 @@ void Game::Render()
 {
 	// Render are outside the playArea grey.
 	// Only visible with aspect ratios unequal to 16/9.
-	SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(m_renderer, 40, 40, 40, 255);
+	SDL_RenderClear(m_renderer);
 
 	// Render playArea black.
-	SDL_Rect playArea = { 0, 0, windowWidth, windowHeight };
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderFillRect(renderer, &playArea);
+	SDL_Rect playArea = { 0, 0, m_logicWidth, m_logicHeight };
+	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+	SDL_RenderFillRect(m_renderer, &playArea);
 
-	gameState.top()->Render(renderer);
+	m_gameState.top()->Render(m_renderer);
 
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(m_renderer);
 }
 
 void Game::Clean()
 {
-	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(m_window);
+	SDL_DestroyRenderer(m_renderer);
 	TTF_CloseFont(m_fontHuge);
 	TTF_CloseFont(m_font);
 	Mix_CloseAudio();
@@ -281,17 +287,17 @@ void Game::Clean()
 
 void Game::PrintPerformanceInfo(Uint32 updateTime, Uint32 renderTime, Uint32 loopTime, Uint32 frameTime)
 {
-	if (showUpdateTime)
+	if (m_showUpdateTime)
 		std::cout << "Update Time: " << updateTime << " ";
-	if (showRenderTime)
+	if (m_showRenderTime)
 		std::cout << "Render Time: " << renderTime << " ";
-	if (showLoopTime)
+	if (m_showLoopTime)
 		std::cout << "Frame Time: " << loopTime << " ";
-	if (showFrameTime) // Loop time plus potential wait time
+	if (m_showFrameTime) // Loop time plus potential wait time
 		std::cout << "Delayed Frame Time: " << frameTime << " ";
-	if (showFPS)
+	if (m_showFPS)
 		std::cout << "FPS: " << 1000 / frameTime << " ";
-	if (showUpdateTime || showRenderTime || showLoopTime || showFrameTime || showFPS)
+	if (m_showUpdateTime || m_showRenderTime || m_showLoopTime || m_showFrameTime || m_showFPS)
 		std::cout << std::endl;
 }
 
@@ -304,13 +310,13 @@ void Game::ResetAllGameObjects()
 	bombs.clear();
 	followers.clear();
 
-	Vec2 midScreenPos = GetWindowDim() / 2.f;
-	Ship ship = Ship(midScreenPos, 50, shipTex);
+	Vec2 midScreenPos = GetLogicWindowDim() / 2.f;
+	Ship ship = Ship(midScreenPos, 50);
 	ships.push_back(ship);
 
 	int asteroidAmountSmall = 5;
 	int asteroidAmountMedium = 5;
-	std::vector<Asteroid> newAsteroids = InitAsteroids(asteroidAmountSmall, asteroidAmountMedium, GetWindowDim());
+	std::vector<Asteroid> newAsteroids = InitAsteroids(asteroidAmountSmall, asteroidAmountMedium, GetLogicWindowDim());
 	asteroids.insert(asteroids.end(), newAsteroids.begin(), newAsteroids.end());
 }
 
@@ -318,8 +324,8 @@ void Game::SetGameplayStartValues()
 {
 	life = STARTING_LIVES;
 
-	timeSinceLastAsteroidWave = 0.f;
-	asteroidWave = 1;
+	m_timeSinceLastAsteroidWave = 0.f;
+	m_asteroidWave = 1;
 	score = 0;
 	bombCount = 0;
 }
@@ -328,29 +334,29 @@ void Game::SpawnAsteroidWave()
 {
 	int size = Asteroid::GetSize(Asteroid::SizeType::Small);
 	float colRadius = Asteroid::GetColRadius(size);
-	Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
-	Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+	Vec2 randomPos = GetFreeRandomPosition(GetLogicWindowDim(), colRadius, GetGameObjectPtrs());
+	Vec2 randomVelocity = GetRandomVelocity(m_asteroidStartVelocity, m_asteroidStartVelocity + ASTEROID_SPAWN_SPEED_MULTI * score);
 
 	Asteroid newAsteroid = Asteroid(randomPos, randomVelocity, Asteroid::SizeType::Small);
 	asteroids.push_back(newAsteroid);
 
-	Vec2 randomPos2 = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
+	Vec2 randomPos2 = GetFreeRandomPosition(GetLogicWindowDim(), colRadius, GetGameObjectPtrs());
 
 	Follower follower(randomPos2, 30);
 	followers.push_back(follower);
 
-	if (asteroidWave % 3 == 0)
+	if (m_asteroidWave % 3 == 0)
 	{
 		int size = Asteroid::GetSize(Asteroid::SizeType::Medium);
 		float colRadius = Asteroid::GetColRadius(size);
-		Vec2 randomPos = GetFreeRandomPosition(GetWindowDim(), colRadius, GetGameObjectPtrs());
-		Vec2 randomVelocity = GetRandomVelocity(0, ASTEROID_SPAWN_SPEED_MULTI * score);
+		Vec2 randomPos = GetFreeRandomPosition(GetLogicWindowDim(), colRadius, GetGameObjectPtrs());
+		Vec2 randomVelocity = GetRandomVelocity(m_asteroidStartVelocity, m_asteroidStartVelocity + ASTEROID_SPAWN_SPEED_MULTI * score);
 		Asteroid newAsteroid = Asteroid(randomPos, randomVelocity, Asteroid::SizeType::Medium);
 		asteroids.push_back(newAsteroid);
 	}
 
 	SetTimeLastWave(0.f);
-	asteroidWave++;
+	m_asteroidWave++;
 }
 
 float Game::GetAverageFPS()
@@ -358,21 +364,21 @@ float Game::GetAverageFPS()
 	if (m_deltaTime > 0)
 	{
 		float FPS = 1 / m_deltaTime;
-		if (FPSVector.size() >= 1000)
+		if (m_FPSVector.size() >= 1000)
 		{
-			FPSVector.insert(FPSVector.begin(), FPS);
-			FPSVector.pop_back();
+			m_FPSVector.insert(m_FPSVector.begin(), FPS);
+			m_FPSVector.pop_back();
 		}
 		else
 		{
-			FPSVector.insert(FPSVector.begin(), FPS);
+			m_FPSVector.insert(m_FPSVector.begin(), FPS);
 		}
 	}
 
-	if (!FPSVector.empty())
+	if (!m_FPSVector.empty())
 	{
-		float count = (float)(FPSVector.size());
-		return std::accumulate(FPSVector.begin(), FPSVector.end(), 0.f) / count;
+		float count = (float)(m_FPSVector.size());
+		return std::accumulate(m_FPSVector.begin(), m_FPSVector.end(), 0.f) / count;
 	}
 	else
 	{

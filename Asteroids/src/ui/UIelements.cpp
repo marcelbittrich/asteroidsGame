@@ -1,4 +1,5 @@
 #include "UIelements.hpp"
+#include "../game.hpp"
 
 UICounter::UICounter(std::string Name, TTF_Font* m_font, SDL_Color color, SDL_Renderer* renderer, 
 	int horizontalPadding, int verticalPadding, UICounterPosition counterPosition, std::function<int()> NumberGetter)
@@ -10,13 +11,11 @@ UICounter::UICounter(std::string Name, TTF_Font* m_font, SDL_Color color, SDL_Re
 	m_messageRect = { 0, m_verticalPadding, 0, 0 };
 
 	// Set y position based on how many elements are on the same side of the window.
-	for (const UICounter& uiCounter : UICounters)
+	for (const UICounter& uiCounter : Game::UICounters)
 	{
 		if (m_counterPosition == uiCounter.m_counterPosition)
 			m_messageRect.y += uiCounter.m_verticalPadding * 2 + uiCounter.m_messageRect.h;
 	}
-
-	UICounters.push_back(*this);
 }
 
 void UICounter::Update()
@@ -30,7 +29,6 @@ void UICounter::Update()
 	m_messageTexture = SDL_CreateTextureFromSurface(m_renderer, surfaceMessage);
 	SDL_FreeSurface(surfaceMessage);
 	SDL_QueryTexture(m_messageTexture, NULL, NULL, &m_messageRect.w, &m_messageRect.h);
-
 
 	// Set x position based on UI Size 
 	// For left alligned objects trivial, for right objects size is evaluated

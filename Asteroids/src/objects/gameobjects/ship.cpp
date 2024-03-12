@@ -13,7 +13,7 @@
 	#define PI 3.14159265359f
 #endif
 
-Ship::Ship(Vec2 midPos, int size, SDL_Texture* texture)
+Ship::Ship(Vec2 midPos, int size)
 	: GameObject(midPos, 0.f)
 {
 	m_width = size;

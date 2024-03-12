@@ -7,7 +7,7 @@ InputHandler::InputHandler()
 	m_controlBools = { false };
 }
 
-void InputHandler::HandleInput(bool& isRunning)
+void InputHandler::HandleInput(bool& m_isRunning)
 {
 	for (SDL_GameController* controller : m_gameControllers)
 	{
@@ -27,7 +27,7 @@ void InputHandler::HandleInput(bool& isRunning)
 		switch (event.type)
 		{
 		case SDL_QUIT:
-			isRunning = false;
+			m_isRunning = false;
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym)

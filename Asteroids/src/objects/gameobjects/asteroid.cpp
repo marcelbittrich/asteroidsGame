@@ -124,16 +124,6 @@ void Asteroid::Render()
 	}
 }
 
-//Asteroid spawnAsteroid(Vec2 position, Vec2 velocity, Asteroid::SizeType sizeType)
-//{
-//	GameObject collisionObject = GameObject();
-//	collisionObject.SetMidPos(position);
-//	collisionObject.SetColRadius(Asteroid::GetColRadius(Asteroid::GetSize(sizeType)));
-//
-//	return Asteroid(collisionObject.GetMidPos(),velocity,sizeType);
-//}
-
-
 std::vector<Asteroid> InitAsteroids(int amnountSmall, int amountBig, Vec2 windowDimensions)
 {
 	std::vector<Asteroid> asteroids;

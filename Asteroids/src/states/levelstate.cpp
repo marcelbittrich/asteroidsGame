@@ -135,7 +135,7 @@ void LevelState::UpdateGameObjects(float deltaTime)
 
 void LevelState::UpdateUI(float deltaTime)
 {
-	for (UICounter& uiCounter : UICounter::UICounters)
+	for (UICounter& uiCounter : Game::UICounters)
 		uiCounter.Update();
 }
 
@@ -179,7 +179,7 @@ void LevelState::RenderGameObjects()
 
 void LevelState::RenderUI()
 {
-	for (UICounter& uiCounter : UICounter::UICounters)
+	for (UICounter& uiCounter : Game::UICounters)
 		uiCounter.Render();
 }
 
