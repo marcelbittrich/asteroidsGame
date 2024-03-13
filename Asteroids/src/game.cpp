@@ -134,6 +134,7 @@ void Game::InitTextures()
 	Asteroid::SetTextureMedium(TextureFromPath("./img/asteroid_medium1.png"));
 	Shot::SetTexture(TextureFromPath("./img/shot.png"));
 	Bomb::SetTexture(TextureFromPath("./img/bomb.png"));
+	PowerUp::SetTexture(TextureFromPath("./img/powerUp.png"));
 	Follower::SetTexture(TextureFromPath("./img/follower.png"));
 
 	m_font = TTF_OpenFont("./font/joystix_monospace.ttf", 20);
@@ -239,11 +240,32 @@ std::vector<class GameObject*> Game::GetGameObjectPtrs()
 	{
 		allGameObjects.push_back(&bomb);
 	}
+	for (PowerUp& powerUp : powerUps)
+	{
+		allGameObjects.push_back(&powerUp);
+	}
 	for (Follower& follower : followers)
 	{
 		allGameObjects.push_back(&follower);
 	}
 	return allGameObjects;
+}
+
+void Game::SpawnCollectable(const Vec2& position)
+{
+	if (score % COLLECTABLE_SPAWN_ON_SCORE == 0)
+	{
+		if (rand() > RAND_MAX / 2)
+		{
+			Bomb newBomb = Bomb(position, GetRandomVelocity(0.0f, 0.5f));
+			Game::bombs.push_back(newBomb);
+		}
+		else
+		{
+			PowerUp powerUp = PowerUp(position, GetRandomVelocity(0.0f, 0.5f));
+			Game::powerUps.push_back(powerUp);
+		}
+	}
 }
 
 float Game::CalculateDeltaTime()

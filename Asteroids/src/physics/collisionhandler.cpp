@@ -8,6 +8,7 @@
 #include "../objects/helper.hpp"
 #include "../objects/gameobjects/asteroid.h"
 #include "../objects/gameobjects/bomb.h"
+#include "../objects/gameobjects/powerup.h"
 #include "../objects/gameobjects/ship.h"
 #include "../objects/gameobjects/shot.h"
 
@@ -75,12 +76,7 @@ void CollisionHandler::CheckCollisions(const std::vector<GameObject*>& gameObjec
 				if (weapon && enemy)
 				{
 					enemy->HandleDestruction();
-
-					if (m_game->GetScore() % BOMB_SPAWN_ON_SCORE == 0)
-					{
-						Bomb newBomb = Bomb(enemy->GetMidPos(), GetRandomVelocity(0.0f, 0.5f));
-						Game::bombs.push_back(newBomb);
-					}
+					m_game->SpawnCollectable(enemy->GetMidPos());
 					m_game->IncreaseScore();
 
 					enemy->SetIsDead(true);

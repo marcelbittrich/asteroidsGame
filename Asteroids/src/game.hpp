@@ -20,6 +20,7 @@
 
 #include "objects/gameobjects/asteroid.h"
 #include "objects/gameobjects/bomb.h"
+#include "objects/gameobjects/powerup.h"
 #include "objects/gameobjects/ship.h"
 #include "objects/gameobjects/shot.h"
 #include "objects/gameobjects/follower.h"
@@ -29,7 +30,7 @@
 // Gameplay parameters
 constexpr int   STARTING_LIVES = 3;
 // Spawn a bomb for every points
-constexpr int   BOMB_SPAWN_ON_SCORE = 50;
+constexpr int   COLLECTABLE_SPAWN_ON_SCORE = 50;
 // Time between asteroid waves
 constexpr float ASTEROID_SPAWN_DELTATIME = 3.0f;
 // Determines speed of newly spwaned asteroids multiplied by the current score
@@ -49,6 +50,7 @@ public:
 	inline static std::vector<Asteroid> asteroids;
 	inline static std::vector<Shot> shots;
 	inline static std::vector<Bomb> bombs;
+	inline static std::vector<PowerUp> powerUps;
 	inline static std::vector<Follower> followers;
 	inline static std::vector<UICounter> UICounters;
 
@@ -94,6 +96,7 @@ public:
 	void PushState(GameState* newTemporaryState) { m_gameState.push(newTemporaryState); }
 	void PopState() { m_gameState.pop(); }
 	void ExitGame() { SDL_Delay(200); m_isRunning = false; }
+	void SpawnCollectable(const Vec2& position);
 
 private:
 	float m_deltaTime = 0.f;

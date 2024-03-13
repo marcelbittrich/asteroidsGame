@@ -1,7 +1,5 @@
 #pragma once
 
-#include <list> 
-
 #include "gameobject.hpp"
 
 class Bomb : public Collectable

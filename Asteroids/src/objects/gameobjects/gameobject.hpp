@@ -32,7 +32,8 @@ public:
 		Asteroid,
 		Bomb,
 		Shot,
-		Follower
+		Follower,
+		PowerUp,
 	};
 	Type objectType = Type::Default;
 

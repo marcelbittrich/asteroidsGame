@@ -20,6 +20,7 @@ public:
 	void Reset();
 	void Respawn();
 	void CollectBomb(class Bomb* bomb);
+	void CollectPowerUp();
 
 	float GetMaxVelocity() const { return m_velocityMax; };
 	float GetShotCounter() const { return m_shotCounter; };
@@ -58,7 +59,7 @@ private:
 	float m_shipCooldownThreshold = m_maxShotCounter / 2.f;
 	bool m_hasShotPowerUp = false;
 	float m_currentPowerUpTime = 0.f;
-	float m_maxPowerUpTime = 2.f;
+	float m_maxPowerUpTime = 10.f;
 
 	bool m_canShoot = true;	            // Indicator, false during respawn.
 	Uint32 m_timeLastShot = 0;

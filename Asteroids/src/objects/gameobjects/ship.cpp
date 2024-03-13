@@ -72,6 +72,13 @@ void Ship::UpdateGameplay(float deltaTime)
 			m_canShoot = false;
 		if (!m_canShoot && m_shotCounter <= m_shipCooldownThreshold)
 			m_canShoot = true;
+
+		if (m_hasShotPowerUp)
+		{
+			m_currentPowerUpTime += deltaTime;
+			if (m_currentPowerUpTime > m_maxPowerUpTime)
+				m_hasShotPowerUp = false;
+		}
 	}
 	else
 	{
@@ -249,6 +256,12 @@ void Ship::CollectBomb(Bomb* bomb)
 {
 	s_audioPlayer->PlaySoundEffect(EffectType::BombCollectedSound);
 	m_collectedBombs.push_back(bomb);
+}
+
+void Ship::CollectPowerUp()
+{
+	m_currentPowerUpTime = 0.f;
+	m_hasShotPowerUp = true;
 }
 
 void Ship::Reset()

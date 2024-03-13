@@ -6,6 +6,7 @@
 #include "../ui/UIelements.hpp"
 #include "../objects/gameobjects/asteroid.h"
 #include "../objects/gameobjects/bomb.h"
+#include "../objects/gameobjects/powerup.h"
 #include "../objects/gameobjects/ship.h"
 #include "../objects/gameobjects/shot.h"
 
@@ -74,6 +75,13 @@ void LevelState::DestroyDeadObjects()
 			bombIt++;
 	}
 
+	for (auto powerUpIt = Game::powerUps.begin(); powerUpIt != Game::powerUps.end(); )
+	{
+		powerUpIt->GetIsDead() ?
+			powerUpIt = Game::powerUps.erase(powerUpIt) :
+			powerUpIt++;
+	}
+
 	for (auto followerIt = Game::followers.begin(); followerIt != Game::followers.end(); )
 	{
 		followerIt->GetIsDead() ?
@@ -131,6 +139,10 @@ void LevelState::UpdateGameObjects(float deltaTime)
 	{
 		follower.Update(deltaTime);
 	}
+	for (PowerUp& powerUp : Game::powerUps)
+	{
+		powerUp.Update(deltaTime);
+	}
 }
 
 void LevelState::UpdateUI(float deltaTime)
@@ -174,6 +186,10 @@ void LevelState::RenderGameObjects()
 	for (Bomb& bomb : Game::bombs)
 	{
 		bomb.Render();
+	}
+	for (PowerUp& powerUp : Game::powerUps)
+	{
+		powerUp.Render();
 	}
 }
 
