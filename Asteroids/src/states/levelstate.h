@@ -14,7 +14,7 @@ public:
 
 private:
 	class Game* m_game = nullptr;
-
+	std::vector<class GameObject*> m_gameObjectPtrs;
 	void HandlePausePressed(const InputHandler& inputHandler);
 	void DestroyDeadObjects();
 	void SpawnNewObjects();

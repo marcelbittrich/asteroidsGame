@@ -21,11 +21,16 @@ void LevelState::HandleEvents(const InputHandler& inputHandler)
 	for (Ship& ship : Game::ships)
 		ship.HandleInput(inputHandler);
 
-	m_game->HandlePhysics();
-
 	DestroyDeadObjects();
 	SpawnNewObjects();
-	
+
+	m_game->HandlePhysics();
+
+#define USEPTR 1
+#if USEPTR	
+	m_gameObjectPtrs = m_game->GetGameObjectPtrs();
+#endif
+
 	if (m_game->GetLife() == 0)
 		HandleGameOver();
 }
@@ -119,6 +124,12 @@ void LevelState::UpdateBackground(float deltaTime)
 
 void LevelState::UpdateGameObjects(float deltaTime)
 {
+#if USEPTR
+	for (GameObject* gameObject : m_gameObjectPtrs)
+	{
+		gameObject->Update(deltaTime);
+	}
+#else
 	for (Ship& ship : Game::ships)
 	{
 		ship.Update(deltaTime);
@@ -143,6 +154,7 @@ void LevelState::UpdateGameObjects(float deltaTime)
 	{
 		powerUp.Update(deltaTime);
 	}
+#endif 
 }
 
 void LevelState::UpdateUI(float deltaTime)
@@ -167,6 +179,12 @@ void LevelState::RenderBackground()
 
 void LevelState::RenderGameObjects()
 {
+#if USEPTR
+	for (GameObject* gameObject : m_gameObjectPtrs)
+	{
+		gameObject->Render();
+	}
+#else
 	for (Ship& ship : Game::ships)
 	{
 		ship.Render();
@@ -191,6 +209,7 @@ void LevelState::RenderGameObjects()
 	{
 		powerUp.Render();
 	}
+#endif 
 }
 
 void LevelState::RenderUI()
