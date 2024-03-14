@@ -7,7 +7,6 @@
 void MenuState::Enter(Game* game)
 {
 	m_game = game;
-
 	m_game->GetAudioPlayer().PlayMusic(MusicType::MenuMusic);
 }
 
@@ -40,11 +39,6 @@ void MenuState::Render(SDL_Renderer* renderer)
 
 void MenuState::Exit()
 {
-	m_game->GetAudioPlayer().PlaySoundEffect(EffectType::StartSound);
-	m_game->GetAudioPlayer().PlayMusic(MusicType::GameMusic);
-
 	m_game->ResetAllGameObjects();
 	m_game->SetGameplayStartValues();
-
-	m_game = nullptr;
 }

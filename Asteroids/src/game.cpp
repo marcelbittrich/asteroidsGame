@@ -42,6 +42,7 @@ void Game::Init(const char* title, int xpos, int ypos, int m_width, int m_height
 	InitUI();
 	// Priming game time
 	m_lastUpdateTime = SDL_GetTicks();
+	m_currentGameStates.reserve(2);
 }
 
 void Game::InitWindow(const char* title, int xpos, int ypos, int m_width, int m_height)
@@ -174,7 +175,7 @@ void Game::InitGameplay()
 
 	GameObject::SetRenderer(m_renderer);
 	ChangeState(&menuState);
-	m_gameState.top()->Enter(this);
+	m_currentGameStates.back()->Enter(this);
 }
 
 void Game::InitUI()
@@ -199,12 +200,13 @@ void Game::HandleEvents()
 {
 	m_inputHandler.HandleInput(m_isRunning);
 
-	GameState* prevGameState = m_gameState.top();
-	m_gameState.top()->HandleEvents(m_inputHandler);
-	if (prevGameState != m_gameState.top())
+	GameState* prevGameState = m_currentGameStates.back();
+
+	m_currentGameStates.back()->HandleEvents(m_inputHandler);
+	if (prevGameState != m_currentGameStates.back())
 	{
 		prevGameState->Exit();
-		m_gameState.top()->Enter(this);
+		m_currentGameStates.back()->Enter(this);
 	}
 }
 
@@ -212,7 +214,7 @@ void Game::Update()
 {
 	m_deltaTime = CalculateDeltaTime();
 
-	m_gameState.top()->Update(m_deltaTime);
+	m_currentGameStates.back()->Update(m_deltaTime);
 }
 
 void Game::HandlePhysics()
@@ -257,12 +259,12 @@ void Game::SpawnCollectable(const Vec2& position)
 	{
 		if (rand() > RAND_MAX / 2)
 		{
-			Bomb newBomb = Bomb(position, GetRandomVelocity(0.0f, 0.5f));
+			Bomb newBomb = Bomb(position, GetRandomVelocity(0.0f, 30.0f));
 			Game::bombs.push_back(newBomb);
 		}
 		else
 		{
-			PowerUp powerUp = PowerUp(position, GetRandomVelocity(0.0f, 0.5f));
+			PowerUp powerUp = PowerUp(position, GetRandomVelocity(0.0f, 30.0f));
 			Game::powerUps.push_back(powerUp);
 		}
 	}
@@ -288,7 +290,10 @@ void Game::Render()
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(m_renderer, &playArea);
 
-	m_gameState.top()->Render(m_renderer);
+	for (GameState* gamestate : m_currentGameStates)
+	{
+		gamestate->Render(m_renderer);
+	}
 
 	SDL_RenderPresent(m_renderer);
 }

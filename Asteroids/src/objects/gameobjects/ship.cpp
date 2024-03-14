@@ -64,18 +64,12 @@ void Ship::UpdateGameplay(float deltaTime)
 	if (m_isVisible)
 	{
 		m_canBomb = true;
-
-		float coolDownFactor = m_canShoot ? 1.0f : 2.0f;
-		m_shotCounter = std::max((m_shotCounter - m_shotCounterDecay * coolDownFactor * deltaTime), 0.0f);
-		
-		if (m_shotCounter >= m_maxShotCounter)
-			m_canShoot = false;
-		if (!m_canShoot && m_shotCounter <= m_shipCooldownThreshold)
-			m_canShoot = true;
+		m_canShoot = true;
 
 		if (m_hasShotPowerUp)
 		{
 			m_currentPowerUpTime += deltaTime;
+			m_shotMeterValue = 1.f - m_currentPowerUpTime / m_maxPowerUpTime;
 			if (m_currentPowerUpTime > m_maxPowerUpTime)
 				m_hasShotPowerUp = false;
 		}
@@ -84,13 +78,13 @@ void Ship::UpdateGameplay(float deltaTime)
 	{
 		m_canBomb = false;
 		m_canShoot = false;
-		m_shotCounter = m_maxShotCounter + 1; // turns the UI red
+		m_shotMeterValue = 1.f;
 		m_timeNotVisible += deltaTime;
 		if (m_timeNotVisible > m_respawnTime)
 		{
 			m_timeNotVisible = 0;
 			m_isVisible = true;
-			m_shotCounter = 0;
+			m_shotMeterValue = 0.f;
 		}
 	}
 }
@@ -141,7 +135,7 @@ void Ship::Shoot()
 {
 	Uint32 timeSinceLastShot = SDL_GetTicks() - m_timeLastShot;
 
-	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots && m_shotCounter < m_maxShotCounter)
+	if (m_canShoot && timeSinceLastShot > m_timeBetweenShots)
 	{
 		if (m_hasShotPowerUp)
 		{
@@ -155,8 +149,6 @@ void Ship::Shoot()
 		}
 
 		s_audioPlayer->PlaySoundEffect(EffectType::ShotSound);
-		m_shotCounter = m_shotCounter + 100;
-
 		m_timeLastShot = SDL_GetTicks();
 	}
 }
@@ -202,26 +194,24 @@ void Ship::Render()
 
 void Ship::RenderShotMeter()
 {
-	SDL_Color meterColor = m_canShoot ? SDL_Color{ 0, 200, 0, 255 } : SDL_Color{ 200, 0, 0, 255 }; // Green : red
+	const SDL_Color green = { 0, 200, 0, 255 };
+	const SDL_Color red = { 200, 0, 0, 255 };
+	SDL_Color meterColor = m_canShoot ? green : red;
 
 	/// Render meter triangle.
-	/// Meter grows starting from the ships nose.
-	Vec2 shipNose;
-	float noseDistanceToShipMid = m_height * 0.42f;
-	shipNose.x = m_midPos.x + SDL_sinf(m_rotation / 180 * (float)PI) * noseDistanceToShipMid;
-	shipNose.y = m_midPos.y - SDL_cosf(m_rotation / 180 * (float)PI) * noseDistanceToShipMid;
+	/// Meter size starting from the ships nose.
+	Vec2 noseDistanceToShipMid = { 0, -m_height * 0.42f };
+	Vec2 shipNosePosition = m_midPos + noseDistanceToShipMid.Rotate(m_rotation);
 
 	/// Render black base layer.
 	SDL_Color triangleBaseColor = { 0, 0, 0, 255 };
 	float tringleWidth = m_width * 0.5f;
 	float trinagleHeight = m_height * 0.625f;
-	DrawTriangle(s_renderer, shipNose, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
+	DrawTriangle(s_renderer, shipNosePosition, tringleWidth, trinagleHeight, m_rotation, triangleBaseColor);
 
-	/// Overlay actual shot meter triangle
-	float shotMeterValue = std::min(m_shotCounter / m_maxShotCounter, 1.0f); // from 0 to 1
-	if (shotMeterValue > 0.1f)
+	if (m_shotMeterValue > 0.1f)
 	{
-		DrawTriangle(s_renderer, shipNose, shotMeterValue * tringleWidth, shotMeterValue * trinagleHeight, m_rotation, meterColor);
+		DrawTriangle(s_renderer, shipNosePosition, m_shotMeterValue * tringleWidth, m_shotMeterValue * trinagleHeight, m_rotation, meterColor);
 	}
 }
 
@@ -254,7 +244,6 @@ void Ship::RenderShip()
 
 void Ship::CollectBomb(Bomb* bomb)
 {
-	s_audioPlayer->PlaySoundEffect(EffectType::BombCollectedSound);
 	m_collectedBombs.push_back(bomb);
 }
 

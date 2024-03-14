@@ -11,6 +11,7 @@ struct ControlBools
     bool isTurningLeft;
     bool isShooting;
     bool isLeftClicking;
+    bool isLeftClickPressed;
     bool isUsingBomb;
     bool pausePressed;
 };
@@ -36,11 +37,11 @@ public:
     ControllerAnalogInput GetControllerAnlogInput() const { return m_controllerAnalogInput; }
 
 private:
+    bool m_newLeftClick = true;
     ControlBools m_controlBools;
     ControllerAnalogInput m_controllerAnalogInput;
     std::vector<SDL_GameController*> m_gameControllers;
 
     float m_stickDeadZone = 0.10f;
-
     float MapControllerInput(int16_t input) const;
 };

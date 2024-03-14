@@ -13,6 +13,7 @@
 void LevelState::Enter(Game* game)
 {
 	m_game = game;
+	m_game->GetAudioPlayer().PlayMusic(MusicType::GameMusic);
 }
 
 void LevelState::HandleEvents(const InputHandler& inputHandler)
@@ -223,8 +224,6 @@ void LevelState::Exit()
 	ChangeMainMenuState(MainMenu::MenuState::GameOver);
 	SetScoreForMenu();
 	HandleHighscore();
-
-	m_game = nullptr;
 }
 
 

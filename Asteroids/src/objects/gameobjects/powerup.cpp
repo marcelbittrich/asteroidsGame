@@ -3,6 +3,7 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "ship.h"
+#include "../../audio/audioplayer.hpp"
 
 PowerUp::PowerUp(Vec2 midPos, Vec2 velocity)
 	: Collectable(midPos, velocity)
@@ -17,10 +18,8 @@ PowerUp::PowerUp(Vec2 midPos, Vec2 velocity)
 
 void PowerUp::Update(float deltaTime)
 {
-	m_midPos.x += m_velocity.x * deltaTime * 60;
-	m_midPos.y += m_velocity.y * deltaTime * 60;
+	m_midPos += m_velocity * deltaTime;
 	m_midPos = calcPosIfLeavingScreen(m_midPos, m_colRadius);
-
 	m_rotation += m_rotatingSpeed * deltaTime;
 }
 
@@ -32,7 +31,7 @@ void PowerUp::Render()
 
 void PowerUp::GetCollected(Ship* ownerShip)
 {
-	std::cout << "I was collected! " << std::endl;
+	s_audioPlayer->PlaySoundEffect(EffectType::CollectedSound);
 	ownerShip->CollectPowerUp();
 	m_isDead = true;
 }

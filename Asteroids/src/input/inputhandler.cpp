@@ -98,7 +98,7 @@ void InputHandler::HandleInput(bool& m_isRunning)
 			switch (event.button.button)
 			{
 			case SDL_BUTTON_LEFT:
-				m_controlBools.isLeftClicking = true;
+				m_controlBools.isLeftClickPressed = true;
 				break;
 			default:
 				break;
@@ -108,7 +108,7 @@ void InputHandler::HandleInput(bool& m_isRunning)
 			switch (event.button.button)
 			{
 			case SDL_BUTTON_LEFT:
-				m_controlBools.isLeftClicking = false;
+				m_controlBools.isLeftClickPressed = false;
 				break;
 			default:
 				break;
@@ -118,8 +118,11 @@ void InputHandler::HandleInput(bool& m_isRunning)
 		case SDL_CONTROLLERBUTTONDOWN:
 			switch (event.cbutton.button)
 			{
+			case SDL_CONTROLLER_BUTTON_A:
+				m_controlBools.isShooting = true;
+				break;
 			case SDL_CONTROLLER_BUTTON_B:
-				m_controlBools.giveThrust = true;
+				m_controlBools.isUsingBomb = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
 				m_controlBools.isTurningRight = true;
@@ -128,10 +131,9 @@ void InputHandler::HandleInput(bool& m_isRunning)
 				m_controlBools.isTurningLeft = true;
 				break;
 			case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-				m_controlBools.isShooting = true;
+				m_controlBools.giveThrust = true;
 				break;
-			case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-				m_controlBools.isUsingBomb = true;
+			case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:			
 				break;
 			default:
 				break;
@@ -140,8 +142,11 @@ void InputHandler::HandleInput(bool& m_isRunning)
 		case SDL_CONTROLLERBUTTONUP:
 			switch (event.cbutton.button)
 			{
+			case SDL_CONTROLLER_BUTTON_A:
+				m_controlBools.isShooting = false;
+				break;
 			case SDL_CONTROLLER_BUTTON_B:
-				m_controlBools.giveThrust = false;
+				m_controlBools.isUsingBomb = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
 				m_controlBools.isTurningRight = false;
@@ -150,10 +155,9 @@ void InputHandler::HandleInput(bool& m_isRunning)
 				m_controlBools.isTurningLeft = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-				m_controlBools.isShooting = false;
+				m_controlBools.giveThrust = false;
 				break;
 			case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-				m_controlBools.isUsingBomb = false;
 				break;
 			default:
 				break;
@@ -163,6 +167,18 @@ void InputHandler::HandleInput(bool& m_isRunning)
 		default:
 			break;
 		}
+	}
+
+	m_controlBools.isLeftClicking = false;
+	if(m_controlBools.isLeftClickPressed && m_newLeftClick)
+	{ 
+		m_newLeftClick = false;
+		m_controlBools.isLeftClicking = true;
+		std::cout << "Click!" << std::endl;
+	}
+	else if (!m_controlBools.isLeftClickPressed)
+	{
+		m_newLeftClick = true;
 	}
 }
 

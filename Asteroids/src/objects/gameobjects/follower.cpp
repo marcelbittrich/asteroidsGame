@@ -50,7 +50,7 @@ void Follower::UpdateTransform(float deltaTime)
 
 	m_midPos += m_velocity * deltaTime;
 
-	m_midPos = calcPosIfLeavingScreen(m_midPos, 0);
+	m_midPos = calcPosIfLeavingScreen(m_midPos, m_colRadius);
 }
 
 void Follower::UpdateAnimation(float deltaTime)

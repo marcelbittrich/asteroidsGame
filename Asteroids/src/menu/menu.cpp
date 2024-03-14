@@ -128,7 +128,8 @@ void GameMenu::HandleEvents(const InputHandler& myInputHandler)
 	SDL_GetMouseState(&mousePos.x, &mousePos.y);
 	RelocateMouse(mousePos);
 
-	bool isLeftClicking = (myInputHandler.GetControlBools()).isLeftClicking;
+	bool isLeftClicking = myInputHandler.GetControlBools().isLeftClicking;
+	bool isLeftClickPressed = myInputHandler.GetControlBools().isLeftClickPressed;
 	if (isLeftClicking)
 	{
 		for (const MenuButton& button : buttonObjects)
@@ -148,7 +149,7 @@ void GameMenu::HandleEvents(const InputHandler& myInputHandler)
 			}
 		}
 	}
-	else
+	else if (!isLeftClickPressed)
 	{
 		for (Slider& slider : sliderObjects)
 		{
@@ -226,8 +227,6 @@ void GameMenu::Render()
 			SDL_RenderFillRect(m_renderer, &slider.indicatorDim);
 		}
 	}
-
-	SDL_RenderPresent(m_renderer);
 }
 
 void MainMenu::CreateDefaultMainMenu()
@@ -279,6 +278,7 @@ void MainMenu::OnMenuStateChange()
 
 void MainMenu::OnStartPressed()
 {
+	m_owner->GetAudioPlayer().PlaySoundEffect(EffectType::StartSound);
 	m_owner->ChangeState(&Game::levelState);
 }
 
@@ -359,6 +359,5 @@ void PauseMenu::OnVolumeChange(float newValue)
 
 void PauseMenu::OnBackPressed()
 {
-	//m_owner->ChangeState(&Game::levelState);
 	m_owner->PopState();
 }

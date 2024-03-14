@@ -26,10 +26,8 @@ void Bomb::Update(float deltaTime)
 {
 	if (!isCollected && !isExploding)
 	{
-		m_midPos.x += m_velocity.x * deltaTime * 60;
-		m_midPos.y += m_velocity.y * deltaTime * 60;
+		m_midPos += m_velocity * deltaTime;
 		m_midPos = calcPosIfLeavingScreen(m_midPos, m_colRadius);
-
 		m_rotation += m_rotatingSpeed * deltaTime;
 	}
 	if (isCollected && !isExploding && m_ownerShip)
@@ -58,6 +56,7 @@ void Bomb::Render()
 
 void Bomb::GetCollected(Ship* ownerShip)
 {
+	s_audioPlayer->PlaySoundEffect(EffectType::CollectedSound);
 	m_ownerShip = ownerShip;
 	ownerShip->CollectBomb(this);
 	isCollected = true;

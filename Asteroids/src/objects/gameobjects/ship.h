@@ -22,11 +22,6 @@ public:
 	void CollectBomb(class Bomb* bomb);
 	void CollectPowerUp();
 
-	float GetMaxVelocity() const { return m_velocityMax; };
-	float GetShotCounter() const { return m_shotCounter; };
-	float GetMaxShotCounter() const { return m_maxShotCounter; };
-	bool GetCanShoot() const { return m_canShoot; };
-	float GetShotVelocity() const { return m_shotVelocity; };
 	int GetCollectedBombsSize() const { return (int)m_collectedBombs.size(); };
 
 	static void SetTexture(struct SDL_Texture* texture) { s_texture = texture; }
@@ -53,10 +48,7 @@ private:
 
 	// Shooting values
 	float m_shotVelocity = 1000.f;
-	float m_shotCounter = 0.0f;
-	float m_shotCounterDecay = 150.0f;
-	float m_maxShotCounter = 1000.0f;
-	float m_shipCooldownThreshold = m_maxShotCounter / 2.f;
+	float m_shotMeterValue = 0.f;
 	bool m_hasShotPowerUp = false;
 	float m_currentPowerUpTime = 0.f;
 	float m_maxPowerUpTime = 10.f;

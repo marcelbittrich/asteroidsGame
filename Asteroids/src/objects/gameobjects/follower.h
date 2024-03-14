@@ -30,7 +30,7 @@ private:
 
 	// Gameplay Values
 	float m_velocityMax = 50.f;
-	float m_velocityDecay = 0.8f;
+	float m_velocityDecay = 0.5f;
 	float m_followSpeed = 50.f;
 	float m_backOfSpeed = 150.f;
 

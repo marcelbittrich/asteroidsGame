@@ -92,15 +92,16 @@ public:
 	void AddTimeSinceLastWave(float time) { m_timeSinceLastAsteroidWave += time; }
 	float GetTimeLastWave() const { return m_timeSinceLastAsteroidWave; }
 
-	void ChangeState(GameState* newState) { m_gameState.emplace(newState); }
-	void PushState(GameState* newTemporaryState) { m_gameState.push(newTemporaryState); }
-	void PopState() { m_gameState.pop(); }
+	void ChangeState(GameState* newState) { m_currentGameStates.back() = newState; }
+	void PushState(GameState* newTemporaryState) { m_currentGameStates.emplace_back(newTemporaryState); }
+	void PopState() { m_currentGameStates.pop_back(); }
 	void ExitGame() { SDL_Delay(200); m_isRunning = false; }
 	void SpawnCollectable(const Vec2& position);
 
 private:
 	float m_deltaTime = 0.f;
 	std::stack<GameState*, std::vector<GameState*>> m_gameState;
+	std::vector<GameState*> m_currentGameStates = { nullptr };
 
 	inline static bool m_isRunning = true;
 	// Game window values

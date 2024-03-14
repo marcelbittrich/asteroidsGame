@@ -23,7 +23,7 @@ enum class EffectType
 	SmallAsteroidExplode,
 	BigAsteroidExplode,
 	ThrusterSound,
-	BombCollectedSound,
+	CollectedSound,
 	BombExplode,
 	ShipDeath
 };
@@ -47,7 +47,7 @@ public:
 	void PlayMusic(MusicType type);
 	void PlaySoundEffect(EffectType type);
 	void SetMasterVolume(float volume);
-	float GetMasterVolume() { return m_masterVolume; }
+	float GetMasterVolume() const { return m_masterVolume; }
 
 private:
 	// master volume within 0.0..1.0
@@ -56,4 +56,5 @@ private:
 	std::vector<Effect>		m_effects = {};
 	Music createMusic(MusicType type, const std::string& path);
 	Effect createEffect(EffectType type, const std::string& path, int defaultVolume);
+	Music currentMusic;
 };
