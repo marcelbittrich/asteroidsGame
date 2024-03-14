@@ -15,7 +15,6 @@ void InputHandler::HandleInput(bool& m_isRunning)
 		m_controllerAnalogInput.LeftStick.y = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
 		m_controllerAnalogInput.RightStick.x = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX));
 		m_controllerAnalogInput.RightStick.y = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY));
-		
 		m_controllerAnalogInput.LeftTrigger = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT));
 		m_controllerAnalogInput.RightTrigger = MapControllerInput(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
 	}
@@ -174,7 +173,6 @@ void InputHandler::HandleInput(bool& m_isRunning)
 	{ 
 		m_newLeftClick = false;
 		m_controlBools.isLeftClicking = true;
-		std::cout << "Click!" << std::endl;
 	}
 	else if (!m_controlBools.isLeftClickPressed)
 	{

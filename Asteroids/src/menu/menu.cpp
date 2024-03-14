@@ -324,23 +324,37 @@ void PauseMenu::CreateDefaultPauseMenu()
 {
 	m_backgroundRect =
 	{
-		m_width / 2 - 200,
-		m_height / 2 - 100,
-		400,
-		200
+		m_width / 2 - 250,
+		m_height / 2 - 150,
+		500,
+		300
 	};
 
-	SDL_Point position = { m_width / 2, m_height / 2 - 80 };
+	SDL_Point position = { m_width / 2, m_height / 2 - 130 };
 	AddText("PauseHeadline", "PAUSE", TextSize::Small, position);
 
-	SDL_Rect posAndDim = { m_width / 2, m_height / 2 - 30, 200, 10 };
-	float defaultValue = m_owner->GetAudioPlayer().GetMasterVolume();
-	AddSlider("SoundSlider", posAndDim, defaultValue, [&](float newValue) { this->OnVolumeChange(newValue); });
-
-	position = { m_width / 2, m_height / 2 };
+	position = { m_width / 2, m_height / 2 - 90 };
 	AddText("SoundText", "Sound", TextSize::Small, position);
 
-	posAndDim = { m_width / 2, m_height / 2 + 60, 200, 40 };
+	position = { m_width / 2 - 120, m_height / 2 - 50 };
+	AddText("SoundTextMaster", "Master", TextSize::Small, position);
+	SDL_Rect posAndDim = { m_width / 2 + 80, m_height / 2 - 50, 200, 10 };
+	float defaultValue = m_owner->GetAudioPlayer().GetMasterVolume();
+	AddSlider("SoundMasterSlider", posAndDim, defaultValue, [&](float newValue) { this->OnVolumeChange(newValue); });
+
+	position = { m_width / 2 - 120, m_height / 2 };
+	AddText("SoundTextMaster", "Effect", TextSize::Small, position);
+	posAndDim = { m_width / 2 + 80, m_height / 2, 200, 10 };
+	defaultValue = m_owner->GetAudioPlayer().GetEffectVolume();
+	AddSlider("SoundEffectSlider", posAndDim, defaultValue, [&](float newValue) { this->OnEffectVolumeChange(newValue); });
+
+	position = { m_width / 2 - 120, m_height / 2 + 50 };
+	AddText("SoundTextMaster", "Music", TextSize::Small, position);
+	posAndDim = { m_width / 2 + 80, m_height / 2 + 50, 200, 10 };
+	defaultValue = m_owner->GetAudioPlayer().GetMusicVolume();
+	AddSlider("SoundMusicSlider", posAndDim, defaultValue, [&](float newValue) { this->OnMusicVolumeChange(newValue); });
+
+	posAndDim = { m_width / 2, m_height / 2 + 120, 200, 40 };
 	AddButton("BackButton", "Back", TextSize::Small, posAndDim, [&]() { this->OnBackPressed(); });
 }
 
@@ -355,6 +369,16 @@ void PauseMenu::Render()
 void PauseMenu::OnVolumeChange(float newValue)
 {
 	m_owner->GetAudioPlayer().SetMasterVolume(newValue);
+}
+
+void PauseMenu::OnEffectVolumeChange(float newValue)
+{
+	m_owner->GetAudioPlayer().SetEffectVolume(newValue);
+}
+
+void PauseMenu::OnMusicVolumeChange(float newValue)
+{
+	m_owner->GetAudioPlayer().SetMusicVolume(newValue);
 }
 
 void PauseMenu::OnBackPressed()

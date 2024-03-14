@@ -47,11 +47,17 @@ public:
 	void PlayMusic(MusicType type);
 	void PlaySoundEffect(EffectType type);
 	void SetMasterVolume(float volume);
+	void SetEffectVolume(float volume);
+	void SetMusicVolume(float volume);
 	float GetMasterVolume() const { return m_masterVolume; }
+	float GetEffectVolume() const { return m_effectVolume; }
+	float GetMusicVolume() const { return m_musicVolume; }
 
 private:
 	// master volume within 0.0..1.0
 	float					m_masterVolume = 0.5f;
+	float					m_effectVolume = 0.5f;
+	float					m_musicVolume = 0.5f;
 	std::vector<Music>		m_music = {};
 	std::vector<Effect>		m_effects = {};
 	Music createMusic(MusicType type, const std::string& path);

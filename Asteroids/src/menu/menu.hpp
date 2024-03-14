@@ -130,6 +130,8 @@ private:
 	SDL_Color	m_backgroundColor	= { 30,30,30,255 };
 	SDL_Rect	m_backgroundRect	= { 0,0,0,0 };
 
-	void OnVolumeChange(float);
+	void OnVolumeChange(float newValue);
+	void OnEffectVolumeChange(float newValue);
+	void OnMusicVolumeChange(float newValue);
 	void OnBackPressed();
 }; 

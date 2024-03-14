@@ -158,6 +158,8 @@ void Game::InitMenu()
 {
 	m_gameSave = GameSave();
 	m_audioPlayer.SetMasterVolume(m_gameSave.GetMasterVolume());
+	m_audioPlayer.SetEffectVolume(m_gameSave.GetEffectVolume());
+	m_audioPlayer.SetMusicVolume(m_gameSave.GetMusicVolume());
 
 	m_mainMenu = MainMenu(m_font, m_fontHuge, m_renderer, m_logicWidth, m_logicHeight, this);
 	m_mainMenu.CreateDefaultMainMenu();

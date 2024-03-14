@@ -38,7 +38,8 @@ void PauseState::Exit()
 {
 	m_game->GetAudioPlayer().PlaySoundEffect(EffectType::PauseClose);
 	m_game->GetGameSave().SetMasterVolume(m_game->GetAudioPlayer().GetMasterVolume());
+	m_game->GetGameSave().SetEffectVolume(m_game->GetAudioPlayer().GetEffectVolume());
+	m_game->GetGameSave().SetMusicVolume(m_game->GetAudioPlayer().GetMusicVolume());
 	m_game->GetGameSave().WriteFile();
-
 	m_game = nullptr;
 }
